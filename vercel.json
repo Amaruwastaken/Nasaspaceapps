@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": "Interfaz",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/Index.html"
+    },
+    {
+      "source": "/styles.css",
+      "destination": "/Style.css"
+    },
+    {
+      "source": "/script.js",
+      "destination": "/Script.js"
+    }
+  ]
+}
