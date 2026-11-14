@@ -237,3 +237,8 @@ h2 {
 @media (prefers-reduced-motion: reduce) { 
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } 
 }
+
+/* Keep session-only controls hidden even when their component uses flex/grid. */
+[hidden] { display:none !important; }
+.auth-notice { margin:24px; padding:20px; border:1px solid #dcdff2; border-radius:14px; background:#fff; }
+@media(max-width:560px) { .brand {font-size:clamp(16px,4.7vw,25px); letter-spacing:-.7px; gap:8px;} .brand-mark {flex-shrink:0; width:26px; height:26px; border-width:6px;} .topbar-actions {margin-left:10px;} .organ-card-header {flex-wrap:wrap;} }
