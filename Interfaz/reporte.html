@@ -1,0 +1,84 @@
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7f8fc" />
+  <meta name="description" content="Reporte de Farmacias Similunares" />
+  <title>Reporte | Farmacias Similunares</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="Farmacias Similunares, ir al inicio">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Farmacias Similunares<span class="brand-dot">.</span></span>
+      </a>
+
+      <div class="topbar-actions">
+        <button class="menu-toggle" id="menuToggle" type="button"
+          aria-controls="sidebar" aria-expanded="false"
+          aria-label="Abrir menú">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <main class="main" id="reporte">
+        <div class="intro">
+          <span class="section-label">FARMACIAS SIMILUNARES</span>
+          <h1>Reporte</h1>
+          <p>Consulta la información de nuestros reportes.</p>
+        </div>
+
+        <section class="report-content">
+          <!-- Aquí agregarás el contenido del reporte -->
+        </section>
+      </main>
+
+      <aside class="sidebar" id="sidebar"
+        aria-label="Menú lateral" aria-hidden="true" inert>
+
+        <div class="sidebar-top">
+          <div class="sidebar-heading">NAVEGACIÓN</div>
+          <button class="sidebar-close" type="button"
+            id="sidebarClose" aria-label="Cerrar menú">×</button>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Navegación principal">
+          <a href="index.html" class="nav-link">
+            <span class="nav-icon">⌂</span>
+            <span>Inicio</span>
+          </a>
+
+          <a href="reporte.html" class="nav-link is-active" aria-current="page">
+            <span class="nav-icon">01</span>
+            <span>Reporte</span>
+          </a>
+
+          <div class="nav-divider"></div>
+          <span class="sidebar-label">PERFIL</span>
+
+          <button class="nav-link" type="button" data-select="Registro">
+            <span class="nav-icon">⌨</span>
+            <span>Registro</span>
+          </button>
+
+          <button class="nav-link" type="button" data-select="IniciarSesion">
+            <span class="nav-icon">➔</span>
+            <span>Iniciar Sesion</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">Farmacias Similunares © 2026</div>
+      </aside>
+    </div>
+
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+  </div>
+</body>
+</html>
