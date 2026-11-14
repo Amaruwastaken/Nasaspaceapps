@@ -8,6 +8,7 @@
   <title>Registro | Farmacias Similunares</title>
   <link rel="stylesheet" href="Style.css" />
   <script src="Script.js" defer></script>
+  <script type="module" src="auth.js"></script>
   <style>
     .register-container {
       max-width: 520px;
@@ -63,6 +64,17 @@
       background: #6791cc;
     }
 
+    .register-button:disabled {
+      cursor: wait;
+      opacity: .65;
+    }
+
+    #authMessage {
+      margin: 0;
+      color: #527ab6;
+      font-size: 14px;
+    }
+
     .login-text {
       margin: 0;
       color: #81899d;
@@ -99,7 +111,8 @@
         </div>
 
         <section class="register-container" aria-label="Formulario de registro">
-          <form class="register-form" method="post">
+          <form class="register-form" id="registerForm" method="post">
+            <p id="authMessage" role="status" aria-live="polite"></p>
             <div class="form-group">
               <label for="nombre">Nombre completo</label>
               <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" autocomplete="name" required />
@@ -115,7 +128,7 @@
               <input type="password" id="contrasena" name="contrasena" placeholder="Crea una contraseña" autocomplete="new-password" minlength="8" required />
             </div>
 
-            <button type="submit" class="register-button">Registrarme</button>
+            <button type="submit" class="register-button" disabled>Registrarme</button>
 
             <p class="login-text">¿Ya tienes una cuenta? <a href="login.html">Inicia sesión</a></p>
           </form>
@@ -127,47 +140,14 @@
           <div class="sidebar-heading">NAVEGACIÓN</div>
           <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Cerrar menú">×</button>
         </div>
-
-        
-            <nav class="sidebar-nav" aria-label="Navegación principal">
-
-            <a href="Index.html" class="nav-link">
-                <span class="nav-icon">⌂</span>
-                <span>Inicio</span>
-            </a>
-
-            <!-- CON SESIÓN INICIADA -->
-            <a href="reporte.html" class="nav-link"
-                data-auth="logged-in" hidden>
-                <span class="nav-icon">01</span>
-                <span>Reporte</span>
-            </a>
-
-            <a href="registro.html" class="nav-link"
-                data-auth="logged-in" hidden>
-                <span class="nav-icon">⌨</span>
-                <span>Registro</span>
-            </a>
-
-            <div class="nav-divider"></div>
-            <span class="sidebar-label">PERFIL</span>
-
-            <!-- SIN INICIAR SESIÓN -->
-            <a href="login.html" class="nav-link"
-                data-auth="logged-out">
-                <span class="nav-icon">➔</span>
-                <span>Iniciar Sesión</span>
-            </a>
-
-            <!-- CON SESIÓN INICIADA -->
-            <button type="button" class="nav-link"
-                    id="logoutButton" data-auth="logged-in" hidden>
-                <span class="nav-icon">↪</span>
-                <span>Cerrar Sesión</span>
-            </button>
-
-            </nav>
-
+        <nav class="sidebar-nav" aria-label="Navegación principal">
+          <a href="Index.html" class="nav-link"><span class="nav-icon">⌂</span><span>Inicio</span></a>
+          <a href="reporte.html" class="nav-link"><span class="nav-icon">01</span><span>Reporte</span></a>
+          <div class="nav-divider"></div>
+          <span class="sidebar-label">PERFIL</span>
+          <a href="registro.html" class="nav-link is-active" aria-current="page"><span class="nav-icon">⌨</span><span>Registro</span></a>
+          <a href="login.html" class="nav-link"><span class="nav-icon">➔</span><span>Iniciar Sesión</span></a>
+        </nav>
         <div class="sidebar-footer">Farmacias Similunares © 2026</div>
       </aside>
     </div>
