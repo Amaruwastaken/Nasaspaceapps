@@ -1,8 +1,6 @@
 # Nasaspaceapps
-<<<<<<< HEAD
 nasa space apps lololol
 .
-=======
 
 ## Supabase
 
@@ -12,4 +10,3 @@ variables; copy it to `.env` for local development. Do not commit `.env`.
 
 The Supabase client is exported from `Backend/backend.ts`. Database-specific
 types and queries can be added once the project's schema is defined.
->>>>>>> 533064b5d65efdc09f71c486caf328347df70caa
