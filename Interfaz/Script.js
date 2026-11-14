@@ -57,10 +57,7 @@ sidebar.querySelectorAll('a').forEach(link => {
   const DIST = { // km promedio aproximados
     'tierra-luna': 384400,
     'tierra-marte': 225e6,
-    'tierra-titan': 1275e6,
     'luna-marte': 225e6,
-    'luna-titan': 1275e6,
-    'marte-titan': 1100e6,
   };
   const SPEED = 58000; // km/h (nave ficticia)
 
