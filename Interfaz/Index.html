@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7f8fc" />
+  <meta name="description" content="Explora el cuerpo humano de una forma interactiva." />
+  <title>Loso | Explora el cuerpo humano</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Loso, ir al inicio">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Loso<span class="brand-dot">.</span></span>
+      </a>
+      <div class="topbar-actions">
+        <span class="eyebrow">Atlas interactivo</span>
+        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <main class="main" id="inicio">
+        <div class="intro">
+          <span class="section-label">BIENVENIDO A LOSO</span>
+          <h1>Descubre el cuerpo humano.</h1>
+          <p>Selecciona un órgano para conocer sus funciones y explorar cómo trabaja nuestro cuerpo.</p>
+        </div>
+
+        <section class="organ-card" aria-labelledby="organ-heading">
+          <div class="organ-card-header">
+            <div>
+              <span class="section-label">EXPLORA</span>
+              <h2 id="organ-heading">Órganos del cuerpo</h2>
+            </div>
+            <span class="card-chip">Vista interactiva</span>
+          </div>
+          <div class="organ-stage" id="organStage">
+            <!-- Sustituye estos botones de demostración con imágenes PNG/SVG transparentes de tus órganos.
+                 Puedes conservar las clases organ y organ-item para aprovechar las animaciones. -->
+            <button class="organ organ-brain" data-organ="cerebro" type="button" aria-label="Ver información del cerebro"><span class="organ-emoji" aria-hidden="true">🧠</span></button>
+            <button class="organ organ-heart" data-organ="corazon" type="button" aria-label="Ver información del corazón"><span class="organ-emoji" aria-hidden="true">❤️</span></button>
+            <button class="organ organ-lungs" data-organ="pulmones" type="button" aria-label="Ver información de los pulmones"><span class="organ-emoji" aria-hidden="true">🫁</span></button>
+            <div class="organ-tip" id="organTip" role="status" aria-live="polite">
+              <span class="organ-tip-icon">✦</span>
+              <div><strong id="tipTitle">Explora los órganos</strong><p id="tipText">Pasa el cursor por un órgano o tócalo para ver información.</p></div>
+            </div>
+          </div>
+        </section>
+        <p class="under-card">Este espacio está listo para colocar tus imágenes reales de órganos y el contenido de tu proyecto.</p>
+      </main>
+
+      <aside class="sidebar" id="sidebar" aria-label="Menú lateral" aria-hidden="true" inert>
+        <div class="sidebar-top">
+          <div class="sidebar-heading">NAVEGACIÓN</div>
+          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Cerrar menú">×</button>
+        </div>
+        <nav class="sidebar-nav" aria-label="Navegación principal">
+          <a href="#inicio" class="nav-link is-active"><span class="nav-icon">⌂</span><span>Inicio</span></a>
+          <a href="#organ-heading" class="nav-link"><span class="nav-icon">◉</span><span>Órganos</span></a>
+          <button class="nav-link" type="button" id="aboutButton"><span class="nav-icon">ⓘ</span><span>Acerca del proyecto</span></button>
+          <div class="nav-divider"></div>
+          <span class="sidebar-label">EXPLORAR</span>
+          <button class="nav-link" type="button" data-select="cerebro"><span class="nav-icon">01</span><span>Cerebro</span></button>
+          <button class="nav-link" type="button" data-select="corazon"><span class="nav-icon">02</span><span>Corazón</span></button>
+          <button class="nav-link" type="button" data-select="pulmones"><span class="nav-icon">03</span><span>Pulmones</span></button>
+        </nav>
+        <div class="sidebar-footer">Loso © 2026</div>
+      </aside>
+    </div>
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+  </div>
+</body>
+</html>
