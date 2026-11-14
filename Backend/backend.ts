@@ -45,7 +45,7 @@ function go(id: string): void {
   window.scrollTo(0, 0);
 }
 
-/* ---------- 1. Misión ---------- */
+/* ---------- 1. Misión ---------- */  
 $<HTMLInputElement>('#mis').value = MISSION;
 $('#patch').textContent = MISSION || 'Misión';
 $<HTMLInputElement>('#mis').oninput = e => {
