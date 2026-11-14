@@ -56,7 +56,7 @@ button:focus-visible, a:focus-visible {
   transition: background .2s; 
 }
 .menu-toggle:hover { 
-  background: #e7e2fc; 
+  background: #e2f7fc; 
 }
 
 .menu-toggle span { 
@@ -171,7 +171,7 @@ h2 {
 }
 
 .nav-link:hover, .nav-link.is-active { 
-  color: #527ab6; background: #f2efff; 
+  color: #527ab6; background: #eff9ff; 
 }
 
 .nav-icon { 
@@ -179,7 +179,7 @@ h2 {
 }
 
 .nav-divider { 
-  height: 1px; background: #eceef5; margin: 16px 8px 23px; 
+  height: 1px; background: #ecf0f5; margin: 16px 8px 23px; 
 }
 
 .sidebar-label { 
@@ -187,7 +187,7 @@ h2 {
 }
 
 .sidebar-footer { 
-  margin-top: auto; padding: 15px; color: #abb0c0; font-size: 12px; 
+  margin-top: auto; padding: 15px; color: #abbac0; font-size: 12px; 
 }
 
 .overlay { 
