@@ -13,6 +13,7 @@ export const supabase = createClient(
   requireEnv('SUPABASE_URL'),
   requireEnv('SUPABASE_PUBLISHABLE_KEY')
 )
+const sb = supabase
 
 /* ---------- Tipos ---------- */
 type Level = 0 | 1 | 2 | 3;
