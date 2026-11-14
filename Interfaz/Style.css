@@ -32,7 +32,7 @@ button:focus-visible, a:focus-visible {
   display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: #20243b; font-size: 28px; font-weight: 780; letter-spacing: -1.3px; 
 }
 .brand-mark { 
-  display: inline-block; width: 37px; height: 37px; border: 8px solid #8271e6; border-radius: 50%;
+  display: inline-block; width: 37px; height: 37px; border: 8px solid #6791cc; border-radius: 50%;
  }
 .brand-dot { 
   color: #73a8d8; 
@@ -171,11 +171,11 @@ h2 {
 }
 
 .nav-link:hover, .nav-link.is-active { 
-  color: #5056a4; background: #f2efff; 
+  color: #527ab6; background: #f2efff; 
 }
 
 .nav-icon { 
-  width: 24px; text-align: center; color: #606fc4; font-size: 17px; 
+  width: 24px; text-align: center; color: #6088c4; font-size: 17px; 
 }
 
 .nav-divider { 
