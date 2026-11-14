@@ -18,7 +18,7 @@ button {
   font: inherit; 
 }
 button:focus-visible, a:focus-visible { 
-  outline: 3px solid #9c8df6; outline-offset: 3px;
+  outline: 3px solid #73a8d8; outline-offset: 3px;
  }
 .app { 
   min-height: 100vh; 
@@ -26,7 +26,7 @@ button:focus-visible, a:focus-visible {
 .topbar {
   position: relative; z-index: 30; height: 86px; padding: 0 clamp(24px, 5vw, 82px);
   display: flex; align-items: center; justify-content: space-between;
-  background: #7850b4; border-bottom: 1px solid #e9eaf2;
+  background: #73a8d8; border-bottom: 1px solid #e9eaf2;
 }
 .brand { 
   display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: #20243b; font-size: 28px; font-weight: 780; letter-spacing: -1.3px; 
@@ -35,7 +35,7 @@ button:focus-visible, a:focus-visible {
   display: inline-block; width: 37px; height: 37px; border: 8px solid #8271e6; border-radius: 50%;
  }
 .brand-dot { 
-  color: #8271e6; 
+  color: #73a8d8; 
 }
 .topbar-actions { 
   display: flex; align-items: center; gap: 25px; 
@@ -68,7 +68,7 @@ button:focus-visible, a:focus-visible {
 
 .main { width: 100%; margin: 0 auto; padding: clamp(40px, 5vw, 75px) clamp(24px, 6vw, 90px) 52px; transition: padding-right .35s ease; }
 .intro { max-width: 650px; margin-bottom: 33px; }
-.section-label { color: #8473e9; font-size: 11px; letter-spacing: 2px; font-weight: 800; }
+.section-label { color: #73a8d8; font-size: 11px; letter-spacing: 2px; font-weight: 800; }
 h1 { font-size: clamp(31px, 4vw, 49px); letter-spacing: -1.8px; margin: 12px 0; line-height: 1.14; }
 .intro p { color: #81899d; font-size: 16px; line-height: 1.7; margin: 0; }
 .organ-card { background: #fff; border: 1px solid #e8eaf3; box-shadow: 0 16px 65px rgba(59, 66, 117, .05); border-radius: 24px; max-width: 1120px; padding: clamp(20px, 3.2vw, 35px); }
@@ -81,7 +81,7 @@ h2 { font-size: 21px; letter-spacing: -.6px; margin: 8px 0 0; }
 .organ-stage:has(.organ:hover) .organ:not(:hover), .organ-stage:has(.organ:focus-visible) .organ:not(:focus-visible), .organ-stage.has-selection .organ:not(.is-selected) { filter: blur(3px); opacity: .4; transform: scale(.96); }
 .organ:hover, .organ:focus-visible, .organ.is-selected { transform: scale(1.14); z-index: 1; box-shadow: 0 17px 45px #7267b933; }
 .organ-tip { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); width: min(450px, calc(100% - 30px)); background: #fff; border: 1px solid #ebe9fa; box-shadow: 0 10px 35px #534b8514; border-radius: 14px; display: flex; gap: 14px; align-items: center; padding: 14px 18px; }
-.organ-tip-icon { color: #897ae8; background: #f1edff; border-radius: 11px; width: 35px; height: 35px; flex: none; display: grid; place-items: center; }
+.organ-tip-icon { color: #73a8d8; background: #f1edff; border-radius: 11px; width: 35px; height: 35px; flex: none; display: grid; place-items: center; }
 .organ-tip strong { font-size: 14px; }
 .organ-tip p { margin: 3px 0 0; color: #8a90a4; font-size: 12px; line-height: 1.45; }
 .under-card { color: #969bad; font-size: 13px; margin-top: 22px; }
