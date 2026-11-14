@@ -60,7 +60,8 @@ button:focus-visible, a:focus-visible {
 }
 
 .menu-toggle span { 
-  width: 20px; height: 2px; background: #73a8d8; border-radius: 6px; }
+  width: 20px; height: 2px; background: #73a8d8; border-radius: 6px; 
+}
 
 .shell {
    min-height: calc(100vh - 86px); 
