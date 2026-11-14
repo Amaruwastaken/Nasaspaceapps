@@ -4,15 +4,82 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#f7f8fc" />
-  <meta name="description" content="Explora el universo!" />
-  <title>Farmacias Similunares | Explora el universo!</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="script.js" defer></script>
+  <meta name="description" content="Crea una cuenta en Farmacias Similunares" />
+  <title>Registro | Farmacias Similunares</title>
+  <link rel="stylesheet" href="Style.css" />
+  <script src="Script.js" defer></script>
+  <style>
+    .register-container {
+      max-width: 520px;
+      padding: clamp(22px, 4vw, 36px);
+      background: #fff;
+      border: 1px solid #e8eaf3;
+      border-radius: 20px;
+      box-shadow: 0 16px 65px rgba(59, 66, 117, .05);
+    }
+
+    .register-form {
+      display: grid;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #dcdff2;
+      border-radius: 10px;
+      color: #21263b;
+      font: inherit;
+    }
+
+    .form-group input:focus {
+      border-color: #73a8d8;
+      outline: 2px solid #73a8d8;
+      outline-offset: 2px;
+    }
+
+    .register-button {
+      padding: 13px 18px;
+      border: 0;
+      border-radius: 10px;
+      background: #73a8d8;
+      color: #21263b;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .register-button:hover {
+      background: #6791cc;
+    }
+
+    .login-text {
+      margin: 0;
+      color: #81899d;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .login-text a {
+      color: #527ab6;
+      font-weight: 650;
+    }
+  </style>
 </head>
 <body>
   <div class="app" id="app">
     <header class="topbar">
-      <a class="brand" href="#inicio" aria-label="Farmacias Similunares, ir al inicio">
+      <a class="brand" href="Index.html" aria-label="Farmacias Similunares, ir al inicio">
         <span class="brand-mark" aria-hidden="true"></span>
         <span>Farmacias Similunares<span class="brand-dot">.</span></span>
       </a>
@@ -24,11 +91,35 @@
     </header>
 
     <div class="shell">
-      <main class="main" id="inicio">
+      <main class="main" id="registro">
         <div class="intro">
-          <span class="section-label">HOLAAAAAAAAAAAAa A FARMACIAS SIMILUNARES</span>
-          <h1>Descubre sobre nuestra misión.</h1>
+          <span class="section-label">FARMACIAS SIMILUNARES</span>
+          <h1>Crear cuenta</h1>
+          <p>Regístrate para continuar.</p>
         </div>
+
+        <section class="register-container" aria-label="Formulario de registro">
+          <form class="register-form" method="post">
+            <div class="form-group">
+              <label for="nombre">Nombre completo</label>
+              <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" autocomplete="name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="correo">Correo electrónico</label>
+              <input type="email" id="correo" name="correo" placeholder="ejemplo@correo.com" autocomplete="email" required />
+            </div>
+
+            <div class="form-group">
+              <label for="contrasena">Contraseña</label>
+              <input type="password" id="contrasena" name="contrasena" placeholder="Crea una contraseña" autocomplete="new-password" minlength="8" required />
+            </div>
+
+            <button type="submit" class="register-button">Registrarme</button>
+
+            <p class="login-text">¿Ya tienes una cuenta? <a href="login.html">Inicia sesión</a></p>
+          </form>
+        </section>
       </main>
 
       <aside class="sidebar" id="sidebar" aria-label="Menú lateral" aria-hidden="true" inert>
@@ -37,16 +128,17 @@
           <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Cerrar menú">×</button>
         </div>
         <nav class="sidebar-nav" aria-label="Navegación principal">
-          <a href="Index.html" class="nav-link is-active"><span class="nav-icon">⌂</span><span>Inicio</span></a>
+          <a href="Index.html" class="nav-link"><span class="nav-icon">⌂</span><span>Inicio</span></a>
           <a href="reporte.html" class="nav-link"><span class="nav-icon">01</span><span>Reporte</span></a>
           <div class="nav-divider"></div>
           <span class="sidebar-label">PERFIL</span>
-          <a href="registro.html" class="nav-link"><span class="nav-icon">⌨</span><span>Registro</span></a>
-          <a href="login.html" class="nav-link"><span class="nav-icon">➔</span><span>Iniciar Sesion</span></a>
+          <a href="registro.html" class="nav-link is-active" aria-current="page"><span class="nav-icon">⌨</span><span>Registro</span></a>
+          <a href="login.html" class="nav-link"><span class="nav-icon">➔</span><span>Iniciar Sesión</span></a>
         </nav>
         <div class="sidebar-footer">Farmacias Similunares © 2026</div>
       </aside>
     </div>
+
     <div class="overlay" id="overlay" aria-hidden="true"></div>
   </div>
 </body>
