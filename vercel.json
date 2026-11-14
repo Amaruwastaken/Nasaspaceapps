@@ -15,6 +15,10 @@
     {
       "source": "/script.js",
       "destination": "/Script.js"
+    },
+    {
+      "source": "/login.html",
+      "destination": "/Login.html"
     }
   ]
 }
