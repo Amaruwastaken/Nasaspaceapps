@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="es">
 <head>
+  <title>Reporte | Farmacias Similunares</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#061b3a" />
   <meta name="description" content="Reporte anat?mico e indicadores de salud de la misi?n" />
-  <title>Reporte | Farmacias Similunares</title>
   <!-- Shared layout, navigation behavior, and session-aware links. -->
   <link rel="stylesheet" href="Style.css" />
   <script src="Script.js" defer></script>
@@ -32,7 +32,7 @@
     <div class="shell">
       <!-- Landing-page content. -->
       <main class="main report-main" id="reporte">
- <div class="intro"><span class="section-label">REPORTE</span><h1>Tu estado actual.</h1><p>Las regiones en atenci&#243;n o alerta aparecen primero. Puedes consultar todas las mediciones y su historial en m&#225;s detalles.</p></div>
+ <div class="intro"><span class="section-label">REPORTE</span><h1>Tu estado actual.</h1><p>Explora el cuerpo para consultar cada regi&#243;n. El historial completo est&#225; en m&#225;s detalles.</p></div>
  <section id="bodyOverview" class="body-overview" aria-labelledby="bodyOverviewTitle" hidden>
    <div class="body-overview-heading">
      <div><h2 id="bodyOverviewTitle">Vista general del cuerpo</h2><p>Pasa el cursor sobre un órgano para ver su información. También puedes usar Tab o tocarlo.</p></div>
@@ -59,33 +59,27 @@
            <circle cx="205" cy="621" r="18" /><path class="body-organ-line" d="M205 609V633M193 621H217" />
          </g>
          <g class="body-organ" data-anatomy="lungs" role="button" tabindex="0" aria-label="Pulmones" aria-expanded="false" aria-controls="bodyPopup">
-           <title>Pulmones</title>
            <path d="M193 222C180 211 157 222 146 245C135 267 132 303 140 322C144 332 165 323 181 313C189 308 193 296 193 281Z" />
            <path d="M214 222C228 212 250 223 261 247C271 269 274 302 267 321C262 333 241 323 226 314C218 309 214 298 214 282Z" />
            <path class="body-organ-line" d="M203 211V253M203 248L176 271M203 248L232 271M176 271L160 289M232 271L250 289" />
          </g>
          <g class="body-organ" data-anatomy="heart" role="button" tabindex="0" aria-label="Corazón" aria-expanded="false" aria-controls="bodyPopup">
-           <title>Corazón</title>
            <path d="M202 279C191 264 181 271 183 287C185 304 203 323 213 328C225 318 237 300 234 285C231 271 219 273 214 282L212 265L202 266Z" />
            <path class="body-organ-line" d="M205 290Q212 301 215 316" />
          </g>
          <g class="body-organ" data-anatomy="liver" role="button" tabindex="0" aria-label="Hígado" aria-expanded="false" aria-controls="bodyPopup">
-           <title>Hígado</title>
            <path d="M144 346C162 332 195 335 224 344L230 356C216 367 196 370 174 374C158 377 145 371 141 363Z" />
            <path class="body-organ-line" d="M194 342L187 366" />
          </g>
          <g class="body-organ" data-anatomy="stomach" role="button" tabindex="0" aria-label="Estómago" aria-expanded="false" aria-controls="bodyPopup">
-           <title>Estómago</title>
            <path d="M219 339L218 363C230 356 249 360 253 374C258 391 247 408 232 411C218 414 205 408 198 398C193 391 197 382 204 382C211 382 210 391 219 390C230 389 234 378 230 374L209 365L210 339Z" />
          </g>
          <g class="body-organ" data-anatomy="kidneys" role="button" tabindex="0" aria-label="Riñones" aria-expanded="false" aria-controls="bodyPopup">
-           <title>Riñones</title>
            <path d="M159 392C141 386 137 402 140 416C143 433 158 436 165 426C170 420 163 416 160 412C157 407 170 401 159 392Z" />
            <path d="M251 392C269 386 273 402 270 416C267 433 252 436 245 426C240 420 247 416 250 412C253 407 240 401 251 392Z" />
            <path class="body-organ-line body-organ-duct" d="M160 417Q169 435 190 456M250 417Q241 435 220 456" />
          </g>
          <g class="body-organ" data-anatomy="intestines" role="button" tabindex="0" aria-label="Intestinos" aria-expanded="false" aria-controls="bodyPopup">
-           <title>Intestinos</title>
            <path d="M171 428C154 424 150 435 152 449L153 478C154 489 166 492 176 487L235 487C247 491 257 483 256 472L256 444C257 431 246 425 236 430Z" />
            <path class="body-organ-line" d="M167 443H237Q246 447 237 454H175Q166 459 176 466H237Q245 472 236 477H174M205 481V498" />
          </g>
@@ -100,7 +94,6 @@
    </div>
  </section>
  <p id="reportMessage" class="report-message" role="status" aria-live="polite">Consultando datos&#8230;</p>
- <section id="affectedOrgans" class="affected-organs" aria-label="Regiones que requieren atenci&#243;n"></section>
  <details id="reportDetails" class="report-details">
    <summary>M&#225;s detalles: todas las mediciones</summary>
    <p class="report-details-intro">Consulta los valores disponibles y el historial de registros y sensores de tu cuenta.</p>
