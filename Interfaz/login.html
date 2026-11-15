@@ -161,7 +161,7 @@
             <span>Inicio</span>
           </a>
 
-          <a href="reporte.html" class="nav-link">
+          <a href="reporte.html" class="nav-link" data-auth="logged-in" hidden>
             <span class="nav-icon">01</span>
             <span>Reporte</span>
           </a>
@@ -169,13 +169,23 @@
           <div class="nav-divider"></div>
           <span class="sidebar-label">PERFIL</span>
 
-          <a href="registro.html" class="nav-link"><span class="nav-icon">⌨</span><span>Registro</span></a>
-          <a href="login.html" class="nav-link"><span class="nav-icon">➔</span><span>Iniciar Sesion</span></a>
+          <a href="registro.html" class="nav-link" data-auth="logged-in" hidden><span class="nav-icon">⌨</span><span>Registro</span></a>
+          <a href="login.html" class="nav-link" data-auth="logged-out"><span class="nav-icon">➔</span><span>Iniciar Sesión</span></a>
+          <button type="button" class="nav-link" id="logoutButton" data-auth="logged-in" hidden>
+            <span class="nav-icon">↪</span><span>Cerrar Sesión</span>
+          </button>
 
         </nav>
 
         <div class="sidebar-footer">
-          Farmacias Similunares © 2026
+          <div class="sidebar-user" data-auth="logged-in" hidden>
+            <svg class="sidebar-user-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4 21a8 8 0 0 1 16 0"></path>
+            </svg>
+            <span id="sidebarUserName">Usuario</span>
+          </div>
+          <span class="sidebar-copyright">Farmacias Similunares © 2026</span>
         </div>
 
       </aside>

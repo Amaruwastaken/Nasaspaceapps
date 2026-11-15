@@ -4,6 +4,7 @@ const loginForm = document.querySelector('#loginForm');
 const registerForm = document.querySelector('#registerForm');
 const message = document.querySelector('#authMessage');
 const protectedPage = document.querySelector('[data-requires-auth]');
+const sidebarUserName = document.querySelector('#sidebarUserName');
 let currentUser = null;
 let notice;
 
@@ -15,6 +16,13 @@ function showMessage(text, error = false) {
 }
 function renderSession(session) {
   currentUser = session?.user ?? null;
+  if (sidebarUserName) {
+    const fullName = currentUser?.user_metadata?.full_name;
+    sidebarUserName.textContent =
+      typeof fullName === 'string' && fullName.trim()
+        ? fullName.trim()
+        : currentUser?.email ?? 'Usuario';
+  }
   document.querySelectorAll('[data-auth]').forEach(el => {
     el.hidden = (el.dataset.auth === 'logged-in') !== Boolean(currentUser);
   });

@@ -7,8 +7,9 @@
   <meta name="theme-color" content="#f7f8fc" />
   <meta name="description" content="Reporte de Farmacias Similunares" />
   <title>Reporte | Farmacias Similunares</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="script.js" defer></script>
+  <link rel="stylesheet" href="Style.css" />
+  <script src="Script.js" defer></script>
+  <script type="module" src="auth.js"></script>
 </head>
 <body>
   <div class="app" id="app">
@@ -102,10 +103,22 @@
           <div class="nav-divider"></div>
           <span class="sidebar-label">PERFIL</span>
 
-          <a href="registro.html" class="nav-link"><span class="nav-icon">⌨</span><span>Registro</span></a>
-          <a href="login.html" class="nav-link"><span class="nav-icon">➔</span><span>Iniciar Sesion</span></a>
+          <a href="registro.html" class="nav-link" data-auth="logged-in" hidden><span class="nav-icon">⌨</span><span>Registro</span></a>
+          <a href="login.html" class="nav-link" data-auth="logged-out"><span class="nav-icon">➔</span><span>Iniciar Sesión</span></a>
+          <button type="button" class="nav-link" id="logoutButton" data-auth="logged-in" hidden>
+            <span class="nav-icon">↪</span><span>Cerrar Sesión</span>
+          </button>
 
-        <div class="sidebar-footer">Farmacias Similunares © 2026</div>
+        <div class="sidebar-footer">
+          <div class="sidebar-user" data-auth="logged-in" hidden>
+            <svg class="sidebar-user-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4 21a8 8 0 0 1 16 0"></path>
+            </svg>
+            <span id="sidebarUserName">Usuario</span>
+          </div>
+          <span class="sidebar-copyright">Farmacias Similunares © 2026</span>
+        </div>
       </aside>
     </div>
 
