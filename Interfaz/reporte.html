@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#061b3a" />
+  <meta name="description" content="Reporte anat?mico e indicadores de salud de la misi?n" />
+  <title>Reporte | Farmacias Similunares</title>
+  <!-- Shared layout, navigation behavior, and session-aware links. -->
+  <link rel="stylesheet" href="Style.css" />
+  <script src="Script.js" defer></script>
+  <link rel="stylesheet" href="report.css" />
+  <script type="module" src="report.js"></script>
+  <script type="module" src="auth.js"></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <!-- Site header and menu toggle are shared by all pages. -->
+    <header class="topbar">
+      <a class="brand" href="Index.html" aria-label="Farmacias Similunares, ir al inicio">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Farmacias Similunares<span class="brand-dot">.</span></span>
+      </a>
+      <div class="topbar-actions">
+        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <!-- Landing-page content. -->
+      <main class="main report-main" id="reporte">
+  <div class="intro"><span class="section-label">MONITOREO DE MISIÓN</span><h1>Tu cuerpo en misión.</h1><p>Explora la silueta para consultar tus indicadores por región.</p></div>
+  <div class="report-toolbar"><span id="reportMode">Sin mediciones personales</span><div><button type="button" id="reportDemo">Cargar ejemplo</button><button type="button" id="reportClear">Limpiar datos</button></div></div>
+  <div class="report-grid">
+    <section class="anatomy-card" aria-labelledby="anatomyTitle">
+      <div class="report-card-heading"><span class="section-label">01 / MAPA CORPORAL</span><h2 id="anatomyTitle">Explora tu anatomía</h2><p>Pasa el cursor, usa Tab o toca una región. Pulsa Escape para quitar el enfoque.</p></div>
+      <div class="anatomy-layout">
+        <div class="anatomy-stage" id="anatomyStage">
+          <svg class="anatomy-svg" viewBox="0 0 320 650" role="group" aria-label="Silueta anatómica interactiva">
+            <defs><linearGradient id="bodyFill" x1="0" x2="1"><stop stop-color="#dce9f2"/><stop offset=".5" stop-color="#f5faff"/><stop offset="1" stop-color="#c6d9e8"/></linearGradient><radialGradient id="organFill"><stop stop-color="#ffb2a2"/><stop offset="1" stop-color="#e86759"/></radialGradient></defs>
+            <g class="body-backdrop" fill="url(#bodyFill)" stroke="#a0b9ce" stroke-width="2">
+              <ellipse cx="160" cy="63" rx="39" ry="49"/>
+              <path d="M144 108L143 127Q113 131 101 146L70 206 40 302Q35 320 46 326Q57 331 64 313L99 229 112 203 108 299Q100 332 110 362L119 468 118 603Q118 620 141 619L153 469 160 379 167 469 179 619Q202 620 202 603L201 468 210 362Q220 332 212 299L208 203 221 229 256 313Q263 331 274 326Q285 320 280 302L250 206 219 146Q207 131 177 127L176 108"/>
+              <path d="M118 610Q109 621 108 634L143 634 143 610M177 610L177 634 212 634Q211 621 202 610"/>
+            </g>
+            <g class="anatomy-region" data-region="body" tabindex="0" role="button" aria-label="Cuerpo y huesos" aria-pressed="false">
+              <path class="region-hit" d="M115 128H205V365H115Z"/>
+              <g fill="none" stroke="#86a9bf" stroke-width="7" stroke-linecap="round"><path d="M160 141V346M160 159L125 151M160 159L195 151M160 180Q128 162 120 183M160 180Q192 162 200 183M160 202Q128 184 120 205M160 202Q192 184 200 205M160 225Q128 207 120 228M160 225Q192 207 200 228M132 307Q160 332 188 307M130 332L136 452 130 574M190 332L184 452 190 574M102 172L77 236 53 300M218 172L243 236 267 300"/></g>
+              <circle class="region-dot" cx="160" cy="345" r="9"/><text x="181" y="350">CUERPO</text>
+            </g>
+            <g class="anatomy-region" data-region="head" tabindex="0" role="button" aria-label="Cabeza: concentración de CO2" aria-pressed="false">
+              <path class="region-hit" d="M118 14H202V114H118Z"/><path d="M124 65Q116 102 143 112M196 65Q204 102 177 112" fill="none" stroke="#6d9ebd" stroke-width="5"/><circle class="region-dot" cx="200" cy="97" r="8"/><text x="215" y="101">CABEZA</text>
+            </g>
+            <g class="anatomy-region" data-region="brain" tabindex="0" role="button" aria-label="Cerebro: sueño, reacción y HRV" aria-pressed="false">
+              <path fill="url(#organFill)" stroke="#c95150" stroke-width="1.5" d="M160 25C143 15 126 29 128 42C118 53 128 64 141 62Q153 68 160 59Q167 68 179 62C192 64 202 53 192 42C194 29 177 15 160 25Z"/><path d="M160 27V57M140 32Q153 35 145 47M178 33Q165 35 175 48M130 48L140 52M183 52L192 48" fill="none" stroke="#b85455" stroke-width="2"/>
+              <text x="54" y="37">CEREBRO</text><path class="region-line" d="M106 34H126"/>
+            </g>
+            <g class="anatomy-region" data-region="eyes" tabindex="0" role="button" aria-label="Ojos: test Amsler" aria-pressed="false">
+              <rect class="region-hit" x="130" y="68" width="60" height="25" rx="10"/>
+              <g fill="#fff" stroke="#507a99" stroke-width="1.5"><ellipse cx="143" cy="78" rx="11" ry="7"/><ellipse cx="177" cy="78" rx="11" ry="7"/></g><g fill="#1769aa"><circle cx="143" cy="78" r="4"/><circle cx="177" cy="78" r="4"/></g>
+              <text x="67" y="82">OJOS</text><path class="region-line" d="M103 78H130"/>
+            </g>
+            <g class="anatomy-region" data-region="stomach" tabindex="0" role="button" aria-label="Estómago: hidratación" aria-pressed="false">
+              <path fill="url(#organFill)" stroke="#c95150" stroke-width="2" d="M171 223L171 241Q201 231 199 258C198 283 171 296 153 281Q142 272 150 261Q157 252 161 262Q178 264 179 253L162 245 162 223Z"/>
+              <text x="212" y="268">ESTÓMAGO</text><path class="region-line" d="M199 265H208"/>
+            </g>
+          </svg>
+          <span class="anatomy-caption">VISTA ANTERIOR · ESQUEMA ILUSTRATIVO</span>
+        </div>
+        <div class="organ-detail" id="organDetail" aria-labelledby="organTitle"><span class="section-label">REGIÓN SELECCIONADA</span><h3 id="organTitle">Cerebro</h3><p id="organDescription"></p><div id="organMetrics"></div></div>
+      </div>
+      <div class="region-tabs" aria-label="Seleccionar región"><button type="button" data-select-region="brain">Cerebro</button><button type="button" data-select-region="eyes">Ojos</button><button type="button" data-select-region="head">Cabeza</button><button type="button" data-select-region="stomach">Estómago</button><button type="button" data-select-region="body">Cuerpo</button></div>
+    </section>
+    <aside class="environment-card" aria-labelledby="environmentTitle"><span class="section-label">02 / ENTORNO</span><h2 id="environmentTitle">Condiciones de misión</h2><p>Indicadores que no pertenecen a una región anatómica.</p><div id="environmentMetrics"></div></aside>
+  </div>
+  <section class="health-card" aria-labelledby="healthTitle"><div class="health-heading"><div><span class="section-label">03 / RESUMEN</span><h2 id="healthTitle">Indicador de salud</h2></div><strong id="healthScore">Sin datos</strong></div><div id="healthMeter" class="health-meter" role="progressbar" aria-label="Índice orientativo de indicadores" aria-valuemin="0" aria-valuemax="100" aria-valuetext="Sin datos"><div id="healthFill"></div></div><div class="health-scale"><span>Menor puntuación</span><span>Mayor puntuación</span></div><p id="healthCoverage" role="status"></p><p class="report-method">Índice orientativo, no diagnóstico: promedio de los semáforos disponibles (verde = 100, amarillo = 50, rojo = 0). Más lleno indica mejores resultados en los datos clasificados; los datos faltantes o sin umbral se excluyen. No es una fórmula clínica ni una puntuación definida por NASA.</p></section>
+  <details class="report-source"><summary>Fuente y criterios del reporte</summary><p>Umbrales transcritos de Informacion.pdf, proporcionado para este proyecto. Las referencias del estudio son contexto, no mediciones personales. Los intervalos decimales entre límites consecutivos se interpretan de forma continua; los rangos no cubiertos quedan sin clasificación. La gravedad se cuenta una sola vez. La radiación diaria y acumulada se muestran por separado. Los valores se mantienen únicamente mientras esta página está abierta.</p><p>Para sueño menor de 6 horas, indica cuántas noches consecutivas: el documento solo define rojo a partir de 3 noches.</p></details>
+</main>
+
+      <!-- Navigation drawer; auth.js shows links appropriate to the session. -->
+      <aside class="sidebar" id="sidebar" aria-label="Menú lateral" aria-hidden="true" inert>
+        <div class="sidebar-top">
+          <div class="sidebar-heading">NAVEGACIÓN</div>
+          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Cerrar menú">×</button>
+        </div>
+
+          <nav class="sidebar-nav" aria-label="Navegación principal">
+
+            <a href="Index.html" class="nav-link">
+              <span class="nav-icon">⌂</span>
+              <span>Inicio</span>
+            </a>
+
+            <!-- CON SESIÓN INICIADA -->
+            <a href="mision.html" class="nav-link">
+            <span class="nav-icon">01</span>
+            <span>Mision</span>
+          </a>
+
+           <a href="reporte.html" class="nav-link is-active" aria-current="page">
+            <span class="nav-icon">02</span>
+            <span>Reporte</span>
+          </a>
+
+
+            <a href="registro.html" class="nav-link"
+              data-auth="logged-out">
+              <span class="nav-icon">⌨</span>
+              <span>Registro</span>
+            </a>
+
+            <div class="nav-divider"></div>
+            <span class="sidebar-label">PERFIL</span>
+
+            <!-- SIN INICIAR SESIÓN -->
+            <a href="login.html" class="nav-link"
+              data-auth="logged-out">
+              <span class="nav-icon">➔</span>
+              <span>Iniciar Sesión</span>
+            </a>
+
+            <!-- CON SESIÓN INICIADA -->
+            <button type="button" class="nav-link"
+                    id="logoutButton" data-auth="logged-in" hidden>
+              <span class="nav-icon">↪</span>
+              <span>Cerrar Sesión</span>
+            </button>
+
+          </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-user" data-auth="logged-in" hidden>
+            <svg class="sidebar-user-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4 21a8 8 0 0 1 16 0"></path>
+            </svg>
+            <span id="sidebarUserName">Usuario</span>
+          </div>
+          <span class="sidebar-copyright">Farmacias Similunares © 2026</span>
+        </div>
+      </aside>
+    </div>
+    <!-- Backdrop closes the drawer when clicked on compact layouts. -->
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+  </div>
+</body>
+</html>
