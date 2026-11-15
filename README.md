@@ -22,3 +22,11 @@ Aplica `supabase/migrations/20261114223000_registry_auth.sql` al proyecto.
 Supabase Auth almacena las credenciales; el trigger crea el perfil relacionado
 en `public."Registry"` y guarda el nombre en `"Usuario"`. La columna
 `"Contraseña"` no se usa para autenticar ni debe contener contraseñas.
+
+### Métricas y reporte
+
+`Interfaz/report-data.js` define las métricas, sus rangos y si son manuales o
+automáticas. `captura.html` pregunta únicamente las manuales, una por una, y
+guarda esas respuestas localmente por cuenta. `report-source.js` consulta los
+indicadores disponibles en `records`, `daily_sensor` y `telemetry`; los que aún
+no tienen una columna o conexión quedan como “Sin datos” en el reporte.

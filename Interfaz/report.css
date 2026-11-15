@@ -28,12 +28,21 @@
 .report-capture-link { display:inline-block; margin-top:24px; color:var(--blue); font-weight:700; font-size:14px; }
 .report-footnote { color:var(--muted); font-size:12px; line-height:1.7; margin-top:24px; max-width:650px; }
 .capture-form { max-width:580px; padding:24px; background:white; border:1px solid var(--line); border-radius:6px; }
+.capture-progress { margin-bottom:22px; }
+.capture-progress-track { height:10px; overflow:hidden; border-radius:8px; background:#e6edf4; }
+.capture-progress-track span { display:block; width:0; height:100%; border-radius:inherit; background:var(--blue); transition:width .2s ease; }
+#captureStep { margin:8px 0 0; color:var(--muted); font-size:13px; }
 .metric-card { display:grid; gap:9px; margin-bottom:24px; }
+.metric-card h2 { margin:0; color:var(--ink); font-size:18px; }
 .metric-card label { color:var(--ink); font-size:14px; font-weight:700; }
 .metric-card input,.metric-card select { width:100%; min-height:44px; padding:10px 12px; border:1px solid #cbd5df; border-radius:4px; color:var(--ink); background:#fff; font:inherit; }
 .metric-card input:focus,.metric-card select:focus { outline:2px solid var(--blue); outline-offset:2px; }
 .metric-ranges { margin:0; color:var(--muted); font-size:11px; line-height:1.7; }
-#captureMessage { font-size:13px; color:var(--muted); line-height:1.6; }
+#captureMessage { min-height:1.5em; font-size:13px; color:var(--muted); line-height:1.6; }
 #captureMessage[role=alert] { color:#a5332d; }
 .capture-save { border:0; border-radius:4px; background:var(--blue); color:#fff; padding:13px 20px; font:inherit; font-weight:700; cursor:pointer; }
+.capture-controls { display:flex; flex-wrap:wrap; gap:10px; }
+.capture-controls button[hidden] { display:none; }
+.capture-controls button:disabled { cursor:wait; opacity:.65; }
+.capture-secondary { border:1px solid var(--blue); border-radius:4px; background:#fff; color:var(--blue); padding:12px 18px; font:inherit; font-weight:700; cursor:pointer; }
 @media(max-width:700px) { .affected-organs { grid-template-columns:1fr; } .organ-alert { padding:18px; gap:15px; } .organ-alert svg { width:70px; height:85px; } }

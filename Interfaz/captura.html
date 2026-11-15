@@ -31,9 +31,21 @@
     <div class="shell">
       <!-- Landing-page content. -->
       <main class="main report-main" id="captura">
- <div class="intro"><span class="section-label">CAPTURA</span><h1>Registra tus pruebas.</h1><p>Ingresa PVT, NASA-TLX y Amsler. Las dem&#225;s mediciones se consultan desde la base de datos.</p></div>
- <form id="captureForm" class="capture-form"><div id="captureFields"></div><p id="captureMessage" role="status" aria-live="polite"></p><button class="capture-save" type="submit">Guardar y ver Reporte</button></form>
- <p class="report-footnote">Estas tres pruebas se guardan en este navegador. Los sensores se consultan para tu cuenta al iniciar sesi&#243;n. Los datos pendientes de conexi&#243;n no se sustituyen por valores de ejemplo.</p>
+ <div class="intro"><span class="section-label">CAPTURA</span><h1>Registra tus pruebas.</h1><p>Responde una por una las mediciones manuales. Las autom&#225;ticas se consultan desde Supabase y no se solicitan aqu&#237;.</p></div>
+ <form id="captureForm" class="capture-form">
+   <div class="capture-progress">
+     <div id="captureProgress" class="capture-progress-track" role="progressbar" aria-label="Progreso de pruebas manuales" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="captureProgressBar"></span></div>
+     <p id="captureStep" aria-live="polite"></p>
+   </div>
+   <div id="captureFields"></div>
+   <div class="capture-controls">
+     <button id="capturePrevious" class="capture-secondary" type="button">Anterior</button>
+     <button id="captureSkip" class="capture-secondary" type="button">Saltar</button>
+     <button id="captureNext" class="capture-save" type="submit">Siguiente</button>
+   </div>
+   <p id="captureMessage" role="status" aria-live="polite"></p>
+ </form>
+ <p class="report-footnote">Las pruebas manuales se guardan en este navegador. Los sensores se consultan para tu cuenta al iniciar sesi&#243;n; si faltan datos, el reporte los mostrar&#225; como “Sin datos”.</p>
 </main>
 
       <!-- Navigation drawer; auth.js shows links appropriate to the session. -->

@@ -25,16 +25,29 @@ function organCard(organ,dates) {
   content.append(heading,badge);
   for (const {metric,value,state} of organ.items) {
     const line = document.createElement('p'); line.className = 'organ-reading'; line.dataset.state = state;
-    const formatted = metric.options ? metric.options.find(([key]) => key === value)?.[1] : `${value} ${metric.unit ?? ''}`;
+    const formatted = metricValue(metric,value);
     line.textContent = `${metric.name}: ${formatted}`;
     if (dates[metric.id]) { const date = document.createElement('small'); date.textContent = ` · ${dates[metric.id]}`; line.append(date); }
     content.append(line);
   }
   card.append(svg,content); return card;
 }
-const statusNames = {green:'Normal',yellow:'Atención',red:'Alerta',missing:'Sin datos',unknown:'Sin clasificar',invalid:'Dato inválido'};
+const statusNames = {green:'Verde · Normal',yellow:'Amarillo · Atención',red:'Rojo · Alerta',missing:'Sin datos',unknown:'Sin clasificar',invalid:'Dato inválido'};
 function metricValue(metric,value) {
   if (value === undefined || value === null || value === '') return 'Sin datos';
+  if (metric.fields && typeof value === 'object' && !Array.isArray(value)) {
+    return metric.fields.map(field => {
+      const raw = value[field.id];
+      const formatted = field.options ? field.options.find(([key]) => key === raw)?.[1] ?? String(raw) : `${raw}${field.unit ? ` ${field.unit}` : ''}`;
+      return `${field.label}: ${formatted}`;
+    }).join(' · ');
+  }
+  if (metric.id === 'bodyFat' || metric.id === 'hemoglobin') {
+    if (typeof value === 'object' && !Array.isArray(value)) return `${value.value}${metric.unit ? ` ${metric.unit}` : ''}`;
+  }
+  if (metric.id === 'boneDensity' && typeof value === 'object' && !Array.isArray(value)) {
+    return `T-score ${value.tScore} · pérdida ${value.monthlyLoss}%/mes`;
+  }
   if (metric.options) return metric.options.find(([key]) => key === value)?.[1] ?? String(value);
   return `${value}${metric.unit ? ` ${metric.unit}` : ''}`;
 }
@@ -123,10 +136,12 @@ async function render() {
   list.replaceChildren(...organs.map(organ => organCard(organ,dates)));
   const applicable = metrics.filter(m => m.group !== 'environment');
   const classified = applicable.filter(m => ['green','yellow','red'].includes(classify(m,values[m.id],values))).length;
+  const missingAutomatic = metrics.filter(m => m.source !== 'manual' && classify(m,values[m.id],values) === 'missing');
   const parts = [];
   if (!classified) parts.push('No hay datos suficientes para evaluar los órganos.');
   else if (!organs.length) parts.push('Sin órganos en atención o alerta en los datos disponibles.');
   else parts.push(`${organs.length} ${organs.length === 1 ? 'región requiere' : 'regiones requieren'} atención.`);
+  if (missingAutomatic.length) parts.push(`No hay suficiente información automática para ${missingAutomatic.length} ${missingAutomatic.length === 1 ? 'medición' : 'mediciones'}; las faltantes aparecen como “Sin datos” en la tabla.`);
   if (classified < applicable.length) parts.push('Evaluación parcial: hay mediciones sin datos o pendientes de conexión.');
   if (!userId) parts.push('Inicia sesión para consultar las mediciones de la base de datos.');
   if (localError) parts.push('No se pudieron leer las pruebas de Captura.');
