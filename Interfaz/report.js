@@ -139,6 +139,7 @@ async function render() {
     try {
       const {error} = await client.rpc('sync_health_emergency',{p_score:score});
       if (error) emergencyError = ' No se pudo enviar la alerta a las cuentas registradas.';
+      else if (score > 10) document.dispatchEvent(new Event('healthnotificationschange'));
     } catch {
       emergencyError = ' No se pudo enviar la alerta a las cuentas registradas.';
     }

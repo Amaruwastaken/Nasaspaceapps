@@ -77,6 +77,7 @@ export const getCurrentUser = () => currentUser;
 const healthPopup = document.createElement('dialog');
 healthPopup.className = 'health-alert-popup';
 healthPopup.setAttribute('aria-labelledby','healthPopupTitle');
+healthPopup.setAttribute('aria-live','assertive');
 const healthPopupContent = document.createElement('div');
 healthPopupContent.className = 'health-alert-popup-content';
 const healthPopupTitle = document.createElement('h2');
@@ -114,7 +115,7 @@ async function refreshHealthPopup() {
     currentNotificationId = data.id;
     currentNotificationUser = user.id;
     healthPopupMessage.textContent = data.message;
-    if (!healthPopup.open) healthPopup.showModal();
+    if (!healthPopup.open) healthPopup.show();
   } catch (error) {
     if (request === notificationRequest) console.error('No se pudo actualizar la alerta de salud:',error);
   } finally { notificationLoading = false; }
@@ -148,10 +149,11 @@ document.addEventListener('sessionchange',() => {
   dismissHealthPopup();
   void refreshHealthPopup();
 });
+document.addEventListener('healthnotificationschange',() => void refreshHealthPopup());
 void supabaseReady.then(client => {
   if (!client) return;
   void refreshHealthPopup();
-  window.setInterval(() => void refreshHealthPopup(),15000);
+  window.setInterval(() => void refreshHealthPopup(),10000);
 });
 
 // Use the same handler for sign-in and registration forms.

@@ -27,8 +27,7 @@ button:focus-visible, a:focus-visible {
 
 .app { min-height: 100vh; }
 
-.health-alert-popup { width:min(440px,calc(100% - 32px)); margin:auto; padding:0; border:0; border-radius:8px; color:var(--ink); box-shadow:0 18px 60px #061b3a55; }
-.health-alert-popup::backdrop { background:#061b3a99; }
+.health-alert-popup { position:fixed; z-index:1000; top:auto; right:auto; bottom:max(20px,env(safe-area-inset-bottom)); left:max(20px,env(safe-area-inset-left)); width:min(440px,calc(100vw - 40px)); margin:0; padding:0; border:0; border-radius:8px; color:var(--ink); box-shadow:0 18px 60px #061b3a55; }
 .health-alert-popup-content { padding:28px; border-top:5px solid #c5443d; }
 .health-alert-popup h2 { margin:0 0 12px; color:#a5332d; }
 .health-alert-popup p { margin:0 0 20px; line-height:1.6; }
