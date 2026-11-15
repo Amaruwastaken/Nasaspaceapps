@@ -46,7 +46,7 @@ export function validateValues(values) {
   if (new TextEncoder().encode(JSON.stringify(clean)).length > MAX_BYTES) throw new Error('La captura supera el tamaño permitido.');
   return clean;
 }
-async function requireUser(client,userId) {
+async function requireUser(client,userId,readOnly = false) {
   if (!client || typeof client.from !== 'function' || typeof client.auth?.getUser !== 'function') throw new Error('La conexión con Supabase no está disponible.');
   if (typeof userId !== 'string' || !userId.trim()) throw new Error('Inicia sesión para guardar y consultar tus pruebas.');
   let session;
@@ -54,7 +54,7 @@ async function requireUser(client,userId) {
   catch { throw new Error('No se pudo verificar tu sesión. Intenta de nuevo.'); }
   if (session.error) throw new Error('No se pudo verificar tu sesión. Inicia sesión de nuevo.');
   if (!session.data?.user?.id) throw new Error('Inicia sesión para guardar y consultar tus pruebas.');
-  if (session.data.user.id !== userId) throw new Error('La sesión cambió. Recarga la página antes de continuar.');
+  if (!readOnly && session.data.user.id !== userId) throw new Error('La sesión cambió. Recarga la página antes de continuar.');
 }
 function databaseError(error,operation) {
   if (['42P01','42703','PGRST204','PGRST205'].includes(error?.code)) return new Error('Falta aplicar la migración de telemetría unificada en Supabase.');

@@ -349,3 +349,7 @@
 .body-popup .body-stat-counts { margin-top:10px; }
 @media(max-width:700px) { .body-stage { min-height:500px; } .body-stage .body-figure { width:min(260px,85%); max-height:540px; } }
 @media(prefers-reduced-motion:reduce) { .body-background,.body-organ,.body-markers { transition:none; } }
+
+.crew-controls { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:24px; }
+.crew-controls[hidden] { display:none; }
+.crew-controls select { max-width:100%; padding:12px; border:1px solid var(--line); border-radius:6px; background:white; color:var(--ink); font:inherit; }

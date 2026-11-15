@@ -52,6 +52,20 @@ function renderSession(session) {
     }
     if (notice) notice.hidden = Boolean(currentUser);
   }
+  let crewLink = document.querySelector('[data-crew-link]');
+  const nav = document.querySelector('.nav-link[href="reporte.html"]');
+  if (!crewLink && nav) {
+    crewLink = document.createElement('a'); crewLink.href = 'doctor.html'; crewLink.className = 'nav-link';
+    crewLink.dataset.crewLink = ''; crewLink.textContent = 'Doctor y capit?n'; crewLink.hidden = true; nav.after(crewLink);
+    if (document.querySelector('[data-crew-report]')) { crewLink.classList.add('is-active'); crewLink.setAttribute('aria-current','page'); }
+  }
+  if (crewLink) {
+    crewLink.hidden = true; const sessionUser = currentUser;
+    if (sessionUser) void supabaseReady.then(async client => {
+      const result = await client?.rpc('can_review_mission');
+      if (currentUser === sessionUser) crewLink.hidden = result?.data !== true;
+    }).catch(() => {});
+  }
   document.dispatchEvent(new CustomEvent('sessionchange', { detail: currentUser }));
 }
 function busy(form, value) {

@@ -98,18 +98,38 @@ function renderDetails(values,dates,history,userId,simulatedMetrics,partiallySim
   }
   measurementHistory.append(sensors);
 }
+const crewPage = document.querySelector('[data-crew-report]');
+const crewSelect = document.querySelector('#crewMember');
 let version = 0;
+crewSelect?.addEventListener('change',render);
 async function render() {
   const request = ++version;
   anatomyView.update({},{}); message.textContent = 'Consultando datos\u2026';
   allMeasurements.replaceChildren(); measurementHistory.replaceChildren();
   const client = await supabaseReady;
-  const userId = getCurrentUser()?.id;
+  const viewerId = getCurrentUser()?.id;
+  let userId = viewerId;
+  if (crewPage) {
+    const controls = document.querySelector('.crew-controls'); controls.hidden = true;
+    if (!client || !viewerId) { message.textContent = 'Inicia sesi?n como doctor o capit?n para consultar los reportes de la misi?n.'; return; }
+    const {data:members,error} = await client.rpc('get_mission_report_members');
+    if (request !== version || viewerId !== getCurrentUser()?.id) return;
+    if (error || !members?.length) {
+      crewSelect.replaceChildren();
+      message.textContent = error ? 'Acceso no disponible. Se requiere un rol de doctor o capit?n autorizado y la migraci?n de permisos en Supabase.' : 'No hay integrantes en esta misi?n.'; return;
+    }
+    const selected = crewSelect.value;
+    crewSelect.replaceChildren(...members.map(member => {
+      const option = document.createElement('option'); option.value = member.id; option.textContent = member.username; return option;
+    }));
+    crewSelect.value = members.some(member => member.id === selected) ? selected : members[0].id;
+    userId = crewSelect.value; controls.hidden = false;
+  }
   const [manualResult,database] = await Promise.all([
     client && userId ? loadMeasurements(client,userId).then(data => ({data,error:null}),error => ({data:null,error})) : Promise.resolve({data:null,error:null}),
     fetchDatabaseMeasurements(client,userId),
   ]);
-  if (request !== version || userId !== getCurrentUser()?.id) return;
+  if (request !== version || viewerId !== getCurrentUser()?.id) return;
   const manual = manualResult.data;
   const actualValues = {...database.values};
   const dates = {...database.dates};
@@ -152,7 +172,7 @@ async function render() {
   const canClearEmergency = !manualResult.error && !database.warnings.length && classified === applicable.length;
   const shouldSyncEmergency = score > 10 || canClearEmergency;
   let emergencyError = '';
-  if (client && userId && shouldSyncEmergency) {
+  if (!crewPage && client && userId && shouldSyncEmergency) {
     try {
       const {error} = await client.rpc('sync_health_emergency_for_user',{p_user_id:userId,p_score:score});
       if (error) emergencyError = ' No se pudo enviar la alerta a las cuentas registradas.';
@@ -161,7 +181,7 @@ async function render() {
       emergencyError = ' No se pudo enviar la alerta a las cuentas registradas.';
     }
   }
-  if (request !== version || userId !== getCurrentUser()?.id) return;
+  if (request !== version || viewerId !== getCurrentUser()?.id) return;
   const organs = affectedOrgans(actualValues);
   const missingAutomatic = metrics.filter(m => m.source !== 'manual' && classify(m,actualValues[m.id],actualValues) === 'missing');
   const simulatedCount = simulatedMetrics.size + partiallySimulatedMetrics.size;

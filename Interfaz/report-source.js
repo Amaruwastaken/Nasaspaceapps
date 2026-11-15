@@ -61,7 +61,7 @@ async function fetchLatestTelemetry(client,userId) {
 
 async function fetchMissionStart(client,userId) {
   try {
-    const {data,error} = await client.rpc('get_mission_start_at_for_user');
+    const {data,error} = await client.rpc('get_report_mission_start',{p_user_id:userId});
     if (!error) {
       if (data === null) return null;
       if (typeof data !== 'string' || !Number.isFinite(Date.parse(data))) {
