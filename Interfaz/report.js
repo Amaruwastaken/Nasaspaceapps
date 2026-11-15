@@ -3,6 +3,8 @@ import {loadMeasurements} from './measurement-store.js';
 import {fetchDatabaseMeasurements} from './report-source.js';
 import {supabaseReady,getCurrentUser} from './auth.js';
 const list = document.querySelector('#affectedOrgans');
+const bodyIndicatorsLeft = document.querySelector('#bodyIndicatorsLeft');
+const bodyIndicatorsRight = document.querySelector('#bodyIndicatorsRight');
 const message = document.querySelector('#reportMessage');
 const allMeasurements = document.querySelector('#allMeasurements');
 const measurementHistory = document.querySelector('#measurementHistory');
@@ -33,6 +35,14 @@ function organCard(organ,dates) {
   card.append(svg,content); return card;
 }
 const statusNames = {green:'Verde · Normal',yellow:'Amarillo · Atención',red:'Rojo · Alerta',missing:'Sin datos',unknown:'Sin clasificar',invalid:'Dato inválido'};
+const bodyAreas = [
+  {id:'brain',name:'Cerebro',side:'left'},
+  {id:'eyes',name:'Ojos',side:'left'},
+  {id:'heart',name:'Corazón',side:'right'},
+  {id:'stomach',name:'Estómago y riñones',side:'right'},
+  {id:'body',name:'Cuerpo',side:'right'},
+];
+const bodyStateNames = {green:'Bien',yellow:'Atención',red:'Mal',unknown:'Sin clasificar',missing:'Sin datos'};
 function metricValue(metric,value) {
   if (value === undefined || value === null || value === '') return 'Sin datos';
   if (metric.fields && typeof value === 'object' && !Array.isArray(value)) {
@@ -51,6 +61,63 @@ function metricValue(metric,value) {
   }
   if (metric.options) return metric.options.find(([key]) => key === value)?.[1] ?? String(value);
   return `${value}${metric.unit ? ` ${metric.unit}` : ''}`;
+}
+function bodyAreaState(states) {
+  if (states.includes('red')) return 'red';
+  if (states.includes('yellow')) return 'yellow';
+  if (states.includes('green')) return 'green';
+  if (states.includes('unknown') || states.includes('invalid')) return 'unknown';
+  return 'missing';
+}
+function bodyIndicatorCard(area,values,dates) {
+  const areaMetrics = metrics.filter(metric => metric.group === area.id || metric.organs?.includes(area.id));
+  const states = areaMetrics.map(metric => classify(metric,values[metric.id],values));
+  const state = bodyAreaState(states);
+  const counts = Object.fromEntries(['green','yellow','red','missing'].map(name => [name,states.filter(item => item === name).length]));
+  counts.unclassified = states.filter(item => item === 'unknown' || item === 'invalid').length;
+  const card = document.createElement('article'); card.className = 'body-stat-card'; card.dataset.state = state;
+  const heading = document.createElement('div'); heading.className = 'body-stat-heading';
+  const dot = document.createElement('span'); dot.className = 'body-stat-dot'; dot.dataset.state = state; dot.setAttribute('aria-hidden','true');
+  const title = document.createElement('h3'); title.textContent = area.name;
+  const label = document.createElement('span'); label.className = 'body-stat-state';
+  label.textContent = state === 'green' && (counts.missing || counts.unclassified) ? 'Bien · parcial' : bodyStateNames[state];
+  heading.append(dot,title,label);
+  const summary = document.createElement('p'); summary.className = 'body-stat-counts';
+  summary.textContent = `${counts.green} verde · ${counts.yellow} atención · ${counts.red} rojo · ${counts.missing} sin datos · ${counts.unclassified} sin clasificar`;
+  card.append(heading,summary);
+
+  const priority = {red:0,yellow:1,green:2,unknown:3,invalid:4};
+  const available = areaMetrics.map(metric => ({metric,state:classify(metric,values[metric.id],values)}))
+    .filter(item => item.state !== 'missing')
+    .sort((a,b) => priority[a.state] - priority[b.state])
+    .slice(0,3);
+  if (available.length) {
+    const readings = document.createElement('ul'); readings.className = 'body-stat-readings';
+    for (const {metric,state:metricState} of available) {
+      const item = document.createElement('li'); item.className = 'body-stat-reading'; item.dataset.state = metricState;
+      const readingDot = document.createElement('span'); readingDot.className = 'body-reading-dot'; readingDot.dataset.state = metricState; readingDot.setAttribute('aria-hidden','true');
+      const reading = document.createElement('span');
+      const name = document.createElement('strong'); name.textContent = metric.name;
+      const value = document.createElement('small'); value.textContent = `${metricValue(metric,values[metric.id])} · ${statusNames[metricState] ?? metricState}${dates[metric.id] ? ` · ${dates[metric.id]}` : ''}`;
+      reading.append(name,value); item.append(readingDot,reading); readings.append(item);
+    }
+    card.append(readings);
+  } else {
+    const empty = document.createElement('p'); empty.className = 'body-stat-empty'; empty.textContent = 'Todavía no hay mediciones disponibles.';
+    card.append(empty);
+  }
+  return {card,state,name:area.name};
+}
+function renderBodyOverview(values,dates) {
+  bodyIndicatorsLeft.replaceChildren(); bodyIndicatorsRight.replaceChildren();
+  for (const area of bodyAreas) {
+    const {card,state,name} = bodyIndicatorCard(area,values,dates);
+    (area.side === 'left' ? bodyIndicatorsLeft : bodyIndicatorsRight).append(card);
+    const marker = document.querySelector(`[data-body-marker="${area.id}"]`);
+    marker.dataset.state = state;
+    marker.setAttribute('aria-label',`${name}: ${bodyStateNames[state]}`);
+    marker.querySelector('title').textContent = `${name}: ${bodyStateNames[state]}`;
+  }
 }
 function detailSection(title) {
   const section = document.createElement('section'); section.className = 'report-detail-section';
@@ -168,6 +235,7 @@ async function render() {
     }
   }
   renderDetails(values,dates,database.history,userId,simulatedMetrics,partiallySimulatedMetrics);
+  renderBodyOverview(actualValues,dates);
   const applicable = metrics.filter(m => m.group !== 'environment');
   const classified = applicable.filter(m => ['green','yellow','red'].includes(classify(m,actualValues[m.id],actualValues))).length;
   const score = emergencyScore(actualValues);
