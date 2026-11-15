@@ -73,7 +73,7 @@ function renderTable(section,captionText,headers,rows,emptyMessage) {
   }
   wrap.append(table); section.append(wrap);
 }
-function renderDetails(values,dates,history,userId) {
+function renderDetails(values,dates,history,userId,simulatedMetrics,partiallySimulatedMetrics) {
   allMeasurements.replaceChildren(); measurementHistory.replaceChildren();
   reportDetails.open = false;
 
@@ -81,9 +81,11 @@ function renderDetails(values,dates,history,userId) {
   renderTable(current,'Último valor conocido de cada indicador',['Medición','Valor','Estado','Fecha','Origen'],
     metrics.map(metric => {
       const state = classify(metric,values[metric.id],values);
-      const simulated = history.telemetrySimulated && ['heartRate','temperature','spo2','respiratoryRate','co2','gravity'].includes(metric.id);
+      const origin = partiallySimulatedMetrics.has(metric.id) ? 'Incluye datos simulados'
+        : simulatedMetrics.has(metric.id) ? 'Simulado (prototipo)'
+          : metric.source === 'manual' ? 'Captura / registro diario' : 'Sensores';
       return [metric.name,metricValue(metric,values[metric.id]),statusNames[state] ?? state,dates[metric.id] ?? '—',
-        metric.source === 'manual' ? 'Captura / registro diario' : simulated ? 'Telemetría simulada (prototipo)' : 'Sensores'];
+        origin];
     }),
     'Todavía no hay mediciones disponibles.');
   allMeasurements.append(current);
@@ -132,18 +134,43 @@ async function render() {
   ]);
   if (request !== version || userId !== getCurrentUser()?.id) return;
   const manual = manualResult.data;
-  const values = {...database.values};
+  const actualValues = {...database.values};
   const dates = {...database.dates};
   // A saved snapshot is authoritative: skipped tests must not resurrect older records.
   if (manual || manualResult.error) for (const metric of metrics.filter(m => m.source === 'manual')) {
-    delete values[metric.id]; delete dates[metric.id];
+    delete actualValues[metric.id]; delete dates[metric.id];
   }
-  Object.assign(values,manual?.values);
+  Object.assign(actualValues,manual?.values);
   if (manual) for (const id of Object.keys(manual.values)) dates[id] = new Date(manual.savedAt).toLocaleDateString('es-MX');
-  renderDetails(values,dates,database.history,userId);
+  const values = {...actualValues};
+  const simulatedMetrics = new Set(), partiallySimulatedMetrics = new Set();
+  const simulatedDate = database.simulatedAt ? new Date(database.simulatedAt).toLocaleDateString('es-MX') : null;
+  for (const [id,simulated] of Object.entries(database.simulatedValues ?? {})) {
+    const actual = values[id];
+    if (actual === undefined || actual === null || actual === '') {
+      values[id] = simulated;
+      simulatedMetrics.add(id);
+      if (simulatedDate) dates[id] = simulatedDate;
+    } else if (actual && simulated && typeof actual === 'object' && typeof simulated === 'object' && !Array.isArray(actual) && !Array.isArray(simulated)) {
+      const combined = {...simulated,...actual};
+      let completedMissingField = false;
+      for (const [field,value] of Object.entries(simulated)) {
+        if (actual[field] === undefined || actual[field] === null || actual[field] === '') {
+          combined[field] = value;
+          completedMissingField = true;
+        }
+      }
+      if (completedMissingField) {
+        values[id] = combined;
+        partiallySimulatedMetrics.add(id);
+        if (simulatedDate) dates[id] ??= simulatedDate;
+      }
+    }
+  }
+  renderDetails(values,dates,database.history,userId,simulatedMetrics,partiallySimulatedMetrics);
   const applicable = metrics.filter(m => m.group !== 'environment');
-  const classified = applicable.filter(m => ['green','yellow','red'].includes(classify(m,values[m.id],values))).length;
-  const score = emergencyScore(values);
+  const classified = applicable.filter(m => ['green','yellow','red'].includes(classify(m,actualValues[m.id],actualValues))).length;
+  const score = emergencyScore(actualValues);
   let emergencyError = '';
   if (client && userId && !manualResult.error && !database.warnings.length && (score > 10 || classified === applicable.length)) {
     try {
@@ -155,15 +182,17 @@ async function render() {
     }
   }
   if (request !== version || userId !== getCurrentUser()?.id) return;
-  const organs = affectedOrgans(values);
+  const organs = affectedOrgans(actualValues);
   list.replaceChildren(...organs.map(organ => organCard(organ,dates)));
-  const missingAutomatic = metrics.filter(m => m.source !== 'manual' && classify(m,values[m.id],values) === 'missing');
+  const missingAutomatic = metrics.filter(m => m.source !== 'manual' && classify(m,actualValues[m.id],actualValues) === 'missing');
+  const simulatedCount = simulatedMetrics.size + partiallySimulatedMetrics.size;
   const parts = [];
   if (!classified) parts.push('No hay datos suficientes para evaluar los órganos.');
   else if (!organs.length) parts.push('Sin órganos en atención o alerta en los datos disponibles.');
   else parts.push(`${organs.length} ${organs.length === 1 ? 'región requiere' : 'regiones requieren'} atención.`);
-  if (missingAutomatic.length) parts.push(`No hay suficiente información automática para ${missingAutomatic.length} ${missingAutomatic.length === 1 ? 'medición' : 'mediciones'}; las faltantes aparecen como “Sin datos” en la tabla.`);
+  if (missingAutomatic.length) parts.push(`No hay suficiente información automática real para ${missingAutomatic.length} ${missingAutomatic.length === 1 ? 'medición' : 'mediciones'}; los datos simulados solo sirven como referencia.`);
   if (database.history.telemetrySimulated) parts.push('La última lectura automática es genérica y simulada para el prototipo.');
+  if (simulatedCount) parts.push(`${simulatedCount} ${simulatedCount === 1 ? 'medición se completa' : 'mediciones se completan'} con datos simulados; no se usan para alertas.`);
   if (classified < applicable.length) parts.push('Evaluación parcial: hay mediciones sin datos o pendientes de conexión.');
   if (!userId) parts.push('Inicia sesión para consultar las mediciones de la base de datos.');
   if (manualResult.error) parts.push(manualResult.error.message || 'No se pudieron consultar las pruebas de Captura en Supabase.');

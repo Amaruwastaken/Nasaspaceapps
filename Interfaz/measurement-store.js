@@ -7,6 +7,7 @@ const isMissing = value => value === undefined || value === null || value === ''
 const plainObject = value => value !== null && typeof value === 'object' && !Array.isArray(value) && [Object.prototype,null].includes(Object.getPrototypeOf(value));
 const randomInteger = (min,max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const randomDecimal = (min,max,places) => Number((min + Math.random() * (max - min)).toFixed(places));
+const option = values => values[randomInteger(0,values.length - 1)];
 function invalid(name) { throw new Error(`Revisa el dato: ${name}.`); }
 function scalar(definition,value,name) {
   if (definition.options) {
@@ -62,7 +63,48 @@ function databaseError(error,operation) {
   const code = error?.code ? ` (código ${error.code})` : '';
   return new Error(`No se pudieron ${operation} las pruebas en Supabase${code}. Intenta de nuevo.`);
 }
-function simulatedTelemetry() {
+export function generateSimulatedValues(automatic) {
+  return {
+    pvt:randomInteger(240,420),
+    tlx:randomInteger(30,70),
+    amsler:option(['green','yellow','red']),
+    sleep:randomDecimal(6.5,8.5,1),
+    hrv:randomInteger(40,70),
+    heartRate:automatic.hr,
+    co2:automatic.co2,
+    fluids:randomDecimal(1.6,2.4,1),
+    radiation:randomDecimal(0.1,0.45,2),
+    dose:randomDecimal(5,30,1),
+    gravity:automatic.gravity,
+    pressure:randomDecimal(97,102,1),
+    ventilation:randomDecimal(0.08,0.16,2),
+    bloodPressure:`${randomInteger(105,125)}/${randomInteger(65,80)}`,
+    heartRecovery:randomInteger(20,35),
+    arrhythmia:0,
+    perfusion:randomDecimal(1,1.9,1),
+    glucose:randomInteger(80,100),
+    bmr:randomDecimal(0.95,1.05,2),
+    bodyFat:{value:randomInteger(12,18),sex:'male'},
+    calories:randomInteger(90,110),
+    sodium:randomInteger(1600,2200),
+    calcium:randomInteger(1000,1200),
+    vitaminD:randomInteger(800,1000),
+    caffeine:randomInteger(0,200),
+    sleepApnea:randomInteger(0,4),
+    medication:{takenPercent:randomInteger(95,100),doubleDose:'no'},
+    spo2:automatic.spo2,
+    oxygen:randomDecimal(20.5,22,1),
+    respiratoryRate:automatic.resp,
+    temperature:automatic.temp,
+    sleepEfficiency:randomInteger(85,95),
+    orthostatic:{hrRise:randomInteger(5,18),systolicDrop:randomInteger(0,8),diastolicDrop:randomInteger(0,5),symptoms:'none'},
+    who5:randomInteger(50,85),
+    hemoglobin:{value:randomDecimal(13,16,1),sex:'male'},
+    leanMassChange:randomDecimal(-1,2,1),
+    boneDensity:{tScore:randomDecimal(-0.8,0.5,1),monthlyLoss:randomDecimal(0,0.3,2)},
+  };
+}
+function simulatedTelemetry(manualValues) {
   const automatic = {
     hr:randomInteger(60,90),
     rr:randomDecimal(0.6,1,2),
@@ -77,7 +119,14 @@ function simulatedTelemetry() {
     latency_s:randomDecimal(0.15,0.4,2),
     mission_day:1,
   };
-  return {...automatic,automatic_data:automatic,is_simulated:true};
+  const simulated = generateSimulatedValues(automatic);
+  for (const [id,value] of Object.entries(manualValues)) {
+    if (plainObject(value) && plainObject(simulated[id])) {
+      for (const field of Object.keys(value)) delete simulated[id][field];
+      if (!Object.keys(simulated[id]).length) delete simulated[id];
+    } else delete simulated[id];
+  }
+  return {...automatic,automatic_data:automatic,simulated_data:simulated,is_simulated:true};
 }
 function decode(row,userId) {
   const validId = Number.isSafeInteger(row?.id) || (typeof row?.id === 'string' && /^\d+$/.test(row.id));
@@ -98,7 +147,7 @@ export async function saveMeasurements(client,userId,values) {
   const clean = validateValues(values);
   let result;
   try {
-    const automatic = simulatedTelemetry();
+    const automatic = simulatedTelemetry(clean);
     result = await client.from(TABLE).insert({
       user_id:userId,
       ...automatic,

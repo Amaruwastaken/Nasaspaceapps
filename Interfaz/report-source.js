@@ -1,6 +1,26 @@
-// Metrics without a column in the current schema remain missing in the report.
+import {metrics,manualMetrics,classify} from './report-data.js';
+import {validateValues} from './measurement-store.js';
+
+// Keep this list as the automated metrics that still need real device integrations.
 export const pendingConnections = ['fluids','pressure','ventilation','bloodPressure','heartRecovery','arrhythmia','glucose','bmr','bodyFat','calories','sodium','calcium','vitaminD','caffeine','sleepApnea','oxygen','sleepEfficiency','hemoglobin','leanMassChange','boneDensity'];
 const pageSize = 1000;
+const isPlainObject = value => value !== null && typeof value === 'object' && !Array.isArray(value) && [Object.prototype,null].includes(Object.getPrototypeOf(value));
+
+function decodeSimulatedValues(payload) {
+  if (!isPlainObject(payload) || Object.keys(payload).some(id => !metrics.some(metric => metric.id === id))) {
+    throw new Error('Supabase devolvió datos simulados inválidos.');
+  }
+  const manualIds = new Set(manualMetrics.map(metric => metric.id));
+  const manualPayload = Object.fromEntries(Object.entries(payload).filter(([id]) => manualIds.has(id)));
+  const values = validateValues(manualPayload);
+  for (const metric of metrics) {
+    if (manualIds.has(metric.id) || !Object.hasOwn(payload,metric.id)) continue;
+    const value = payload[metric.id];
+    if (['invalid','missing'].includes(classify(metric,value))) throw new Error('Supabase devolvió datos simulados inválidos.');
+    values[metric.id] = value;
+  }
+  return values;
+}
 
 async function fetchAllRows(client,table,columns,userId) {
   const rows = [];
@@ -14,16 +34,26 @@ async function fetchAllRows(client,table,columns,userId) {
 }
 
 async function fetchLatestTelemetry(client,userId) {
-  const {data,error} = await client.from('telemetry').select('ts,hr,temp,spo2,resp,co2,gravity,is_simulated')
-    .eq('user_id',userId).order('ts',{ascending:false}).limit(1).maybeSingle();
-  if (error) throw error;
-  return data;
+  const [latest,simulation] = await Promise.all([
+    client.from('telemetry').select('ts,hr,temp,spo2,resp,co2,gravity,is_simulated')
+      .eq('user_id',userId).order('ts',{ascending:false}).limit(1).maybeSingle(),
+    client.from('telemetry').select('ts,simulated_data').eq('user_id',userId)
+      .not('simulated_data','is',null).order('ts',{ascending:false}).limit(1).maybeSingle(),
+  ]);
+  if (latest.error) throw latest.error;
+  if (simulation.error) throw simulation.error;
+  return {
+    latest:latest.data,
+    simulatedValues:simulation.data ? decodeSimulatedValues(simulation.data.simulated_data) : {},
+    simulatedAt:simulation.data?.ts ?? null,
+  };
 }
 
 export async function fetchDatabaseMeasurements(client,userId) {
   const values = {}, dates = {}, warnings = [];
+  let simulatedValues = {}, simulatedAt = null;
   const history = {records:[],sensors:[],recordsLoaded:false,sensorsLoaded:false,telemetrySimulated:false};
-  if (!client || !userId) return {values,dates,warnings,history};
+  if (!client || !userId) return {values,dates,warnings,history,simulatedValues,simulatedAt};
   const results = await Promise.allSettled([
     fetchAllRows(client,'daily_sensor','date,hr_avg,hr_max,temp_avg,spo2_min,rad_msv,co2_max,rmssd',userId),
     fetchAllRows(client,'records','date,env,sleep,tlx,pvt,pvt_max,fs',userId),
@@ -41,14 +71,20 @@ export async function fetchDatabaseMeasurements(client,userId) {
       history[source.key] = result.value;
       history[`${source.key}Loaded`] = true;
     }
-    const row = source.key === 'telemetry' ? result.value : result.value[0];
+    const row = source.key === 'telemetry' ? result.value.latest : result.value[0];
+    if (source.key === 'telemetry') {
+      simulatedValues = result.value.simulatedValues;
+      simulatedAt = result.value.simulatedAt;
+    }
     if (!row) return;
     if (source.key === 'telemetry') history.telemetrySimulated = row.is_simulated === true;
-    for (const [id,column] of Object.entries(source.mapping)) {
-      const value = row[column];
-      if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
-        values[id] = value;
-        dates[id] = row.date ?? new Date(row.ts).toLocaleDateString('es-MX');
+    if (source.key !== 'telemetry' || !row.is_simulated) {
+      for (const [id,column] of Object.entries(source.mapping)) {
+        const value = row[column];
+        if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
+          values[id] = value;
+          dates[id] = row.date ?? new Date(row.ts).toLocaleDateString('es-MX');
+        }
       }
     }
   });
@@ -61,5 +97,5 @@ export async function fetchDatabaseMeasurements(client,userId) {
     }
   }
   // rad_msv is a daily dose, not lifetime exposure; hr_avg is not resting heart rate.
-  return {values,dates,warnings,history};
+  return {values,dates,warnings,history,simulatedValues,simulatedAt};
 }

@@ -1,6 +1,7 @@
 ﻿import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateValues,loadMeasurements,saveMeasurements} from '../Interfaz/measurement-store.js';
+import {validateValues,generateSimulatedValues,loadMeasurements,saveMeasurements} from '../Interfaz/measurement-store.js';
+import {metrics,manualMetrics,classify} from '../Interfaz/report-data.js';
 
 // This in-memory PostgREST boundary is test-only. Runtime code never falls back here.
 function database(options = {}) {
@@ -49,19 +50,28 @@ test('all seven manual metrics round-trip as normalized values',async()=>{
   const saved=await saveMeasurements(client,'user-a',values);
   assert.deepEqual(saved.values,{pvt:250,tlx:60,amsler:'yellow',perfusion:1.5,medication:{takenPercent:95,doubleDose:'no'},orthostatic:{hrRise:15,systolicDrop:5,diastolicDrop:0,symptoms:'none'},who5:64});
   assert.deepEqual(await loadMeasurements(client,'user-a'),saved);
-  assert.deepEqual(Object.keys(rows[0]).sort(),['asleep','automatic_data','co2','gravity','hr','id','is_simulated','latency_s','manual_measurements','mission_day','phase','rad_rate','resp','rr','spo2','temp','ts','user_id']);
+  assert.deepEqual(Object.keys(rows[0]).sort(),['asleep','automatic_data','co2','gravity','hr','id','is_simulated','latency_s','manual_measurements','mission_day','phase','rad_rate','resp','rr','simulated_data','spo2','temp','ts','user_id']);
   assert.deepEqual(rows[0].manual_measurements,saved.values);
   assert.equal(rows[0].is_simulated,true);
   assert.deepEqual(rows[0].automatic_data,{hr:rows[0].hr,rr:rows[0].rr,temp:rows[0].temp,spo2:rows[0].spo2,resp:rows[0].resp,rad_rate:rows[0].rad_rate,co2:rows[0].co2,asleep:false,phase:'prototipo',gravity:0.38,latency_s:rows[0].latency_s,mission_day:1});
+  assert.deepEqual(Object.keys(rows[0].simulated_data).sort(),metrics.filter(metric=>!manualMetrics.some(manual=>manual.id===metric.id)).map(metric=>metric.id).sort());
+  assert.equal(rows[0].simulated_data.heartRate,rows[0].hr);
 });
 
 test('empty snapshots supersede previous readings; missing and skipped fields stay absent',async()=>{
-  const {client}=database();assert.equal(await loadMeasurements(client,'user-a'),null);
+  const {client,rows}=database();assert.equal(await loadMeasurements(client,'user-a'),null);
   await saveMeasurements(client,'user-a',{pvt:600,amsler:'red'});
   const empty=await saveMeasurements(client,'user-a',{});
   assert.deepEqual((await loadMeasurements(client,'user-a')).values,{});
   assert.equal((await loadMeasurements(client,'user-a')).id,empty.id);
+  assert.deepEqual(Object.keys(rows[1].simulated_data).sort(),metrics.map(metric=>metric.id).sort());
   assert.deepEqual(validateValues({pvt:'',amsler:null,medication:{takenPercent:'',doubleDose:''}}),{});
+});
+
+test('generated simulation covers every metric with a valid display value',()=>{
+  const values=generateSimulatedValues({hr:72,co2:800,gravity:0.38,spo2:98,resp:16,temp:36.7});
+  assert.deepEqual(Object.keys(values).sort(),metrics.map(metric=>metric.id).sort());
+  for(const metric of metrics)assert(!['invalid','missing'].includes(classify(metric,values[metric.id],values)),metric.id);
 });
 
 test('automatic-only telemetry rows are not treated as Captura snapshots',async()=>{
