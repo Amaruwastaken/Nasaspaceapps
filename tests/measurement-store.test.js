@@ -199,3 +199,12 @@ test('malformed stored data is rejected, and invalid input never issues an inser
     {id:'bad',user_id:'user-a',manual_measurements:null,ts:'2026-11-15T00:00:00Z'},
   ])await assert.rejects(loadMeasurements(database({badRow:row}).client,'user-a'));
 });
+
+test('mission report reads use the selected member while writes remain self-only',async()=>{
+  const row={id:1,user_id:'user-b',manual_measurements:{pvt:300},ts:'2026-11-15T01:00:00Z'};
+  const {client}=database({rows:[row]});
+  const result=await loadMeasurements(client,'user-b',{missionRead:true});
+  assert.equal(result.values.pvt,300);
+  await assert.rejects(saveMeasurements(client,'user-b',{}));
+  await assert.rejects(loadMeasurements(database({readError:{code:'42501'}}).client,'user-b',{missionRead:true}));
+});

@@ -26,6 +26,10 @@ Aplica `supabase/migrations/20261114223000_registry_auth.sql` al proyecto.
 Supabase Auth almacena las credenciales; el trigger crea el perfil relacionado
 en `public."Registry"` y guarda el nombre en `"Usuario"`. La columna
 `"Contraseña"` no se usa para autenticar ni debe contener contraseñas.
+El registro también solicita un rol (capitán, ingeniero, piloto, doctor o
+científico) y lo muestra junto al nombre de usuario. Ese valor de registro no
+concede permisos; el acceso médico se asigna por separado en `app_metadata`,
+como se describe en el panel del doctor y capitán.
 
 ### Métricas y reporte
 
@@ -66,3 +70,23 @@ Proyecto Vercel: nasaspaceapps-farmacias-similunares. El directorio del proyecto
 - Los datos antiguos de localStorage no se importan automaticamente: ya no son la fuente del reporte.
 
 La migración no reemplaza las tablas existentes `records`, `daily_sensor`, `telemetry` o `Registry`; requiere que estén configuradas junto con las migraciones anteriores. La migración nueva solo elimina la tabla anterior `manual_measurements` y amplía `telemetry`. En un Supabase totalmente nuevo hay que configurar el esquema base antes de activar sensores y alertas.
+
+### Panel del doctor y capitán
+
+`Interfaz/doctor.html` permite seleccionar integrantes de la misma misión y consultar sus indicadores, pruebas de Captura e historial de registros y sensores. El panel es de consulta; las capturas y alertas personales conservan su flujo habitual.
+
+Aplicar en orden las migraciones `20261115070000_mission_start_at.sql`,
+`20261115080000_ensure_core_schema.sql` y
+`20261115090000_mission_medical_access.sql` (en proyectos conectados, usar
+`supabase db push`). Las políticas RLS dejan a cada usuario consultar sus propios
+datos; solo las cuentas con `role: "doctor"` o `role: "capitan"` en
+`app_metadata`, asignado por un administrador, pueden consultar los reportes de
+compañeros de su misión. El rol elegido al registrarse en `user_metadata` no
+concede esos permisos; solo controla la visibilidad del enlace junto con el rol
+administrativo. Mostrar el enlace no autoriza la lectura. Conservar los demás
+campos de `app_metadata` al actualizarlo.
+
+La pertenencia se determina por `profiles.mission`; su modificación queda
+reservada a la administración porque delimita el acceso a los reportes. La vista
+`daily_sensor` aplica las políticas de sus tablas de origen. La migración no
+autoriza cuentas automáticamente.

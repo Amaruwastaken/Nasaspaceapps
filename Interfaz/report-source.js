@@ -59,9 +59,9 @@ async function fetchLatestTelemetry(client,userId) {
   };
 }
 
-async function fetchMissionStart(client,userId) {
+async function fetchMissionStart(client,userId,missionRead) {
   try {
-    const {data,error} = await client.rpc('get_mission_start_at_for_user');
+    const {data,error} = await (missionRead ? client.rpc('get_report_mission_start',{p_user_id:userId}) : client.rpc('get_mission_start_at_for_user'));
     if (!error) {
       if (data === null) return null;
       if (typeof data !== 'string' || !Number.isFinite(Date.parse(data))) {
@@ -87,7 +87,7 @@ async function fetchMissionStart(client,userId) {
   return new Date(data.mission_start_at).toISOString().slice(0,10);
 }
 
-export async function fetchDatabaseMeasurements(client,userId) {
+export async function fetchDatabaseMeasurements(client,userId,{missionRead = false} = {}) {
   const values = {}, dates = {}, warnings = [];
   let simulatedValues = {}, simulatedAt = null;
   const history = {records:[],sensors:[],recordsLoaded:false,sensorsLoaded:false,telemetrySimulated:false};
@@ -96,7 +96,7 @@ export async function fetchDatabaseMeasurements(client,userId) {
     fetchAllRows(client,'daily_sensor','date,hr_avg,hr_max,temp_avg,spo2_min,rad_msv,co2_max,rmssd',userId),
     fetchAllRows(client,'records','date,env,sleep,tlx,pvt,pvt_max,fs',userId),
     fetchLatestTelemetry(client,userId),
-    fetchMissionStart(client,userId),
+    fetchMissionStart(client,userId,missionRead),
   ]);
   const sources = [
     {key:'sensors',warning:'No se pudieron cargar todos los sensores.',mapping:{hrv:'rmssd',co2:'co2_max',radiation:'rad_msv'}},
