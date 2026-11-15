@@ -14,7 +14,20 @@
 .space .solar-planet.is-a { outline: 2px solid #73a8d8; outline-offset: 3px; }
 .space .solar-planet.is-b { outline: 2px solid #3fae85; outline-offset: 3px; }
 .space .luna { width: clamp(14px, 2.4vw, 20px); }
-.space .saturno { border: 3px solid #cbb783; }
+/* Circular silhouettes with a light source at the upper left. */
+.space .solar-planet {
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, var(--planet-light, #ffffff), var(--planet-color) 48%, var(--planet-dark, #17243c) 100%);
+}
+.space .mercurio { --planet-light: #e3ded5; --planet-dark: #514a43; }
+.space .venus { --planet-light: #fff1be; --planet-dark: #99602d; }
+.space .tierra { --planet-light: #b5f3e9; --planet-dark: #173b85; }
+.space .marte { --planet-light: #ffd2a4; --planet-dark: #852e24; }
+.space .jupiter { --planet-light: #fff0cf; --planet-dark: #86523e; }
+.space .saturno { --planet-light: #fff5ce; --planet-dark: #9a783c; }
+.space .urano { --planet-light: #d5ffff; --planet-dark: #337e91; }
+.space .neptuno { --planet-light: #bdd5ff; --planet-dark: #243a95; }
+.space .luna { --planet-light: #f7f6f2; --planet-dark: #666779; }
 /* Animation controls and the scale/source note below the diagram. */
 .orbit-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
 .orbit-controls p, .orbit-note { font-size: 12px; color: #626e86; line-height: 1.7; }
