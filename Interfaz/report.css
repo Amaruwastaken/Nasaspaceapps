@@ -11,6 +11,20 @@
 [data-state=red]>.organ-status,.organ-alert[data-state=red] .organ-status { background:#ffe9e6; color:#a5332d; }
 .organ-reading { margin:10px 0 0; color:var(--ink); font-size:13px; line-height:1.6; overflow-wrap:anywhere; }
 .organ-reading small { display:block; color:var(--muted); font-size:11px; }
+.report-details { margin-top:28px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+.report-details summary { padding:17px 20px; color:var(--blue); font-weight:700; cursor:pointer; }
+.report-details summary:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+.report-details[open] summary { border-bottom:1px solid var(--line); }
+.report-details-intro { margin:16px 20px; color:var(--muted); font-size:13px; line-height:1.6; }
+.report-detail-section { margin:24px 20px; }
+.report-detail-section h2 { margin:0 0 12px; font-size:18px; }
+.report-table-wrap { overflow-x:auto; }
+.report-details table { width:100%; border-collapse:collapse; font-size:13px; text-align:left; }
+.report-details caption { padding:0 0 9px; color:var(--muted); text-align:left; }
+.report-details th,.report-details td { padding:10px 12px; border:1px solid var(--line); vertical-align:top; }
+.report-details th { background:#f4f7fa; color:var(--ink); white-space:nowrap; }
+.report-details td { color:var(--ink); }
+.report-detail-note { color:var(--muted); font-size:13px; line-height:1.6; }
 .report-capture-link { display:inline-block; margin-top:24px; color:var(--blue); font-weight:700; font-size:14px; }
 .report-footnote { color:var(--muted); font-size:12px; line-height:1.7; margin-top:24px; max-width:650px; }
 .capture-form { max-width:580px; padding:24px; background:white; border:1px solid var(--line); border-radius:6px; }

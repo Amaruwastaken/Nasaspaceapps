@@ -1,9 +1,12 @@
-﻿import {metrics,affectedOrgans,classify} from './report-data.js';
+import {metrics,affectedOrgans,classify} from './report-data.js';
 import {loadMeasurements} from './measurement-store.js';
 import {fetchDatabaseMeasurements} from './report-source.js';
 import {supabaseReady,getCurrentUser} from './auth.js';
 const list = document.querySelector('#affectedOrgans');
 const message = document.querySelector('#reportMessage');
+const allMeasurements = document.querySelector('#allMeasurements');
+const measurementHistory = document.querySelector('#measurementHistory');
+const reportDetails = document.querySelector('#reportDetails');
 const drawings = {
   brain:'M50 20C35 6 13 20 17 36C4 46 14 66 30 64Q38 78 50 65Q62 78 70 64C86 66 96 46 83 36C87 20 65 6 50 20ZM50 23V63M29 28Q45 30 35 46M70 28Q55 30 65 46M20 48L31 53M69 53L80 48',
   heart:'M50 80C39 68 10 50 13 30C15 10 41 9 50 28C59 9 85 10 87 30C90 50 61 68 50 80Z',
@@ -29,10 +32,83 @@ function organCard(organ,dates) {
   }
   card.append(svg,content); return card;
 }
+const statusNames = {green:'Normal',yellow:'Atención',red:'Alerta',missing:'Sin datos',unknown:'Sin clasificar',invalid:'Dato inválido'};
+function metricValue(metric,value) {
+  if (value === undefined || value === null || value === '') return 'Sin datos';
+  if (metric.options) return metric.options.find(([key]) => key === value)?.[1] ?? String(value);
+  return `${value}${metric.unit ? ` ${metric.unit}` : ''}`;
+}
+function detailSection(title) {
+  const section = document.createElement('section'); section.className = 'report-detail-section';
+  const heading = document.createElement('h2'); heading.textContent = title; section.append(heading);
+  return section;
+}
+function renderTable(section,captionText,headers,rows,emptyMessage) {
+  if (!rows.length) {
+    const note = document.createElement('p'); note.className = 'report-detail-note'; note.textContent = emptyMessage; section.append(note); return;
+  }
+  const wrap = document.createElement('div'); wrap.className = 'report-table-wrap';
+  const table = document.createElement('table');
+  const caption = table.createCaption(); caption.textContent = captionText;
+  const header = table.createTHead().insertRow();
+  for (const title of headers) { const cell = document.createElement('th'); cell.scope = 'col'; cell.textContent = title; header.append(cell); }
+  const body = table.createTBody();
+  for (const row of rows) {
+    const tr = body.insertRow();
+    for (const value of row) tr.insertCell().textContent = value === null || value === undefined || value === '' ? '—' : String(value);
+  }
+  wrap.append(table); section.append(wrap);
+}
+function renderDetails(values,dates,history,userId) {
+  allMeasurements.replaceChildren(); measurementHistory.replaceChildren();
+  reportDetails.open = false;
+
+  const current = detailSection('Mediciones disponibles');
+  renderTable(current,'Último valor conocido de cada indicador',['Medición','Valor','Estado','Fecha','Origen'],
+    metrics.map(metric => {
+      const state = classify(metric,values[metric.id],values);
+      return [metric.name,metricValue(metric,values[metric.id]),statusNames[state] ?? state,dates[metric.id] ?? '—',
+        metric.source === 'manual' ? 'Captura / registro diario' : 'Sensores'];
+    }),
+    'Todavía no hay mediciones disponibles.');
+  allMeasurements.append(current);
+
+  if (!userId) {
+    const note = document.createElement('p'); note.className = 'report-detail-note';
+    note.textContent = 'Inicia sesión para consultar el historial completo guardado en la base de datos.';
+    measurementHistory.append(note);
+    return;
+  }
+
+  const records = detailSection('Historial de registros diarios');
+  if (!history.recordsLoaded) {
+    const note = document.createElement('p'); note.className = 'report-detail-note';
+    note.textContent = 'No se pudo cargar el historial completo de registros.';
+    records.append(note);
+  } else {
+    renderTable(records,'Todos los registros diarios',['Fecha','Entorno','Sueño (h)','NASA-TLX (/100)','Reacción promedio (ms)','Reacción máxima (ms)','Salidas en falso'],
+      history.records.map(row => [row.date,row.env,row.sleep,row.tlx,row.pvt,row.pvt_max,row.fs]),
+      'Aún no hay registros diarios guardados.');
+  }
+  measurementHistory.append(records);
+
+  const sensors = detailSection('Historial de sensores');
+  if (!history.sensorsLoaded) {
+    const note = document.createElement('p'); note.className = 'report-detail-note';
+    note.textContent = 'No se pudo cargar el historial completo de sensores.';
+    sensors.append(note);
+  } else {
+    renderTable(sensors,'Todos los resúmenes diarios de sensores',['Fecha','Pulso medio (lpm)','Pulso máximo (lpm)','Temperatura media (°C)','SpO₂ mínima (%)','Radiación diaria (mSv)','CO₂ máximo (ppm)','HRV RMSSD (ms)'],
+      history.sensors.map(row => [row.date,row.hr_avg,row.hr_max,row.temp_avg,row.spo2_min,row.rad_msv,row.co2_max,row.rmssd]),
+      'Aún no hay datos de sensores guardados.');
+  }
+  measurementHistory.append(sensors);
+}
 let version = 0;
 async function render() {
   const request = ++version;
   list.replaceChildren(); message.textContent = 'Consultando datos…';
+  allMeasurements.replaceChildren(); measurementHistory.replaceChildren();
   const client = await supabaseReady;
   const userId = getCurrentUser()?.id;
   let manual = null, localError = false;
@@ -42,6 +118,7 @@ async function render() {
   const values = {...database.values,...manual?.values};
   const dates = {...database.dates};
   if (manual) for (const id of Object.keys(manual.values)) dates[id] = new Date(manual.savedAt).toLocaleDateString('es-MX');
+  renderDetails(values,dates,database.history,userId);
   const organs = affectedOrgans(values);
   list.replaceChildren(...organs.map(organ => organCard(organ,dates)));
   const applicable = metrics.filter(m => m.group !== 'environment');

@@ -31,9 +31,15 @@
     <div class="shell">
       <!-- Landing-page content. -->
       <main class="main report-main" id="reporte">
- <div class="intro"><span class="section-label">REPORTE</span><h1>Tu estado actual.</h1><p>Solo aparecen las regiones con indicadores en atenci&#243;n o alerta.</p></div>
+ <div class="intro"><span class="section-label">REPORTE</span><h1>Tu estado actual.</h1><p>Las regiones en atenci&#243;n o alerta aparecen primero. Puedes consultar todas las mediciones y su historial en m&#225;s detalles.</p></div>
  <p id="reportMessage" class="report-message" role="status" aria-live="polite">Consultando datos&#8230;</p>
  <section id="affectedOrgans" class="affected-organs" aria-label="Regiones que requieren atenci&#243;n"></section>
+ <details id="reportDetails" class="report-details">
+   <summary>M&#225;s detalles: todas las mediciones</summary>
+   <p class="report-details-intro">Consulta los valores disponibles y el historial de registros y sensores de tu cuenta.</p>
+   <div id="allMeasurements"></div>
+   <div id="measurementHistory"></div>
+ </details>
  <a class="report-capture-link" href="captura.html">Ir a Captura</a>
  <p class="report-footnote">Indicadores orientativos seg&#250;n Nuevas metricas.pdf. No equivalen a un diagn&#243;stico.</p>
 </main>
