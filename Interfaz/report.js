@@ -116,7 +116,10 @@ async function render() {
     if (request !== version || viewerId !== getCurrentUser()?.id) return;
     if (error || !members?.length) {
       crewSelect.replaceChildren();
-      message.textContent = error ? 'Acceso no disponible. Se requiere un rol de doctor o capitán autorizado y la migración de permisos en Supabase.' : 'No hay integrantes en esta misión.'; return;
+      message.textContent = error?.code === '42501'
+        ? 'El rol elegido al registrarse no concede permisos médicos. Un administrador debe asignar doctor o capitán en app_metadata de Supabase.'
+        : error ? 'No se pudieron consultar los integrantes. Revisa la conexión y las migraciones de Supabase.' : 'No hay integrantes en esta misión.';
+      return;
     }
     const selected = crewSelect.value;
     crewSelect.replaceChildren(...members.map(member => {
