@@ -29,6 +29,10 @@
 .body-stat-reading strong { display:block; font-size:11px; }
 .body-stat-reading small { display:block; color:var(--muted); font-size:10px; }
 .body-figure { display:block; width:min(100%,280px); max-height:560px; justify-self:center; overflow:visible; }
+.body-anatomy { pointer-events:none; }
+.body-organ { fill:#fff; stroke:#000; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+.body-organ-line { fill:none; stroke:#000; stroke-width:3; }
+.body-organ-duct { stroke:#fff; stroke-width:3; }
 .body-marker { fill:#9ca8b7; stroke:#fff; stroke-width:4; }
 .body-marker[data-state=green] { fill:#21834f; }
 .body-marker[data-state=yellow] { fill:#bd850b; }

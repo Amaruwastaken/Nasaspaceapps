@@ -44,8 +44,41 @@
      <div id="bodyIndicatorsLeft" class="body-indicators" aria-label="Estad&#237;sticas de cerebro y ojos"></div>
      <svg class="body-figure" viewBox="0 0 408 1024" role="img" aria-labelledby="bodyFigureTitle bodyFigureDescription">
        <title id="bodyFigureTitle">Mapa corporal de indicadores</title>
-       <desc id="bodyFigureDescription">Silueta corporal con marcadores de color solo en las regiones con mediciones disponibles.</desc>
+       <desc id="bodyFigureDescription">Silueta en blanco y negro con cerebro, pulmones, corazón, hígado, estómago, riñones e intestinos. Los marcadores de color indican regiones con mediciones disponibles.</desc>
        <image href="Imagenes/silueta-cuerpo.jpeg" x="0" y="0" width="408" height="1024" />
+       <g class="body-anatomy" aria-hidden="true">
+         <g class="body-organ" data-anatomy="lungs">
+           <title>Pulmones</title>
+           <path d="M193 222C180 211 157 222 146 245C135 267 132 303 140 322C144 332 165 323 181 313C189 308 193 296 193 281Z" />
+           <path d="M214 222C228 212 250 223 261 247C271 269 274 302 267 321C262 333 241 323 226 314C218 309 214 298 214 282Z" />
+           <path class="body-organ-line" d="M203 211V253M203 248L176 271M203 248L232 271M176 271L160 289M232 271L250 289" />
+         </g>
+         <g class="body-organ" data-anatomy="heart">
+           <title>Corazón</title>
+           <path d="M202 279C191 264 181 271 183 287C185 304 203 323 213 328C225 318 237 300 234 285C231 271 219 273 214 282L212 265L202 266Z" />
+           <path class="body-organ-line" d="M205 290Q212 301 215 316" />
+         </g>
+         <g class="body-organ" data-anatomy="liver">
+           <title>Hígado</title>
+           <path d="M144 346C162 332 195 335 224 344L230 356C216 367 196 370 174 374C158 377 145 371 141 363Z" />
+           <path class="body-organ-line" d="M194 342L187 366" />
+         </g>
+         <g class="body-organ" data-anatomy="stomach">
+           <title>Estómago</title>
+           <path d="M219 339L218 363C230 356 249 360 253 374C258 391 247 408 232 411C218 414 205 408 198 398C193 391 197 382 204 382C211 382 210 391 219 390C230 389 234 378 230 374L209 365L210 339Z" />
+         </g>
+         <g class="body-organ" data-anatomy="kidneys">
+           <title>Riñones</title>
+           <path d="M159 392C141 386 137 402 140 416C143 433 158 436 165 426C170 420 163 416 160 412C157 407 170 401 159 392Z" />
+           <path d="M251 392C269 386 273 402 270 416C267 433 252 436 245 426C240 420 247 416 250 412C253 407 240 401 251 392Z" />
+           <path class="body-organ-line body-organ-duct" d="M160 417Q169 435 190 456M250 417Q241 435 220 456" />
+         </g>
+         <g class="body-organ" data-anatomy="intestines">
+           <title>Intestinos</title>
+           <path d="M171 428C154 424 150 435 152 449L153 478C154 489 166 492 176 487L235 487C247 491 257 483 256 472L256 444C257 431 246 425 236 430Z" />
+           <path class="body-organ-line" d="M167 443H237Q246 447 237 454H175Q166 459 176 466H237Q245 472 236 477H174M205 481V498" />
+         </g>
+       </g>
        <g id="bodyMarkers" class="body-markers" aria-hidden="true"></g>
      </svg>
      <div id="bodyIndicatorsRight" class="body-indicators" aria-label="Estad&#237;sticas de coraz&#243;n, abdomen y cuerpo"></div>
