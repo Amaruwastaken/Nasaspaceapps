@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const knowledgePath = path.join(__dirname, '..', 'Backend', 'nasa-knowledge.json');
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 function readJson(pathname) {
@@ -43,22 +43,37 @@ function summarizeTelemetry(rows = []) {
 
 function pickRelevantEvidence(question, entries = []) {
   const normalizedQuestion = question.toLowerCase();
-  const keywordMap = [
-    'sleep', 'circadian', 'fatigue', 'alertness', 'reaction', 'cognition', 'stress',
-    'heart', 'cardio', 'oxygen', 'spo2', 'temperature', 'co2', 'respiration', 'radiation',
-    'vision', 'eye', 'hydration', 'nutrition', 'wellness', 'exercise', 'recovery', 'mission'
+  const concepts = [
+    ['sleep', 'sueño', 'dormir', 'descanso'],
+    ['circadian', 'circadiano', 'ritmo biológico'],
+    ['fatigue', 'fatiga', 'cansancio'],
+    ['alertness', 'vigilancia', 'alerta'],
+    ['reaction', 'reacción', 'respuesta'],
+    ['cognition', 'cognición', 'cognitivo'],
+    ['stress', 'estrés'],
+    ['heart', 'corazón', 'cardio', 'cardiovascular'],
+    ['oxygen', 'oxígeno', 'spo2'],
+    ['temperature', 'temperatura'],
+    ['co2', 'dióxido de carbono', 'ventilación', 'aire'],
+    ['respiration', 'respiración'],
+    ['radiation', 'radiación'],
+    ['vision', 'visión', 'visual', 'eye', 'ojos'],
+    ['hydration', 'hidratación'],
+    ['nutrition', 'nutrición', 'alimentación'],
+    ['wellness', 'bienestar', 'salud'],
+    ['exercise', 'ejercicio'],
+    ['recovery', 'recuperación'],
+    ['mission', 'misión']
   ];
 
   return entries
     .map((entry) => {
       const haystack = [entry.title, entry.summary, ...(entry.excerpts || [])].join(' ').toLowerCase();
       let score = 0;
-      for (const keyword of keywordMap) {
-        if (normalizedQuestion.includes(keyword) && haystack.includes(keyword)) {
-          score += 2;
-        } else if (haystack.includes(keyword) && normalizedQuestion.includes(keyword)) {
-          score += 1;
-        }
+      for (const synonyms of concepts) {
+        const askedAboutConcept = synonyms.some((term) => normalizedQuestion.includes(term));
+        const evidenceCoversConcept = synonyms.some((term) => haystack.includes(term));
+        if (askedAboutConcept && evidenceCoversConcept) score += 2;
       }
       return { entry, score };
     })
@@ -151,6 +166,15 @@ async function callGemini(prompt) {
   return text;
 }
 
+async function translateQuestionForSearch(question) {
+  const prompt = `Translate this question into a short English search query.
+Return only the query, with no explanation. Preserve the health topic and symptoms.
+
+Question: ${question}`;
+
+  return callGemini(prompt);
+}
+
 export default async function handler(request, response) {
   const method = request.method || 'GET';
   if (method !== 'POST') {
@@ -164,21 +188,26 @@ export default async function handler(request, response) {
       throw new Error('Faltan variables de entorno de Supabase.');
     }
 
-    const authHeader = request.headers.get('authorization') || '';
+    const authHeader = request.headers?.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
     if (!token) {
       response.status(401).json({ error: 'Authorization header missing or invalid.' });
       return;
     }
 
-    const client = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const client = createClient(SUPABASE_URL, SUPABASE_KEY, {
+      global: {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
     const { data: { user }, error: authError } = await client.auth.getUser(token);
     if (authError || !user) {
       response.status(401).json({ error: 'Supabase session invalid.' });
       return;
     }
 
-    const body = await request.json().catch(() => ({}));
+    const body = request.body || {};
     const question = normalizeText(body.question || body.prompt || '');
     if (!question) {
       response.status(400).json({ error: 'Question is required.' });
@@ -187,7 +216,11 @@ export default async function handler(request, response) {
 
     const telemetryRows = await getUserTelemetry(client, user.id);
     const knowledge = await readJson(knowledgePath);
-    const evidenceEntries = pickRelevantEvidence(question, knowledge.entries || []);
+    const englishQuery = await translateQuestionForSearch(question);
+    const evidenceEntries = pickRelevantEvidence(
+      `${question} ${englishQuery}`,
+      knowledge.entries || [],
+    );
     const summary = summarizeTelemetry(telemetryRows);
     const prompt = buildPrompt(question, summary, evidenceEntries);
     const answer = await callGemini(prompt);
