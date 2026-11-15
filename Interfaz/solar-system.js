@@ -1,34 +1,19 @@
-// JPL Table 1, J2000 elements and rates per Julian century (1800–2050).
+// JPL mean longitude and rates per Julian century (1800–2050).
 // https://ssd.jpl.nasa.gov/planets/approx_pos.html
 (() => {
   const space = document.querySelector('#planets');
   if (!space) return;
   const rows = [
-    ['tierra','Tierra','#66b9ed',[1.00000261,.01671123,-.00001531,100.46457166,102.93768193,0],[.00000562,-.00004392,-.01294668,35999.37244981,.32327364,0]],
-    ['marte','Marte','#e57f57',[1.52371034,.0933941,1.84969142,-4.55343205,-23.94362959,49.55953891],[.00001847,.00007882,-.00813131,19140.30268499,.44441088,-.29257343]],
+    ['tierra','Tierra','#66b9ed',1.00000261,100.46457166,35999.37244981,365.256],
+    ['marte','Marte','#e57f57',1.52371034,-4.55343205,19140.30268499,686.98],
   ];
-  const TAU = Math.PI * 2, rad = d => d * Math.PI / 180;
+  const TAU = Math.PI * 2, rad = d => d * Math.PI / 180, AU_KM = 149597870.7;
   const date = new Date();
   const T = (date.getTime() / 86400000 + 2440587.5 - 2451545) / 36525;
-  function position(p, mean, scale = p.a) {
-    const M = mean % TAU;
-    let E = M;
-    for (let k = 0; k < 12; k++) {
-      const delta = (E - p.e * Math.sin(E) - M) / (1 - p.e * Math.cos(E));
-      E -= delta;
-      if (Math.abs(delta) < 1e-10) break;
-    }
-    const x = scale * (Math.cos(E) - p.e), y = scale * Math.sqrt(1 - p.e ** 2) * Math.sin(E);
-    const w = p.peri - p.node, cw = Math.cos(w), sw = Math.sin(w);
-    const cn = Math.cos(p.node), sn = Math.sin(p.node), ci = Math.cos(p.i);
-    return [(cw*cn-sw*sn*ci)*x+(-sw*cn-cw*sn*ci)*y,
-      (cw*sn+sw*cn*ci)*x+(-sw*sn+cw*cn*ci)*y,
-      sw*Math.sin(p.i)*x+cw*Math.sin(p.i)*y];
-  }
+  const position = (p, angle) => [p.radius * Math.cos(angle), p.radius * Math.sin(angle)];
   space.replaceChildren();
   const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('viewBox','0 0 1000 1000');
-  svg.setAttribute('preserveAspectRatio','none');
   svg.setAttribute('aria-hidden','true');
   svg.classList.add('solar-orbits'); space.append(svg);
   const moonOrbit = document.createElementNS(svg.namespaceURI,'circle');
@@ -46,15 +31,14 @@
     const label = document.createElement('small'); label.textContent = name; el.append(label);
     space.append(el); return el;
   }
-  const planets = rows.map(([id,name,color,base,rates]) => {
-    const [a,e,i,L,peri,node] = base.map((v,k) => v + rates[k]*T);
-    const p = {id,name,a,e,i:rad(i),peri:rad(peri),node:rad(node),mean:rad(L-peri),radius:a*150};
-    const path = document.createElementNS(svg.namespaceURI,'path');
-    path.setAttribute('d',Array.from({length:181},(_,k) => {
-      const [x,y] = position(p,k/180*TAU,p.radius);
-      return `${k ? 'L' : 'M'}${500+x},${500-y}`;
-    }).join(' ')+'Z'); svg.append(path);
-    return {...p,button:button(id,name,color),initialPosition:position(p,p.mean)};
+  const planets = rows.map(([id,name,color,a,longitude,longitudeRate,periodDays]) => {
+    const p = {id,name,radius:a*150,angle:rad(longitude+longitudeRate*T),periodDays};
+    const orbit = document.createElementNS(svg.namespaceURI,'circle');
+    orbit.setAttribute('cx','500');
+    orbit.setAttribute('cy','500');
+    orbit.setAttribute('r',String(p.radius));
+    svg.append(orbit);
+    return {...p,button:button(id,name,color),initialPosition:position(p,p.angle)};
   });
   const moon = button('luna','Luna','#cfced3');
   const moonOrbitRadius = 30;
@@ -64,7 +48,7 @@
       if ([a,b].includes('luna') && [a,b].includes('tierra')) return 384400;
       const get = id => planets.find(p => p.id === (id === 'luna' ? 'tierra' : id)).initialPosition;
       const x = get(a), y = get(b);
-      return Math.hypot(...x.map((v,k) => v-y[k]))*149597870.7;
+      return Math.hypot(x[0]-y[0],x[1]-y[1])*AU_KM/150;
     },
   };
   const controls = document.createElement('div'); controls.className = 'orbit-controls';
@@ -73,22 +57,24 @@
   const pause = document.createElement('button'); pause.type = 'button';
   controls.append(stamp,pause);
   const note = document.createElement('p'); note.className = 'orbit-note';
-  note.innerHTML = '¼ de órbita cada 60 segundos · Vuelta completa en 4 minutos. Vista superior con distancias y tamaños comprimidos; movimiento ilustrativo. Luna esquemática alrededor de la Tierra. Fuente: <a href="https://ssd.jpl.nasa.gov/planets/approx_pos.html" target="_blank" rel="noopener noreferrer">NASA/JPL</a>.';
+  note.innerHTML = 'Órbitas circulares en vista superior, no a escala; la Tierra completa una vuelta en 4 minutos. Movimiento ilustrativo; Luna esquemática alrededor de la Tierra. Fuente: <a href="https://ssd.jpl.nasa.gov/planets/approx_pos.html" target="_blank" rel="noopener noreferrer">NASA/JPL</a>.';
   space.after(controls,note);
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   let paused = motion.matches, elapsed = 0, last = null, frame;
   function draw() {
-    const phase = elapsed/240000*TAU;
+    const earth = planets.find(p => p.id === 'tierra');
     for (const p of planets) {
-      const [x,y] = position(p,p.mean+phase,p.radius);
+      const angle = p.angle + elapsed/(240000*p.periodDays/earth.periodDays)*TAU;
+      const [x,y] = position(p,angle);
       p.button.style.left = `${50+x/10}%`; p.button.style.top = `${50-y/10}%`;
     }
-    const earth = planets.find(p => p.id === 'tierra');
-    const [x,y] = position(earth,earth.mean+phase,earth.radius);
+    const earthAngle = earth.angle + elapsed/240000*TAU;
+    const [x,y] = position(earth,earthAngle);
     moonOrbit.setAttribute('cx',String(500+x));
     moonOrbit.setAttribute('cy',String(500-y));
-    moon.style.left = `${50+(x+moonOrbitRadius*Math.cos(phase))/10}%`;
-    moon.style.top = `${50-(y+moonOrbitRadius*Math.sin(phase))/10}%`;
+    const moonAngle = elapsed/45000*TAU;
+    moon.style.left = `${50+(x+moonOrbitRadius*Math.cos(moonAngle))/10}%`;
+    moon.style.top = `${50-(y+moonOrbitRadius*Math.sin(moonAngle))/10}%`;
   }
   function tick(now) {
     if (last !== null) elapsed += now-last;
