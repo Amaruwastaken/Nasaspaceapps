@@ -47,7 +47,7 @@ const bodyAreas = [
 ];
 const bodyStateNames = {green:'Bien',yellow:'Atención',red:'Mal',unknown:'Sin clasificar'};
 const bodyMarkerPositions = {
-  brain:{x:200,y:73},eyes:{x:174,y:107},heart:{x:218,y:255},stomach:{x:200,y:348},body:{x:200,y:470},
+  brain:{x:181,y:54},eyes:{x:128,y:111},heart:{x:242,y:266},stomach:{x:205,y:411},body:{x:205,y:618},
 };
 function metricValue(metric,value) {
   if (value === undefined || value === null || value === '') return 'Sin datos';
@@ -134,7 +134,6 @@ function renderBodyOverview(values,dates) {
     title.textContent = `${name}: ${bodyStateNames[state]}`;
     marker.append(title);
     bodyMarkers.append(marker);
-    marker.dataset.state = state;
     for (const item of card.querySelectorAll('.body-stat-reading')) displayedStates.add(item.dataset.state);
   }
   bodyOverview.hidden = visibleAreas === 0;
