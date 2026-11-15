@@ -42,6 +42,20 @@
 #captureMessage[role=alert] { color:#a5332d; }
 .capture-save { border:0; border-radius:4px; background:var(--blue); color:#fff; padding:13px 20px; font:inherit; font-weight:700; cursor:pointer; }
 .capture-controls { display:flex; flex-wrap:wrap; gap:10px; }
+.test-instructions { margin:4px 0 12px; color:var(--ink); font-size:14px; line-height:1.7; }
+.test-result { color:var(--blue); font-size:14px; line-height:1.6; min-height:1.6em; }
+.reaction-panel { width:100%; min-height:170px; padding:24px; margin-top:16px; border:2px solid var(--blue); border-radius:6px; color:var(--navy); background:#eaf2f9; font:inherit; font-size:24px; font-weight:700; cursor:pointer; touch-action:manipulation; user-select:none; }
+.reaction-panel[data-state=waiting] { background:#fff0d4; border-color:#b17b16; color:#72500e; }
+.reaction-panel[data-state=ready] { background:#14784e; border-color:#14784e; color:#fff; }
+.tlx-scale { display:grid; gap:8px; margin:12px 0; padding:14px 0; border-bottom:1px solid var(--line); }
+.tlx-scale input[type=range] { padding:0; min-height:32px; accent-color:var(--blue); }
+.tlx-scale output { font-size:13px; font-weight:700; color:var(--blue); }
+.tlx-scale button { justify-self:start; padding:7px 10px; font-size:12px; }
+.amsler-grid { display:block; width:min(100%,330px); height:auto; margin:18px auto; border:1px solid #111; }
+.amsler-eye { min-width:0; padding:14px; margin:12px 0; border:1px solid var(--line); border-radius:4px; }
+.amsler-eye legend { font-size:14px; font-weight:700; }
+.amsler-eye label { display:flex; align-items:flex-start; gap:10px; padding:8px 0; font-size:13px; font-weight:400; line-height:1.6; }
+.amsler-eye input[type=radio] { flex:none; width:18px; min-height:18px; height:18px; margin:2px 0; accent-color:var(--blue); }
 .capture-controls button[hidden] { display:none; }
 .capture-controls button:disabled { cursor:wait; opacity:.65; }
 .capture-secondary { border:1px solid var(--blue); border-radius:4px; background:#fff; color:var(--blue); padding:12px 18px; font:inherit; font-weight:700; cursor:pointer; }

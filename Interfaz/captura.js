@@ -1,6 +1,7 @@
 import {manualMetrics} from './report-data.js';
 import {loadMeasurements,saveMeasurements} from './measurement-store.js';
 import {supabaseReady,getCurrentUser} from './auth.js';
+import {mountDigitalTest} from './digital-tests.js';
 const form = document.querySelector('#captureForm');
 const fields = document.querySelector('#captureFields');
 const message = document.querySelector('#captureMessage');
@@ -15,11 +16,22 @@ const questions = manualMetrics.flatMap(metric => (metric.fields ?? [{
 }]).map(definition => ({metric,definition})));
 let activeUser = null, initialized = false, ready = false, saving = false;
 let currentIndex = 0, values = {};
+let digital = null;
+let testDrafts = {};
+const digitalIds = new Set(['pvt','tlx','amsler']);
 const feedback = (text,error = false) => { message.textContent = text; message.setAttribute('role',error ? 'alert' : 'status'); };
 
 function renderCurrent() {
+  digital?.destroy(); digital = null;
   const {metric,definition} = questions[currentIndex];
   const field = document.createElement('div'); field.className = 'metric-card';
+  if (digitalIds.has(metric.id)) {
+    field.append(Object.assign(document.createElement('h2'),{textContent:metric.name}));
+    fields.replaceChildren(field);
+    testDrafts[metric.id] ??= {result:values[metric.id] ?? null};
+    digital = mountDigitalTest(metric.id,field,testDrafts[metric.id],() => feedback('Resultado sin guardar.'));
+    updateProgress(); return;
+  }
   if (metric.fields) {
     const heading = document.createElement('h2'); heading.textContent = metric.name; field.append(heading);
   }
@@ -45,6 +57,10 @@ function renderCurrent() {
   input.setAttribute('aria-describedby',help.id);
   field.append(help);
   fields.replaceChildren(field);
+  updateProgress();
+}
+
+function updateProgress() {
   const percent = Math.round(((currentIndex + 1) / questions.length) * 100);
   progress.setAttribute('aria-valuenow',String(percent));
   progressBar.style.width = `${percent}%`;
@@ -56,6 +72,12 @@ function renderCurrent() {
 
 function rememberCurrent() {
   const {metric,definition} = questions[currentIndex];
+  if (digital) {
+    const result = digital.read();
+    if (result === null || result === undefined) delete values[metric.id];
+    else values[metric.id] = result;
+    return;
+  }
   const input = fields.querySelector('input,select');
   if (metric.fields) {
     const result = {...(values[metric.id] ?? {})};
@@ -71,6 +93,7 @@ function rememberCurrent() {
 
 function skipCurrent() {
   const {metric,definition} = questions[currentIndex];
+  if (digitalIds.has(metric.id)) delete testDrafts[metric.id];
   if (metric.fields) {
     const result = {...(values[metric.id] ?? {})};
     delete result[definition.id];
@@ -93,7 +116,7 @@ function syncUser() {
   if (initialized && userId === activeUser) return;
   try { values = {...(loadMeasurements(userId)?.values ?? {})}; feedback(''); }
   catch (error) { values = {}; feedback(error.message || 'No se pudieron cargar las pruebas locales.',true); }
-  activeUser = userId; initialized = true; currentIndex = 0; renderCurrent();
+  activeUser = userId; initialized = true; currentIndex = 0; testDrafts = {}; renderCurrent();
 }
 
 document.addEventListener('sessionchange',syncUser);
@@ -111,6 +134,12 @@ skip.addEventListener('click',() => {
 form.addEventListener('submit',event => {
   event.preventDefault();
   if (!ready) { feedback('Espera a que termine de comprobarse la sesión.'); return; }
+  if (digital) {
+    if (!digital.validate()) { feedback('Completa la prueba o usa “Saltar”.',true); return; }
+    rememberCurrent();
+    if (currentIndex < questions.length - 1) { currentIndex++; renderCurrent(); feedback(''); return; }
+    saveAndViewReport(); return;
+  }
   const input = fields.querySelector('input,select');
   if (!input.value.trim()) { feedback('Completa esta respuesta o usa “Saltar”.',true); input.focus(); return; }
   if (!input.reportValidity()) return;
@@ -119,3 +148,5 @@ form.addEventListener('submit',event => {
   saveAndViewReport();
 });
 await supabaseReady; ready = true; syncUser();
+window.addEventListener('pagehide',() => digital?.destroy());
+window.addEventListener('pageshow',event => { if (event.persisted) renderCurrent(); });
