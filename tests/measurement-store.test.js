@@ -19,6 +19,7 @@ function database(options = {}) {
       const query = {
         select(columns) { calls.push(['select',columns]); return query; },
         eq(key,value) { calls.push(['eq',key,value]); owner=value; return query; },
+        not(key,operator,value) { calls.push(['not',key,operator,value]); return query; },
         order(key,settings) { calls.push(['order',key,settings]); return query; },
         limit(value) { calls.push(['limit',value]); return query; },
         insert(value) { calls.push(['insert',value]); inserted=value; return query; },
@@ -26,14 +27,14 @@ function database(options = {}) {
           if (options.readThrows) throw new Error('Offline');
           if (options.readError) return {data:null,error:options.readError};
           if (options.badRow) return {data:options.badRow,error:null};
-          const matching=rows.filter(row=>row.user_id===owner).sort((a,b)=>b.created_at.localeCompare(a.created_at)||b.id.localeCompare(a.id));
+          const matching=rows.filter(row=>row.user_id===owner&&row.manual_measurements!==null&&row.manual_measurements!==undefined).sort((a,b)=>b.ts.localeCompare(a.ts)||b.id-a.id);
           return {data:matching[0] ?? null,error:null};
         },
         async single() {
           if (options.writeThrows) throw new Error('Offline');
           if (options.writeError) return {data:null,error:options.writeError};
           if (options.badRow) return {data:options.badRow,error:null};
-          const row={id:String(++serial).padStart(5,'0'),...structuredClone(inserted),created_at:`2026-11-15T00:00:${String(serial).padStart(2,'0')}.000Z`};
+          const row={id:++serial,...structuredClone(inserted),ts:`2026-11-15T00:00:${String(serial).padStart(2,'0')}.000Z`};
           rows.push(row);return {data:row,error:null};
         },
       };return query;
@@ -48,7 +49,10 @@ test('all seven manual metrics round-trip as normalized values',async()=>{
   const saved=await saveMeasurements(client,'user-a',values);
   assert.deepEqual(saved.values,{pvt:250,tlx:60,amsler:'yellow',perfusion:1.5,medication:{takenPercent:95,doubleDose:'no'},orthostatic:{hrRise:15,systolicDrop:5,diastolicDrop:0,symptoms:'none'},who5:64});
   assert.deepEqual(await loadMeasurements(client,'user-a'),saved);
-  assert.deepEqual(Object.keys(rows[0]).sort(),['created_at','id','measurements','user_id']);
+  assert.deepEqual(Object.keys(rows[0]).sort(),['asleep','automatic_data','co2','gravity','hr','id','is_simulated','latency_s','manual_measurements','mission_day','phase','rad_rate','resp','rr','spo2','temp','ts','user_id']);
+  assert.deepEqual(rows[0].manual_measurements,saved.values);
+  assert.equal(rows[0].is_simulated,true);
+  assert.deepEqual(rows[0].automatic_data,{hr:rows[0].hr,rr:rows[0].rr,temp:rows[0].temp,spo2:rows[0].spo2,resp:rows[0].resp,rad_rate:rows[0].rad_rate,co2:rows[0].co2,asleep:false,phase:'prototipo',gravity:0.38,latency_s:rows[0].latency_s,mission_day:1});
 });
 
 test('empty snapshots supersede previous readings; missing and skipped fields stay absent',async()=>{
@@ -85,10 +89,11 @@ test('signed-in identity must match the requested account before reads or writes
 });
 
 test('queries filter snapshots by account and reject mismatched returned owners',async()=>{
-  const {client,calls}=database({rows:[{id:'other',user_id:'user-b',measurements:{pvt:600},created_at:'2026-11-15T01:00:00Z'}]});
+  const {client,calls}=database({rows:[{id:1,user_id:'user-b',manual_measurements:{pvt:600},ts:'2026-11-15T01:00:00Z'}]});
   assert.equal(await loadMeasurements(client,'user-a'),null);
+  assert(calls.some(([method,table])=>method==='from'&&table==='telemetry'));
   assert(calls.some(([method,key,value])=>method==='eq'&&key==='user_id'&&value==='user-a'));
-  const wrong={id:'bad',user_id:'user-b',measurements:{pvt:600},created_at:'2026-11-15T00:00:00Z'};
+  const wrong={id:2,user_id:'user-b',manual_measurements:{pvt:600},ts:'2026-11-15T00:00:00Z'};
   await assert.rejects(loadMeasurements(database({badRow:wrong}).client,'user-a'),/inválida/);
   await assert.rejects(saveMeasurements(database({badRow:wrong}).client,'user-a',{}),/inválida/);
 });
@@ -96,7 +101,7 @@ test('queries filter snapshots by account and reject mismatched returned owners'
 test('database and network errors are surfaced; missing tables have an actionable error',async()=>{
   for(const options of [{readThrows:true},{readError:{code:'42501'}}])await assert.rejects(loadMeasurements(database(options).client,'user-a'),/consultar/);
   for(const options of [{writeThrows:true},{writeError:{code:'42501'}}])await assert.rejects(saveMeasurements(database(options).client,'user-a',{}),/guardar/);
-  for(const code of ['42P01','PGRST205'])await assert.rejects(loadMeasurements(database({readError:{code}}).client,'user-a'),/manual_measurements/);
+  for(const code of ['42P01','42703','PGRST204','PGRST205'])await assert.rejects(loadMeasurements(database({readError:{code}}).client,'user-a'),/migración de telemetría/);
   await assert.rejects(loadMeasurements(database({authThrows:true}).client,'user-a'),/sesión/);
   await assert.rejects(saveMeasurements(database({authError:true}).client,'user-a',{}),/sesión/);
 });
@@ -104,8 +109,8 @@ test('database and network errors are surfaced; missing tables have an actionabl
 test('malformed stored data is rejected, and invalid input never issues an insert',async()=>{
   const {client,calls}=database();await assert.rejects(saveMeasurements(client,'user-a',{tlx:101}));assert(!calls.some(([name])=>name==='insert'));
   for(const row of [
-    {id:'bad',user_id:'user-a',measurements:{tlx:101},created_at:'2026-11-15T00:00:00Z'},
-    {id:'bad',user_id:'user-a',measurements:{pvt:250},created_at:'invalid'},
-    {id:'bad',user_id:'user-a',measurements:null,created_at:'2026-11-15T00:00:00Z'},
+    {id:'bad',user_id:'user-a',manual_measurements:{tlx:101},ts:'2026-11-15T00:00:00Z'},
+    {id:'bad',user_id:'user-a',manual_measurements:{pvt:250},ts:'invalid'},
+    {id:'bad',user_id:'user-a',manual_measurements:null,ts:'2026-11-15T00:00:00Z'},
   ])await assert.rejects(loadMeasurements(database({badRow:row}).client,'user-a'));
 });

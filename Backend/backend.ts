@@ -32,7 +32,7 @@ interface Sensor {
   rad_msv: number | null; co2_max: number | null; rmssd: number | null;
 }
 // Lectura en vivo del traje (tabla telemetry)
-interface Telemetry { ts: string; hr: number; rr: number; temp: number; spo2: number; resp: number; rad_rate: number; co2: number }
+interface Telemetry { ts: string; hr: number; rr: number; temp: number; spo2: number; resp: number; rad_rate: number; co2: number; is_simulated?: boolean }
 
 interface Bundle { R: Rec[]; S: Sensor[] }
 interface Item { k: Key; n: string; lv: Level; hp?: number; v: string }
@@ -282,10 +282,11 @@ function liveBox(): HTMLElement {
 function paintLive(t: Telemetry): void {
   lastReading = t;
   const stale = (Date.now() - new Date(t.ts).getTime()) / 1000 > 60;
+  const badge = stale ? 'SIN SEÑAL RECIENTE' : t.is_simulated ? 'SIMULADO · PROTOTIPO' : 'EN LÍNEA';
   const cell = (l: string, v: string): string =>
     `<div><div class="mu">${l}</div><b style="font-size:1.3rem">${v}</b></div>`;
   liveBox().innerHTML = `
-    <h3>🛰️ Traje en vivo <span class="badge" style="background:${stale ? COL[1] : COL[0]}">${stale ? 'SIN SEÑAL RECIENTE' : 'EN LÍNEA'}</span></h3>
+    <h3>🛰️ Traje en vivo <span class="badge" style="background:${stale || t.is_simulated ? COL[1] : COL[0]}">${badge}</span></h3>
     ${t.rad_rate > 5 ? `<div class="alert"><b>Tormenta solar: ${t.rad_rate.toFixed(1)} mSv/h.</b> Ir al Refugio de Tormenta y cancelar toda actividad extravehicular.</div>` : ''}
     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
       ${cell('❤️ Pulso', `${t.hr} lpm`)}${cell('🌡️ Temperatura', `${t.temp.toFixed(1)} °C`)}${cell('🫁 SpO₂', `${t.spo2.toFixed(0)} %`)}

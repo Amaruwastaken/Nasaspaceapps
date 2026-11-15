@@ -47,9 +47,10 @@ Proyecto Vercel: nasaspaceapps-farmacias-similunares. El directorio del proyecto
 
 - npm run build copia Interfaz a dist y genera la configuracion publica desde SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY. Tambien admite los alias NEXT_PUBLIC_SUPABASE_* y SUPABASE_ANON_KEY. Nunca publica claves service_role ni sb_secret.
 - npm test ejecuta los tests de configuracion y persistencia.
-- Aplica supabase/migrations/20261115030000_manual_measurements.sql en el proyecto Supabase conectado, antes de usar Captura. Crea manual_measurements con validacion de los siete indicadores manuales, historial y politicas RLS por usuario.
+- Aplica las migraciones de `supabase/migrations/` en orden en el proyecto Supabase conectado. `20261115040000_unify_measurements_telemetry.sql` elimina únicamente la tabla anterior `manual_measurements` y agrega a `telemetry` el JSON validado de Captura, el JSON de telemetría y una marca de datos simulados.
 - Captura requiere iniciar sesion y confirma el INSERT antes de abrir Reporte. Si falla, mantiene las respuestas en la pagina; no simula un guardado local.
-- Reporte consulta la ultima captura en Supabase. Una prueba omitida en esa captura no se reemplaza por un valor antiguo de records. Los sensores y las alertas existentes mantienen sus conexiones actuales.
+- Cada envío de Captura agrega una sola fila a `telemetry`: incluye las respuestas manuales y una lectura automática genérica marcada como simulada. Las lecturas automáticas existentes pueden seguir usando las columnas de sensores; `manual_measurements` queda en `NULL` para esas filas.
+- Reporte consulta la última captura de `telemetry`. Una prueba omitida en esa captura no se reemplaza por un valor antiguo de `records`. Los sensores y las alertas existentes mantienen sus conexiones actuales.
 - Los datos antiguos de localStorage no se importan automaticamente: ya no son la fuente del reporte.
 
 La migracion nueva no crea ni reemplaza las tablas legacy records, daily_sensor, telemetry o Registry. Deben existir en el Supabase actual junto con las migraciones anteriores. En un Supabase totalmente nuevo hay que configurar ese esquema antes de activar los sensores y alertas. No ejecutar seed en produccion.

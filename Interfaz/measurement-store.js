@@ -1,10 +1,12 @@
 ﻿import {manualMetrics,classify} from './report-data.js';
 
-const TABLE = 'manual_measurements';
-const COLUMNS = 'id,user_id,measurements,created_at';
+const TABLE = 'telemetry';
+const COLUMNS = 'id,user_id,manual_measurements,ts';
 const MAX_BYTES = 16384;
 const isMissing = value => value === undefined || value === null || value === '';
 const plainObject = value => value !== null && typeof value === 'object' && !Array.isArray(value) && [Object.prototype,null].includes(Object.getPrototypeOf(value));
+const randomInteger = (min,max) => Math.floor(Math.random() * (max - min + 1)) + min;
+const randomDecimal = (min,max,places) => Number((min + Math.random() * (max - min)).toFixed(places));
 function invalid(name) { throw new Error(`Revisa el dato: ${name}.`); }
 function scalar(definition,value,name) {
   if (definition.options) {
@@ -54,18 +56,36 @@ async function requireUser(client,userId) {
   if (session.data.user.id !== userId) throw new Error('La sesión cambió. Recarga la página antes de continuar.');
 }
 function databaseError(error,operation) {
-  if (['42P01','PGRST205'].includes(error?.code)) return new Error('Falta configurar la tabla manual_measurements en Supabase.');
+  if (['42P01','42703','PGRST204','PGRST205'].includes(error?.code)) return new Error('Falta aplicar la migración de telemetría unificada en Supabase.');
   return new Error(`No se pudieron ${operation} las pruebas en Supabase. Intenta de nuevo.`);
 }
+function simulatedTelemetry() {
+  const automatic = {
+    hr:randomInteger(60,90),
+    rr:randomDecimal(0.6,1,2),
+    temp:randomDecimal(36.3,37.1,1),
+    spo2:randomInteger(95,99),
+    resp:randomInteger(12,20),
+    rad_rate:randomDecimal(0.01,0.08,3),
+    co2:randomInteger(450,1000),
+    asleep:false,
+    phase:'prototipo',
+    gravity:0.38,
+    latency_s:randomDecimal(0.15,0.4,2),
+    mission_day:1,
+  };
+  return {...automatic,automatic_data:automatic,is_simulated:true};
+}
 function decode(row,userId) {
-  if (!plainObject(row) || row.user_id !== userId || typeof row.id !== 'string' || !row.id || !Number.isFinite(Date.parse(row.created_at))) throw new Error('Supabase devolvió una captura inválida.');
-  return {id:row.id,values:validateValues(row.measurements),savedAt:row.created_at};
+  const validId = Number.isSafeInteger(row?.id) || (typeof row?.id === 'string' && /^\d+$/.test(row.id));
+  if (!plainObject(row) || row.user_id !== userId || !validId || !Number.isFinite(Date.parse(row.ts))) throw new Error('Supabase devolvió una captura inválida.');
+  return {id:String(row.id),values:validateValues(row.manual_measurements),savedAt:row.ts};
 }
 // Complete snapshots are authoritative: omitted/skipped fields remain absent.
 export async function loadMeasurements(client,userId) {
   await requireUser(client,userId);
   let result;
-  try { result = await client.from(TABLE).select(COLUMNS).eq('user_id',userId).order('created_at',{ascending:false}).order('id',{ascending:false}).limit(1).maybeSingle(); }
+  try { result = await client.from(TABLE).select(COLUMNS).eq('user_id',userId).not('manual_measurements','is',null).order('ts',{ascending:false}).order('id',{ascending:false}).limit(1).maybeSingle(); }
   catch (error) { throw databaseError(error,'consultar'); }
   if (result.error) throw databaseError(result.error,'consultar');
   return result.data === null ? null : decode(result.data,userId);
@@ -74,7 +94,14 @@ export async function saveMeasurements(client,userId,values) {
   await requireUser(client,userId);
   const clean = validateValues(values);
   let result;
-  try { result = await client.from(TABLE).insert({user_id:userId,measurements:clean}).select(COLUMNS).single(); }
+  try {
+    const automatic = simulatedTelemetry();
+    result = await client.from(TABLE).insert({
+      user_id:userId,
+      ...automatic,
+      manual_measurements:clean,
+    }).select(COLUMNS).single();
+  }
   catch (error) { throw databaseError(error,'guardar'); }
   if (result.error) throw databaseError(result.error,'guardar');
   return decode(result.data,userId);

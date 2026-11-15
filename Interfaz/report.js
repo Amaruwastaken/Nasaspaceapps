@@ -81,8 +81,9 @@ function renderDetails(values,dates,history,userId) {
   renderTable(current,'Último valor conocido de cada indicador',['Medición','Valor','Estado','Fecha','Origen'],
     metrics.map(metric => {
       const state = classify(metric,values[metric.id],values);
+      const simulated = history.telemetrySimulated && ['heartRate','temperature','spo2','respiratoryRate','co2','gravity'].includes(metric.id);
       return [metric.name,metricValue(metric,values[metric.id]),statusNames[state] ?? state,dates[metric.id] ?? '—',
-        metric.source === 'manual' ? 'Captura / registro diario' : 'Sensores'];
+        metric.source === 'manual' ? 'Captura / registro diario' : simulated ? 'Telemetría simulada (prototipo)' : 'Sensores'];
     }),
     'Todavía no hay mediciones disponibles.');
   allMeasurements.append(current);
@@ -162,6 +163,7 @@ async function render() {
   else if (!organs.length) parts.push('Sin órganos en atención o alerta en los datos disponibles.');
   else parts.push(`${organs.length} ${organs.length === 1 ? 'región requiere' : 'regiones requieren'} atención.`);
   if (missingAutomatic.length) parts.push(`No hay suficiente información automática para ${missingAutomatic.length} ${missingAutomatic.length === 1 ? 'medición' : 'mediciones'}; las faltantes aparecen como “Sin datos” en la tabla.`);
+  if (database.history.telemetrySimulated) parts.push('La última lectura automática es genérica y simulada para el prototipo.');
   if (classified < applicable.length) parts.push('Evaluación parcial: hay mediciones sin datos o pendientes de conexión.');
   if (!userId) parts.push('Inicia sesión para consultar las mediciones de la base de datos.');
   if (manualResult.error) parts.push(manualResult.error.message || 'No se pudieron consultar las pruebas de Captura en Supabase.');

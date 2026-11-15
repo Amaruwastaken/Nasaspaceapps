@@ -14,7 +14,7 @@ async function fetchAllRows(client,table,columns,userId) {
 }
 
 async function fetchLatestTelemetry(client,userId) {
-  const {data,error} = await client.from('telemetry').select('ts,hr,temp,spo2,resp,co2,gravity')
+  const {data,error} = await client.from('telemetry').select('ts,hr,temp,spo2,resp,co2,gravity,is_simulated')
     .eq('user_id',userId).order('ts',{ascending:false}).limit(1).maybeSingle();
   if (error) throw error;
   return data;
@@ -22,7 +22,7 @@ async function fetchLatestTelemetry(client,userId) {
 
 export async function fetchDatabaseMeasurements(client,userId) {
   const values = {}, dates = {}, warnings = [];
-  const history = {records:[],sensors:[],recordsLoaded:false,sensorsLoaded:false};
+  const history = {records:[],sensors:[],recordsLoaded:false,sensorsLoaded:false,telemetrySimulated:false};
   if (!client || !userId) return {values,dates,warnings,history};
   const results = await Promise.allSettled([
     fetchAllRows(client,'daily_sensor','date,hr_avg,hr_max,temp_avg,spo2_min,rad_msv,co2_max,rmssd',userId),
@@ -43,6 +43,7 @@ export async function fetchDatabaseMeasurements(client,userId) {
     }
     const row = source.key === 'telemetry' ? result.value : result.value[0];
     if (!row) return;
+    if (source.key === 'telemetry') history.telemetrySimulated = row.is_simulated === true;
     for (const [id,column] of Object.entries(source.mapping)) {
       const value = row[column];
       if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
