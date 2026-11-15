@@ -69,13 +69,13 @@ sidebar.querySelectorAll('a').forEach(link => {
     setMenu(false);
   });
 });
-// ===== Misiones (solo existe en reporte.html) =====
+// ===== Misiones (solo existe en mision.html) =====
 (() => {
   // Skip mission setup on pages without the planet selector.
   const space = document.querySelector('#planets');
   if (!space) return;
 
-  const PLANETS = window.reportSolarSystem?.names ?? { tierra: 'Tierra', luna: 'Luna', marte: 'Marte' };
+  const PLANETS = window.missionSolarSystem?.names ?? { tierra: 'Tierra', luna: 'Luna', marte: 'Marte' };
   const DIST = { // km promedio aproximados
     'tierra-luna': 384400,
     'tierra-marte': 225e6,
@@ -97,7 +97,7 @@ sidebar.querySelectorAll('a').forEach(link => {
   // Keep the selected departure (A) and destination (B) between renders.
   let a = null, b = null;
 
-  const distance = (x, y) => window.reportSolarSystem?.distance(x, y) ?? DIST[`${x}-${y}`] ?? DIST[`${y}-${x}`];
+  const distance = (x, y) => window.missionSolarSystem?.distance(x, y) ?? DIST[`${x}-${y}`] ?? DIST[`${y}-${x}`];
   const fmt = n => n.toLocaleString('es-MX', { maximumFractionDigits: 2 });
 
   // Show the summary after both locations and day counts are available.

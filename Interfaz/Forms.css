@@ -89,12 +89,12 @@
 .report-table th { color: #fff; background: #0c2e5b; font-size: 13px; }
 .report-table tbody tr:nth-child(even) { background: #f4f6f9; }
 .table-scroll { overflow-x: auto; }
-.report-content { margin-bottom: 24px; }
+.report-content, .mission-content { margin-bottom: 24px; }
 
 /* The route planner remains bright and readable while retaining a space motif. */
-#reporte { max-width: 1280px; }
-#reporte .intro { margin-bottom: 30px; }
-#reporte .missions { max-width: 1040px; }
+#mision { max-width: 1280px; }
+#mision .intro { margin-bottom: 30px; }
+#mision .missions { max-width: 1040px; }
 .missions-hint { margin: 20px 0 16px; color: #5e6b7e; font-size: 15px; }
 .trip { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 8px; }
 .trip-slot {

@@ -57,7 +57,7 @@
   const moon = button('luna','Luna','#cfced3');
 
   // Expose names and approximate route distances to the mission planner.
-  window.reportSolarSystem = {
+  window.missionSolarSystem = {
     names:Object.fromEntries([...planets.map(p => [p.id,p.name]),['luna','Luna']]),
     distance(a,b) {
       if ([a,b].includes('luna') && [a,b].includes('tierra')) return 384400;
