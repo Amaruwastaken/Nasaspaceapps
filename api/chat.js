@@ -27,20 +27,18 @@ function formatValue(label, value, unit) {
 }
 
 function summarizeTelemetry(rows = []) {
-  if (!rows.length) {
-    return 'No hay lecturas recientes del astronauta disponibles para esta sesión.';
+  const latest = rows.find((row) => row?.is_simulated !== true);
+  if (!latest) {
+    return 'No uses lecturas simuladas para dar recomendaciones personales.';
   }
 
-  const latest = rows[0];
   const keys = ['hr', 'spo2', 'temp', 'resp', 'co2', 'gravity', 'latency_s', 'mission_day'];
   const values = keys
     .filter((key) => latest?.[key] !== null && latest?.[key] !== undefined && latest?.[key] !== '')
-    .map((key) => formatValue(key, latest[key], key === 'hr' ? 'lpm' : key === 'spo2' ? '%' : key === 'temp' ? '°C' : key === 'resp' ? 'rpm' : key === 'co2' ? 'ppm' : key === 'gravity' ? 'm/s²' : key === 'latency_s' ? 's' : 'día'));
+    .map((key) => formatValue(key, latest[key], key === 'hr' ? 'lpm' : key === 'spo2' ? '%' : key === 'temp' ? 'C' : key === 'resp' ? 'rpm' : key === 'co2' ? 'ppm' : key === 'gravity' ? 'm/s2' : key === 'latency_s' ? 's' : 'dia'));
 
-  const simulated = latest?.is_simulated ? ' (datos simulados del prototipo)' : '';
-  return `Último registro${simulated}: ${new Date(latest.ts).toLocaleString('es-MX')} · ${values.join(' · ') || 'sin valores críticos disponibles'}.`;
+  return `Ultima medicion disponible: ${values.join(' | ') || 'sin valores'}.`;
 }
-
 function pickRelevantEvidence(question, entries = []) {
   const normalizedQuestion = question.toLowerCase();
   const concepts = [
@@ -86,34 +84,35 @@ function pickRelevantEvidence(question, entries = []) {
 function buildPrompt(question, telemetrySummary, evidenceEntries = []) {
   const context = evidenceEntries.length
     ? evidenceEntries.map((entry) => `- ${entry.title} (${entry.date}): ${entry.url}\n  ${entry.excerpts?.slice(0, 2).join(' ') || entry.summary}`).join('\n\n')
-    : 'No se adjuntaron evidencias relevantes del programa human research.';
+    : 'No hay una referencia NASA relevante para esta pregunta.';
 
-  return `Eres Dr. SIMI, un asistente de bienestar para astronautas en un prototipo de misión. Responde en español, con un tono útil, claro y conservador. Nunca describas los datos como diagnósticos definitivos; solo ofrece orientación general basada en la información disponible.
+  return `Eres Dr. SIMI, un asistente de bienestar. Responde siempre en espa\u00f1ol sencillo y directo, para personas sin formaci\u00f3n m\u00e9dica.
 
 Reglas:
-- Usa solo la información del astronauta actual y las evidencias de NASA que te proporcionan abajo.
-- Si los datos son simulados o de prototipo, dilo claramente y no los presentes como mediciones reales del astronauta.
-- Si faltan datos o no hay evidencia suficiente, di claramente que no hay suficiente información y qué datos adicionales harían falta.
-- No des diagnósticos médicos definitivos ni órdenes clínicas.
-- Enfatiza las medidas generales de descanso, recuperación, presión ambiental, reacción y vigilancia.
-- Si la pregunta es sobre la salud del astronauta, responde con un marco de monitorización y recomendaciones de seguridad y recuperación.
+- M\u00e1ximo 350 caracteres contando espacios. Comprueba la longitud antes de responder.
+- No saludes, no repitas la pregunta ni hagas un resumen de lecturas.
+- No menciones datos simulados ni evidencia cient\u00edfica. Si es util, agrega solo una referencia breve como (NASA HRP: sue\u00f1o, 2024).
+- Usa lecturas personales solo si estan verificadas. No diagnostiques ni indiques tratamientos.
+- Si la pregunta sugiere una emergencia, recomienda contactar de inmediato al equipo medico.
+- Da una respuesta practica y facil de entender. Si no sabes, dilo brevemente.
 
-Datos del astronauta:
+Lecturas personales disponibles (no las enumeres ni las resumas):
 ${telemetrySummary}
 
-Evidencias NASA:
+Referencia NASA para consultar:
 ${context}
 
-Pregunta del usuario:
-${question}
-
-Respuesta esperada:
-- Responde directamente en español.
-- Menciona la evidencia de NASA de forma breve con títulos y años cuando aplique.
-- Asegúrate de marcar claramente si los datos son simulados.
-- Finaliza con una recomendación práctica de 1 a 3 pasos.`;
+Pregunta:
+${question}`;
 }
 
+function limitAnswer(text, maxLength = 350) {
+  const clean = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= maxLength) return clean;
+  const shortened = clean.slice(0, maxLength - 3);
+  const boundary = shortened.lastIndexOf(' ');
+  return `${shortened.slice(0, boundary > 0 ? boundary : shortened.length).trimEnd()}...`;
+}
 async function getUserTelemetry(client, userId) {
   const { data, error } = await client
     .from('telemetry')
@@ -223,7 +222,7 @@ export default async function handler(request, response) {
     );
     const summary = summarizeTelemetry(telemetryRows);
     const prompt = buildPrompt(question, summary, evidenceEntries);
-    const answer = await callGemini(prompt);
+    const answer = limitAnswer(await callGemini(prompt));
 
     response.status(200).json({
       answer,
