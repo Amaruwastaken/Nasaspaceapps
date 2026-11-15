@@ -1,9 +1,30 @@
 drop table if exists public.manual_measurements;
 
+create table if not exists public.telemetry (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  ts timestamptz not null default now(),
+  hr numeric,
+  rr numeric,
+  temp numeric,
+  spo2 numeric,
+  resp numeric,
+  rad_rate numeric,
+  co2 numeric,
+  asleep boolean not null default false,
+  phase text,
+  gravity numeric,
+  latency_s numeric,
+  mission_day integer,
+  manual_measurements jsonb,
+  automatic_data jsonb,
+  is_simulated boolean not null default false
+);
+
 alter table public.telemetry
-  add column manual_measurements jsonb,
-  add column automatic_data jsonb,
-  add column is_simulated boolean not null default false,
+  add column if not exists manual_measurements jsonb,
+  add column if not exists automatic_data jsonb,
+  add column if not exists is_simulated boolean not null default false,
   add constraint telemetry_manual_measurements_valid
     check (manual_measurements is null or public.valid_manual_measurements(manual_measurements)),
   add constraint telemetry_automatic_data_object

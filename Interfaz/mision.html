@@ -14,6 +14,7 @@
   <script src="solar-system.js" defer></script>
   <script src="Script.js" defer></script>
   <script type="module" src="auth.js"></script>
+  <script type="module" src="mission-start.js"></script>
 </head>
 <body>
   <div class="app" id="app">
@@ -41,60 +42,66 @@
           <p>Explora el sistema solar y planea tu misión.</p>
         </div>
 
-        <!-- Mission planner: choose two bodies, then enter trip and stay days. -->
         <section class="mission-content">
-         <section class="mission-content">
-  <div class="organ-card missions" id="misiones">
-    <div class="organ-card-header">
-      <div>
-        <span class="section-label">MISIONES</span>
-        <h2>Planea tu viaje</h2>
-      </div>
-      <span class="card-chip" id="missionsChip">Paso 1 de 3</span>
-    </div>
+          <div class="organ-card missions" id="misiones">
+            <div class="organ-card-header">
+              <div>
+                <span class="section-label">MISIONES</span>
+                <h2>Planea tu viaje</h2>
+              </div>
+              <span class="card-chip" id="missionsChip">Paso 1 de 3</span>
+            </div>
 
-    <p class="missions-hint" id="missionsHint">Toca tu punto de partida (A).</p>
+            <p class="missions-hint" id="missionsHint">Toca tu punto de partida (A).</p>
 
-    <div class="trip">
-      <div class="trip-slot"><span>A · PARTIDA</span><strong id="slotAName">—</strong></div>
-      <span class="trip-arrow">➔</span>
-      <div class="trip-slot"><span>B · DESTINO</span><strong id="slotBName">—</strong></div>
-    </div>
+            <div class="trip">
+              <div class="trip-slot"><span>A · PARTIDA</span><strong id="slotAName">—</strong></div>
+              <span class="trip-arrow">➔</span>
+              <div class="trip-slot"><span>B · DESTINO</span><strong id="slotBName">—</strong></div>
+            </div>
 
-    <div class="space" id="planets">
-      <div class="space-line" aria-hidden="true"></div>
+            <div class="space" id="planets">
+              <div class="space-line" aria-hidden="true"></div>
+              <button class="planet earth" type="button" data-planet="tierra" aria-label="Tierra">
+                <small>Tierra</small>
+              </button>
+              <button class="planet moon" type="button" data-planet="luna" aria-label="Luna">
+                <small>Luna</small>
+              </button>
+              <button class="planet mars" type="button" data-planet="marte" aria-label="Marte">
+                <small>Marte</small>
+              </button>
+            </div>
 
-      <button class="planet earth" type="button" data-planet="tierra" aria-label="Tierra">
-        <img src="img/tierra.png" alt="" draggable="false"><small>Tierra</small>
-      </button>
-      <button class="planet moon" type="button" data-planet="luna" aria-label="Luna">
-        <img src="img/luna.png" alt="" draggable="false"><small>Luna</small>
-      </button>
-      <button class="planet mars" type="button" data-planet="marte" aria-label="Marte">
-        <img src="img/marte.png" alt="" draggable="false"><small>Marte</small>
-      </button>
+            <div class="mission-form" id="missionForm" hidden>
+              <label class="field">
+                <span class="field-label">Días de viaje (días terrestres)</span>
+                <span class="bubble">
+                  <input type="number" id="travelDays" min="0" step="any" inputmode="decimal" placeholder="Ej. 3.5">
+                </span>
+              </label>
+              <label class="field">
+                <span class="field-label">Días de estancia en <b id="stayPlace">B</b> (días terrestres)</span>
+                <span class="bubble">
+                  <input type="number" id="stayDays" min="0" step="any" inputmode="decimal" placeholder="Ej. 10.25">
+                </span>
+              </label>
+            </div>
 
-    </div>
+            <div class="mission-start">
+              <label class="field" for="missionStartDate">
+                <span class="field-label">Fecha de inicio de la misión actual</span>
+                <span class="bubble">
+                  <input type="date" id="missionStartDate" disabled>
+                </span>
+              </label>
+              <button type="button" class="reset-btn" id="saveMissionStart" disabled>Guardar fecha</button>
+              <p class="form-message" id="missionStartMessage" role="status" aria-live="polite"></p>
+            </div>
 
-    <div class="mission-form" id="missionForm" hidden>
-      <label class="field">
-        <span class="field-label">Días de viaje (días terrestres)</span>
-        <span class="bubble">
-          <input type="number" id="travelDays" min="0" step="any" inputmode="decimal" placeholder="Ej. 3.5">
-        </span>
-      </label>
-      <label class="field">
-        <span class="field-label">Días de estancia en <b id="stayPlace">B</b> (días terrestres)</span>
-        <span class="bubble">
-          <input type="number" id="stayDays" min="0" step="any" inputmode="decimal" placeholder="Ej. 10.25">
-        </span>
-      </label>
-    </div>
-
-    <div class="route" id="route" aria-live="polite" hidden></div>
-    <button class="reset-btn" id="missionsReset" type="button" hidden>↺ Reiniciar</button>
-  </div>
-</section>
+            <div class="route" id="route" aria-live="polite" hidden></div>
+            <button class="reset-btn" id="missionsReset" type="button" hidden>↺ Reiniciar</button>
+          </div>
         </section>
       </main>
 

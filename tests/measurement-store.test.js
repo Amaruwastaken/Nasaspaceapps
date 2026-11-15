@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import {validateValues,generateSimulatedValues,loadMeasurements,saveMeasurements} from '../Interfaz/measurement-store.js';
 import {metrics,manualMetrics,classify} from '../Interfaz/report-data.js';
+import {consecutiveShortSleepDays,fetchDatabaseMeasurements} from '../Interfaz/report-source.js';
 
 // This in-memory PostgREST boundary is test-only. Runtime code never falls back here.
 function database(options = {}) {
@@ -82,6 +83,61 @@ test('generated simulation covers every metric with a valid display value',()=>{
   const values=generateSimulatedValues({hr:72,co2:800,gravity:0.38,spo2:98,resp:16,temp:36.7});
   assert.deepEqual(Object.keys(values).sort(),metrics.map(metric=>metric.id).sort());
   for(const metric of metrics)assert(!['invalid','missing'].includes(classify(metric,values[metric.id],values)),metric.id);
+});
+
+test('short-sleep alert uses a consecutive run of daily records',()=>{
+  const sleep = metrics.find(metric => metric.id === 'sleep');
+  const records = [
+    {date:'2026-11-15',sleep:5.5},
+    {date:'2026-11-14',sleep:5.8},
+    {date:'2026-11-13',sleep:5.9},
+  ];
+  assert.equal(consecutiveShortSleepDays(records),3);
+  assert.equal(classify(sleep,5.5,{sleepDays:consecutiveShortSleepDays(records)}),'red');
+  assert.equal(consecutiveShortSleepDays(records.slice(0,2)),2);
+  assert.equal(classify(sleep,5.5,{sleepDays:2}),'unknown');
+  assert.equal(consecutiveShortSleepDays([records[0],{date:'2026-11-12',sleep:5.8}]),1);
+  assert.equal(consecutiveShortSleepDays([{date:'2026-11-15',sleep:7},...records]),0);
+});
+
+test('database report derives sleep streak from the daily record history',async()=>{
+  const rows = [
+    {date:'2026-11-15',sleep:5.5},
+    {date:'2026-11-14',sleep:5.8},
+    {date:'2026-11-13',sleep:5.9},
+  ];
+  const sensors = [
+    {date:'2026-11-15',rad_msv:0.2},
+    {date:'2026-11-14',rad_msv:0.3},
+    {date:'2026-11-13',rad_msv:0.4},
+  ];
+  const client = {
+    rpc() { return Promise.resolve({data:'2026-11-14T00:00:00.000Z',error:null}); },
+    from(table) {
+      const query = {
+        select() { return query; },
+        eq() { return query; },
+        order() { return query; },
+        not() { return query; },
+        limit() { return query; },
+        range() { return Promise.resolve({data:table === 'records' ? rows : table === 'daily_sensor' ? sensors : [],error:null}); },
+        maybeSingle() { return Promise.resolve({data:null,error:null}); },
+      };
+      return query;
+    },
+  };
+  const result = await fetchDatabaseMeasurements(client,'user-a');
+  const sleep = metrics.find(metric => metric.id === 'sleep');
+  assert.equal(result.values.sleep,5.5);
+  assert.equal(result.values.sleepDays,3);
+  assert.equal(classify(sleep,result.values.sleep,result.values),'red');
+  assert.equal(result.values.dose,0.5);
+  assert.equal(result.dates.dose,'2026-11-14 – 2026-11-15');
+
+  client.rpc = () => Promise.resolve({data:null,error:null});
+  const withoutMissionStart = await fetchDatabaseMeasurements(client,'user-a');
+  assert.equal(withoutMissionStart.values.dose,undefined);
+  assert(withoutMissionStart.warnings.some(warning => warning.includes('fecha de inicio de misión')));
 });
 
 test('automatic-only telemetry rows are not treated as Captura snapshots',async()=>{

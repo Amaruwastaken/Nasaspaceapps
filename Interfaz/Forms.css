@@ -167,6 +167,9 @@
 .mission-form[hidden], .route[hidden], .reset-btn[hidden] { display: none; }
 .field { display: flex; flex-direction: column; gap: 9px; }
 .field-label b { color: #1769aa; }
+.mission-start { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px 18px; margin-top: 24px; }
+.mission-start .reset-btn { margin: 0; }
+.mission-start .form-message { grid-column: 1 / -1; margin: 0; }
 .bubble { border: 1px solid #cbd5df; border-radius: 2px; background: #fff; transition: border-color .2s, box-shadow .2s; }
 .bubble:focus-within { border-color: #1769aa; box-shadow: 0 0 0 3px #1769aa20; }
 .bubble input {
@@ -217,6 +220,8 @@
   .planet.mars { width: 68px; height: 68px; }
   .planet small { padding: 2px 8px; font-size: 11px; }
   .mission-form { grid-template-columns: 1fr; }
+  .mission-start { grid-template-columns: 1fr; }
+  .mission-start .form-message { grid-column: auto; }
   .trip { gap: 8px; }
   .trip-slot { padding: 10px; }
   .trip-slot strong { font-size: 14px; }

@@ -1,15 +1,19 @@
 # Nasaspaceapps
-nasa space apps lololol
-.
+
+Spanish-language static prototype for astronaut health capture, reporting, and
+approximate solar-system mission planning.
 
 ## Supabase
 
-Install dependencies with `npm install`, then configure `SUPABASE_URL` and
-`SUPABASE_PUBLISHABLE_KEY` in the environment. `.env.example` lists the
-variables; copy it to `.env` for local development. Do not commit `.env`.
+Install dependencies with `npm install`. The browser app reads its public
+Supabase URL and publishable key from `Interfaz/supabase-config.js`; never put a
+service-role key in browser code.
 
-The Supabase client is exported from `Backend/backend.ts`. Database-specific
-types and queries can be added once the project's schema is defined.
+`Backend/backend.ts` provides optional typed Supabase helpers for trusted
+server-side scripts. Its `adminClient()` requires `SUPABASE_SERVICE_KEY` and
+must never be used in the browser. The static-site build reads its public
+configuration from the process environment; Vercel should define
+`SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` (or the documented aliases).
 
 ### Registro e inicio de sesión web
 
@@ -52,9 +56,10 @@ Proyecto Vercel: nasaspaceapps-farmacias-similunares. El directorio del proyecto
 - Aplica las migraciones de `supabase/migrations/` en orden en el proyecto Supabase conectado. `20261115040000_unify_measurements_telemetry.sql` elimina únicamente la tabla anterior `manual_measurements` y agrega a `telemetry` el JSON validado de Captura, el JSON de telemetría y una marca de datos simulados.
 - `20261115050000_create_user_profiles.sql` completa perfiles faltantes de cuentas Auth existentes y los crea al registrar usuarios nuevos, para que las filas de `telemetry` cumplan su relación con `profiles`. Si no hay una misión en los metadatos de Auth, usa `Farmacias Similunares`.
 - `20261115060000_simulate_missing_report_metrics.sql` agrega `telemetry.simulated_data` y completa solo la fila más reciente de cada cuenta. Las capturas nuevas también generan valores de prototipo únicamente para campos omitidos; se etiquetan como simulados y no reemplazan respuestas reales.
+- `20261115070000_mission_start_at.sql` agrega una fecha de inicio a `profiles`. La página Misión permite guardarla; el reporte suma radiación diaria solo desde esa fecha y muestra el intervalo usado.
 - Captura requiere iniciar sesion y confirma el INSERT antes de abrir Reporte. Si falla, mantiene las respuestas en la pagina; no simula un guardado local.
 - Cada envío de Captura agrega una sola fila a `telemetry`: incluye las respuestas manuales y una lectura automática genérica marcada como simulada. Las lecturas automáticas existentes pueden seguir usando las columnas de sensores; `manual_measurements` queda en `NULL` para esas filas.
 - Reporte consulta la última captura de `telemetry`. Una prueba omitida en esa captura no se reemplaza por un valor antiguo de `records`. Los sensores y las alertas existentes mantienen sus conexiones actuales.
 - Los datos antiguos de localStorage no se importan automaticamente: ya no son la fuente del reporte.
 
-La migración no reemplaza las tablas existentes `records`, `daily_sensor`, `telemetry` o `Registry`; requiere que estén configuradas junto con las migraciones anteriores. La migración nueva solo elimina la tabla anterior `manual_measurements` y amplía `telemetry`. En un Supabase totalmente nuevo hay que configurar el esquema base antes de activar sensores y alertas. No ejecutar seed en producción.
+La migración no reemplaza las tablas existentes `records`, `daily_sensor`, `telemetry` o `Registry`; requiere que estén configuradas junto con las migraciones anteriores. La migración nueva solo elimina la tabla anterior `manual_measurements` y amplía `telemetry`. En un Supabase totalmente nuevo hay que configurar el esquema base antes de activar sensores y alertas.

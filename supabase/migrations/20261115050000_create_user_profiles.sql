@@ -1,3 +1,17 @@
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  username text not null default 'astronauta',
+  mission text not null default 'Farmacias Similunares',
+  sex text check (sex in ('male', 'female')),
+  sim_stress numeric check (sim_stress is null or (sim_stress >= 0 and sim_stress <= 100)),
+  mission_start_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists profiles_mission_username_idx
+  on public.profiles (mission, username);
+
 create or replace function public.handle_new_registry_user()
 returns trigger
 language plpgsql
