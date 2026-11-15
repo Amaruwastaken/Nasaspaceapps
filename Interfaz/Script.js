@@ -61,6 +61,8 @@ sidebar.querySelectorAll('a').forEach(link => {
   };
   const SPEED = 58000; // km/h (nave ficticia)
 
+  const nameA = document.querySelector('#slotAName');
+  const nameB = document.querySelector('#slotBName');
   const hint = document.querySelector('#missionsHint');
   const chip = document.querySelector('#missionsChip');
   const route = document.querySelector('#route');
@@ -82,6 +84,8 @@ sidebar.querySelectorAll('a').forEach(link => {
       btn.classList.toggle('is-b', btn.dataset.planet === b);
     });
     resetBtn.hidden = !a;
+    nameA.textContent = a ? PLANETS[a] : '—';
+    nameB.textContent = b ? PLANETS[b] : '—';
 
     if (!a) {
       hint.textContent = 'Toca tu punto de partida (A).';

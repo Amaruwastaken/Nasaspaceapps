@@ -48,11 +48,35 @@
 
     <p class="missions-hint" id="missionsHint">Toca tu punto de partida (A).</p>
 
-    <div class="planets" id="planets">
-      <button class="planet" type="button" data-planet="tierra"><span class="planet-icon">🌍</span><span>Tierra</span></button>
-      <button class="planet" type="button" data-planet="luna"><span class="planet-icon">🌕</span><span>Luna</span></button>
-      <button class="planet" type="button" data-planet="marte"><span class="planet-icon">🪐</span><span>Marte</span></button>
-    </div>
+  <div class="trip">
+  <div class="trip-slot"><span>A · PARTIDA</span><strong id="slotAName">—</strong></div>
+  <span class="trip-arrow">➔</span>
+  <div class="trip-slot"><span>B · DESTINO</span><strong id="slotBName">—</strong></div>
+</div>
+
+<div class="space" id="planets">
+  <div class="sun" aria-hidden="true">☀️</div>
+
+  <!-- Órbita de la Tierra (con la Luna) -->
+  <div class="orbit orbit-earth">
+    <div class="arm" style="--t:45s"><div class="slot"><div class="upright" style="--t:45s">
+      <div class="moon-orbit">
+        <div class="arm" style="--t:12s"><div class="slot"><div class="upright" style="--t:12s">
+          <button class="planet moon" type="button" data-planet="luna" aria-label="Luna">🌙<small>Luna</small></button>
+        </div></div></div>
+      </div>
+      <button class="planet" type="button" data-planet="tierra" aria-label="Tierra">🌍<small>Tierra</small></button>
+    </div></div></div>
+  </div>
+
+  <!-- Órbita de Marte -->
+  <div class="orbit orbit-mars">
+    <div class="arm" style="--t:80s"><div class="slot"><div class="upright" style="--t:80s">
+      <button class="planet mars" type="button" data-planet="marte" aria-label="Marte">🔴<small>Marte</small></button>
+    </div></div></div>
+  </div>
+</div>
+
 
     <div class="route" id="route" aria-live="polite" hidden></div>
     <button class="reset-btn" id="missionsReset" type="button" hidden>Reiniciar</button>
