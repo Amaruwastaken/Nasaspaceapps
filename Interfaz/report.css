@@ -11,7 +11,8 @@
 .body-legend [data-state=green]::before,.body-stat-dot[data-state=green],.body-reading-dot[data-state=green] { background:#21834f; }
 .body-legend [data-state=yellow]::before,.body-stat-dot[data-state=yellow],.body-reading-dot[data-state=yellow] { background:#bd850b; }
 .body-legend [data-state=red]::before,.body-stat-dot[data-state=red],.body-reading-dot[data-state=red] { background:#c5443d; }
-.body-map { display:grid; grid-template-columns:minmax(0,1fr) minmax(210px,280px) minmax(0,1fr); align-items:center; gap:18px; }
+.body-map { display:block; }
+.body-stage { position:relative; display:flex; justify-content:center; width:100%; min-height:560px; }
 .body-indicators { display:grid; gap:12px; }
 .body-stat-card { min-width:0; padding:13px; border:1px solid var(--line); border-left:4px solid #9ca8b7; border-radius:5px; background:#fff; }
 .body-stat-card[data-state=green] { border-left-color:#21834f; }
@@ -29,7 +30,17 @@
 .body-stat-reading strong { display:block; font-size:11px; }
 .body-stat-reading small { display:block; color:var(--muted); font-size:10px; }
 .body-figure { display:block; width:min(100%,280px); max-height:560px; justify-self:center; overflow:visible; }
-.body-anatomy { pointer-events:none; }
+.body-anatomy { pointer-events:auto; }
+.body-background,.body-organ,.body-markers { transition:filter .22s ease,opacity .22s ease,transform .22s ease; }
+.body-organ { cursor:pointer; transform-box:fill-box; transform-origin:center; outline:none; }
+.body-organ-hit { fill:transparent; stroke:none; pointer-events:all; }
+.body-organ-pupil { fill:#000; stroke:none; }
+.body-stage.is-inspecting .body-background { filter:blur(3px); opacity:.38; }
+.body-stage.is-inspecting .body-organ:not(.is-active) { filter:blur(3px); opacity:.25; }
+.body-stage.is-inspecting .body-organ.is-active { transform:scale(1.13); filter:drop-shadow(0 0 5px #1769aa88); stroke:#1769aa; }
+.body-organ:focus-visible { filter:drop-shadow(0 0 4px #1769aa); stroke:#1769aa; }
+.body-markers { pointer-events:none; }
+.body-stage.is-inspecting .body-markers { filter:blur(3px); opacity:.2; }
 .body-organ { fill:#fff; stroke:#000; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
 .body-organ-line { fill:none; stroke:#000; stroke-width:3; }
 .body-organ-duct { stroke:#fff; stroke-width:3; }
@@ -114,3 +125,15 @@
   .body-map { grid-template-columns:1fr; }
   .body-figure { grid-column:1; width:min(230px,75%); }
 }
+
+.body-popup { position:fixed; z-index:50; width:min(330px,calc(100vw - 32px)); max-height:min(70vh,480px); overflow:auto; overscroll-behavior:contain; padding:16px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--ink); box-shadow:0 16px 48px #061b3a35; }
+.body-popup[hidden] { display:none; }
+.body-popup-close { position:sticky; top:0; z-index:1; float:right; display:grid; place-items:center; width:30px; height:30px; padding:0; margin:-4px -4px 4px 8px; border:0; border-radius:50%; background:#edf3f8; color:var(--navy); font:inherit; font-size:24px; cursor:pointer; }
+.body-popup .body-stat-card { clear:both; padding:0; border:0; }
+.body-popup .body-stat-heading h3 { font-size:18px; }
+.body-popup .body-stat-readings { gap:12px; }
+.body-popup .body-stat-reading,.body-popup .body-stat-reading strong { font-size:12px; }
+.body-popup .body-stat-reading small { font-size:11px; }
+.body-popup .body-stat-counts { margin-top:10px; }
+@media(max-width:700px) { .body-stage { min-height:500px; } .body-stage .body-figure { width:min(260px,85%); max-height:540px; } }
+@media(prefers-reduced-motion:reduce) { .body-background,.body-organ,.body-markers { transition:none; } }

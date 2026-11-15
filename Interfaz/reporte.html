@@ -35,45 +35,56 @@
  <div class="intro"><span class="section-label">REPORTE</span><h1>Tu estado actual.</h1><p>Las regiones en atenci&#243;n o alerta aparecen primero. Puedes consultar todas las mediciones y su historial en m&#225;s detalles.</p></div>
  <section id="bodyOverview" class="body-overview" aria-labelledby="bodyOverviewTitle" hidden>
    <div class="body-overview-heading">
-     <div><h2 id="bodyOverviewTitle">Vista general del cuerpo</h2><p>Estado de las mediciones reales disponibles.</p></div>
+     <div><h2 id="bodyOverviewTitle">Vista general del cuerpo</h2><p>Pasa el cursor sobre un órgano para ver su información. También puedes usar Tab o tocarlo.</p></div>
      <div class="body-legend" aria-label="Leyenda de estados">
        <span data-state="green" hidden>Verde</span><span data-state="yellow" hidden>Atenci&#243;n</span><span data-state="red" hidden>Rojo</span><span data-state="unknown" hidden>Sin clasificar</span>
      </div>
    </div>
    <div class="body-map">
-     <div id="bodyIndicatorsLeft" class="body-indicators" aria-label="Estad&#237;sticas de cerebro y ojos"></div>
-     <svg class="body-figure" viewBox="0 0 408 1024" role="img" aria-labelledby="bodyFigureTitle bodyFigureDescription">
+     <div class="body-stage" id="bodyStage">
+     <svg class="body-figure" viewBox="0 0 408 1024" role="group" aria-labelledby="bodyFigureTitle bodyFigureDescription">
        <title id="bodyFigureTitle">Mapa corporal de indicadores</title>
        <desc id="bodyFigureDescription">Silueta en blanco y negro con cerebro, pulmones, corazón, hígado, estómago, riñones e intestinos. Los marcadores de color indican regiones con mediciones disponibles.</desc>
-       <image href="Imagenes/silueta-cuerpo.jpeg" x="0" y="0" width="408" height="1024" />
-       <g class="body-anatomy" aria-hidden="true">
-         <g class="body-organ" data-anatomy="lungs">
+       <image class="body-background" href="Imagenes/silueta-cuerpo.jpeg" x="0" y="0" width="408" height="1024" />
+       <g class="body-anatomy">
+         <g class="body-organ" data-anatomy="brain" role="button" tabindex="0" aria-label="Cerebro" aria-expanded="false" aria-controls="bodyPopup">
+           <path d="M131 65C129 47 146 32 169 31C191 27 218 36 229 54C242 74 235 96 218 109C207 116 198 111 193 100C189 91 180 90 170 90C151 90 134 87 131 76Z" />
+         </g>
+         <g class="body-organ" data-anatomy="eyes" role="button" tabindex="0" aria-label="Ojos" aria-expanded="false" aria-controls="bodyPopup">
+           <rect class="body-organ-hit" x="112" y="100" width="34" height="29" rx="8" />
+           <path d="M118 114Q127 105 138 114Q127 123 118 114Z" /><circle cx="128" cy="114" r="3" class="body-organ-pupil" />
+         </g>
+         <g class="body-organ" data-anatomy="body" role="button" tabindex="0" aria-label="Cuerpo" aria-expanded="false" aria-controls="bodyPopup">
+           <circle class="body-organ-hit" cx="205" cy="621" r="29" />
+           <circle cx="205" cy="621" r="18" /><path class="body-organ-line" d="M205 609V633M193 621H217" />
+         </g>
+         <g class="body-organ" data-anatomy="lungs" role="button" tabindex="0" aria-label="Pulmones" aria-expanded="false" aria-controls="bodyPopup">
            <title>Pulmones</title>
            <path d="M193 222C180 211 157 222 146 245C135 267 132 303 140 322C144 332 165 323 181 313C189 308 193 296 193 281Z" />
            <path d="M214 222C228 212 250 223 261 247C271 269 274 302 267 321C262 333 241 323 226 314C218 309 214 298 214 282Z" />
            <path class="body-organ-line" d="M203 211V253M203 248L176 271M203 248L232 271M176 271L160 289M232 271L250 289" />
          </g>
-         <g class="body-organ" data-anatomy="heart">
+         <g class="body-organ" data-anatomy="heart" role="button" tabindex="0" aria-label="Corazón" aria-expanded="false" aria-controls="bodyPopup">
            <title>Corazón</title>
            <path d="M202 279C191 264 181 271 183 287C185 304 203 323 213 328C225 318 237 300 234 285C231 271 219 273 214 282L212 265L202 266Z" />
            <path class="body-organ-line" d="M205 290Q212 301 215 316" />
          </g>
-         <g class="body-organ" data-anatomy="liver">
+         <g class="body-organ" data-anatomy="liver" role="button" tabindex="0" aria-label="Hígado" aria-expanded="false" aria-controls="bodyPopup">
            <title>Hígado</title>
            <path d="M144 346C162 332 195 335 224 344L230 356C216 367 196 370 174 374C158 377 145 371 141 363Z" />
            <path class="body-organ-line" d="M194 342L187 366" />
          </g>
-         <g class="body-organ" data-anatomy="stomach">
+         <g class="body-organ" data-anatomy="stomach" role="button" tabindex="0" aria-label="Estómago" aria-expanded="false" aria-controls="bodyPopup">
            <title>Estómago</title>
            <path d="M219 339L218 363C230 356 249 360 253 374C258 391 247 408 232 411C218 414 205 408 198 398C193 391 197 382 204 382C211 382 210 391 219 390C230 389 234 378 230 374L209 365L210 339Z" />
          </g>
-         <g class="body-organ" data-anatomy="kidneys">
+         <g class="body-organ" data-anatomy="kidneys" role="button" tabindex="0" aria-label="Riñones" aria-expanded="false" aria-controls="bodyPopup">
            <title>Riñones</title>
            <path d="M159 392C141 386 137 402 140 416C143 433 158 436 165 426C170 420 163 416 160 412C157 407 170 401 159 392Z" />
            <path d="M251 392C269 386 273 402 270 416C267 433 252 436 245 426C240 420 247 416 250 412C253 407 240 401 251 392Z" />
            <path class="body-organ-line body-organ-duct" d="M160 417Q169 435 190 456M250 417Q241 435 220 456" />
          </g>
-         <g class="body-organ" data-anatomy="intestines">
+         <g class="body-organ" data-anatomy="intestines" role="button" tabindex="0" aria-label="Intestinos" aria-expanded="false" aria-controls="bodyPopup">
            <title>Intestinos</title>
            <path d="M171 428C154 424 150 435 152 449L153 478C154 489 166 492 176 487L235 487C247 491 257 483 256 472L256 444C257 431 246 425 236 430Z" />
            <path class="body-organ-line" d="M167 443H237Q246 447 237 454H175Q166 459 176 466H237Q245 472 236 477H174M205 481V498" />
@@ -81,7 +92,11 @@
        </g>
        <g id="bodyMarkers" class="body-markers" aria-hidden="true"></g>
      </svg>
-     <div id="bodyIndicatorsRight" class="body-indicators" aria-label="Estad&#237;sticas de coraz&#243;n, abdomen y cuerpo"></div>
+       <aside id="bodyPopup" class="body-popup" role="region" aria-label="Informaci&#243;n del &#243;rgano" hidden>
+         <button id="bodyPopupClose" class="body-popup-close" type="button" aria-label="Cerrar informaci&#243;n del &#243;rgano">&#215;</button>
+         <div id="bodyPopupContent"></div>
+       </aside>
+     </div>
    </div>
  </section>
  <p id="reportMessage" class="report-message" role="status" aria-live="polite">Consultando datos&#8230;</p>
