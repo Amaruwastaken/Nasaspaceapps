@@ -1,16 +1,18 @@
+/* Keep the top-down SVG coordinate system square so circular tracks stay circular. */
 .space { width: min(100%, 520px); height: auto; max-width: 520px; aspect-ratio: 1; padding: 0; }
 .solar-orbits { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .solar-orbits circle { fill: none; stroke: #b4d5ff38; stroke-width: 1.4; }
 .solar-orbits .moon-orbit { fill: none; stroke: #b4d5ff55; stroke-width: 1; stroke-dasharray: 4 5; }
-.solar-sun { position: absolute; left: 50%; top: 50%; width: clamp(28px, 5%, 44px); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff8bb, #ffc34d 55%, #e77920); box-shadow: 0 0 25px #ffc34d99; }
-.space .solar-planet { position: absolute; z-index: 1; width: clamp(16px, 3.1vw, 30px); height: auto; aspect-ratio: 1; margin: 0; padding: 0; transform: translate(-50%, -50%); font-size: 0; background: radial-gradient(circle at 30% 25%, #ffffff99, transparent 50%), var(--planet-color); box-shadow: inset -5px -4px 8px #0006, 0 0 12px #0005; border: 1px solid #ffffff70; transition: border-color .2s, box-shadow .2s, transform .2s; }
+/* The Sun stays centered; the planet buttons are positioned by the animation. */
+.solar-sun { position: absolute; left: 50%; top: 50%; width: clamp(32px, 5.5%, 48px); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff8bb, #ffc34d 55%, #e77920); box-shadow: 0 0 25px #ffc34d99; }
+.space .solar-planet { position: absolute; z-index: 1; width: clamp(20px, 3.5vw, 34px); height: auto; aspect-ratio: 1; margin: 0; padding: 0; transform: translate(-50%, -50%); font-size: 0; background: radial-gradient(circle at 30% 25%, #ffffff99, transparent 50%), var(--planet-color); box-shadow: inset -5px -4px 8px #0006, 0 0 12px #0005; border: 1px solid #ffffff70; transition: border-color .2s, box-shadow .2s, transform .2s; }
 .space .solar-planet small { top: calc(100% + 3px); font-size: clamp(8px, 1.2vw, 11px); padding: 2px 4px; }
 .space .solar-planet:is(:hover, :focus-visible, .is-a, .is-b) { z-index: 3; }
 .space .solar-planet:hover { transform: translate(-50%, -50%) scale(1.1); }
 .space .solar-planet:active { transform: translate(-50%, -50%) scale(.95); }
 .space .solar-planet.is-a { outline: 2px solid #73a8d8; outline-offset: 3px; }
 .space .solar-planet.is-b { outline: 2px solid #3fae85; outline-offset: 3px; }
-.space .luna { width: clamp(10px, 1.8vw, 16px); }
+.space .luna { width: clamp(14px, 2.4vw, 20px); }
 .space .saturno { border: 3px solid #cbb783; }
 .orbit-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
 .orbit-controls p, .orbit-note { font-size: 12px; color: #626e86; line-height: 1.7; }
