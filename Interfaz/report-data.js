@@ -16,7 +16,7 @@ export const metrics = [
   {id:'bloodPressure',source:'database',group:'heart',name:'Presión arterial',unit:'mmHg'},
   {id:'heartRecovery',source:'database',group:'heart',name:'Recuperación cardíaca (1 min)',unit:'bpm'},
   {id:'arrhythmia',source:'database',group:'heart',name:'Eventos de ritmo cardíaco irregular',unit:'eventos/24 h'},
-  {id:'perfusion',source:'manual',group:'body',name:'Perfusión periférica (relleno capilar)',unit:'s',step:'0.1',min:0,example:'1.5 s',ranges:'Menos de 2 s se clasifica como normal; falta definir los rangos amarillo y rojo.'},
+  {id:'perfusion',source:'manual',group:'body',name:'Perfusión periférica (relleno capilar)',unit:'s',step:'0.1',min:0,example:'1.5 s',ranges:'Verde < 2 s · Rojo ≥ 2 s (no hay rango amarillo definido).'},
   {id:'glucose',source:'database',group:'body',name:'Glucosa en sangre en ayunas',unit:'mg/dL'},
   {id:'bmr',source:'database',group:'body',name:'Metabolismo basal vs. línea base',unit:'proporción',min:0,max:2},
   {id:'bodyFat',source:'database',group:'body',name:'Porcentaje de grasa corporal',unit:'%',max:100},
@@ -53,7 +53,7 @@ export function classify(metric,raw,values = {}) {
   if (metric.options) return metric.options.some(([key]) => key === raw) ? raw : 'invalid';
   if (metric.fields) {
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return 'invalid';
-    if (metric.fields.some(field => raw[field.id] === undefined || raw[field.id] === '')) return 'invalid';
+    if (metric.fields.some(field => raw[field.id] === undefined || raw[field.id] === '')) return 'missing';
     if (metric.id === 'medication') {
       const percent = Number(raw.takenPercent);
       if (!Number.isFinite(percent) || percent < 0 || percent > 100 || !['yes','no'].includes(raw.doubleDose)) return 'invalid';
@@ -137,7 +137,7 @@ export function classify(metric,raw,values = {}) {
     case 'respiratoryRate': return v >= 12 && v <= 20 ? 'green' : (v >= 10 && v < 12) || (v > 20 && v <= 24) ? 'yellow' : 'unknown';
     case 'temperature': return v >= 36.1 && v <= 37.2 ? 'green' : ((v > 37.2 && v < 38) || (v >= 35.5 && v < 36.1)) ? 'yellow' : (v >= 38 || v < 35.5) ? 'red' : 'unknown';
     case 'sleepEfficiency': return v >= 85 ? 'green' : v >= 75 ? 'yellow' : 'red';
-    case 'perfusion': return v < 2 ? 'green' : 'unknown';
+    case 'perfusion': return v < 2 ? 'green' : 'red';
     case 'who5': return v >= 50 ? 'green' : v >= 29 ? 'yellow' : 'red';
     case 'leanMassChange': return v >= -2 ? 'green' : v >= -5 ? 'yellow' : 'red';
     case 'hemoglobin': return 'unknown';

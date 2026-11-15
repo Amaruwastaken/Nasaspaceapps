@@ -38,7 +38,8 @@ function metricValue(metric,value) {
   if (metric.fields && typeof value === 'object' && !Array.isArray(value)) {
     return metric.fields.map(field => {
       const raw = value[field.id];
-      const formatted = field.options ? field.options.find(([key]) => key === raw)?.[1] ?? String(raw) : `${raw}${field.unit ? ` ${field.unit}` : ''}`;
+      const formatted = raw === undefined || raw === '' ? 'Sin datos' :
+        field.options ? field.options.find(([key]) => key === raw)?.[1] ?? String(raw) : `${raw}${field.unit ? ` ${field.unit}` : ''}`;
       return `${field.label}: ${formatted}`;
     }).join(' · ');
   }
