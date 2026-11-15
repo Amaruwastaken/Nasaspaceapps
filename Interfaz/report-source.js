@@ -60,13 +60,31 @@ async function fetchLatestTelemetry(client,userId) {
 }
 
 async function fetchMissionStart(client,userId) {
-  const {data,error} = await client.rpc('get_mission_start_at_for_user');
+  try {
+    const {data,error} = await client.rpc('get_mission_start_at_for_user');
+    if (!error) {
+      if (data === null) return null;
+      if (typeof data !== 'string' || !Number.isFinite(Date.parse(data))) {
+        throw new Error('Supabase devolvió una fecha de inicio de misión inválida.');
+      }
+      return new Date(data).toISOString().slice(0,10);
+    }
+    const message = String(error?.message ?? '');
+    const missingFunction = error?.code === '42883' || message.includes('without parameters') || message.includes('function public.get_mission_start_at_for_user');
+    if (!missingFunction) throw error;
+  } catch (error) {
+    const message = String(error?.message ?? '');
+    const missingFunction = error?.code === '42883' || message.includes('without parameters') || message.includes('function public.get_mission_start_at_for_user');
+    if (!missingFunction) throw error;
+  }
+
+  const {data,error} = await client.from('profiles').select('mission_start_at').eq('id',userId).maybeSingle();
   if (error) throw error;
-  if (data === null) return null;
-  if (typeof data !== 'string' || !Number.isFinite(Date.parse(data))) {
+  if (!data?.mission_start_at) return null;
+  if (typeof data.mission_start_at !== 'string' || !Number.isFinite(Date.parse(data.mission_start_at))) {
     throw new Error('Supabase devolvió una fecha de inicio de misión inválida.');
   }
-  return new Date(data).toISOString().slice(0,10);
+  return new Date(data.mission_start_at).toISOString().slice(0,10);
 }
 
 export async function fetchDatabaseMeasurements(client,userId) {
