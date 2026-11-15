@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dr. SIMI bot | Farmacias Similunares</title>
+  <link rel="stylesheet" href="Style.css" />
+  <link rel="stylesheet" href="report.css" />
+  <script src="Script.js" defer></script>
+  <script type="module" src="auth.js"></script>
+  <script type="module" src="chat.js"></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <a class="brand" href="Index.html" aria-label="Farmacias Similunares, ir al inicio">
+        <img class="brand-mark" src="Imagenes/farmacias-similunares.png" width="44" height="44" alt="" aria-hidden="true" />
+        <span>Farmacias Similunares<span class="brand-dot">.</span></span>
+      </a>
+      <div class="topbar-actions">
+        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <main class="main chat-page-main">
+        <div class="chat-page-shell" id="chatPage">
+          <div class="chat-page-header">
+            <div>
+              <span class="section-label">ASISTENTE</span>
+              <h1>Dr. SIMI bot</h1>
+            </div>
+            <a href="reporte.html" class="chat-back-link">Volver al reporte</a>
+          </div>
+
+          <div class="chat-thread" id="chatThread" aria-live="polite"></div>
+
+          <form id="chatForm" class="chat-form">
+            <label class="sr-only" for="chatInput">Pregunta para el asistente</label>
+            <textarea id="chatInput" rows="3" placeholder="Consulta sobre sueño, reacción, visión, estrés o salud durante la misión..."></textarea>
+            <button type="submit">Enviar</button>
+          </form>
+        </div>
+      </main>
+
+      <aside class="sidebar" id="sidebar" aria-label="Menú lateral" aria-hidden="true" inert>
+        <div class="sidebar-top">
+          <div class="sidebar-heading">NAVEGACIÓN</div>
+          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Cerrar menú">×</button>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Navegación principal">
+          <a href="Index.html" class="nav-link">
+            <span class="nav-icon">⌂</span>
+            <span>Inicio</span>
+          </a>
+          <a href="mision.html" class="nav-link">
+            <span class="nav-icon">01</span>
+            <span>Mision</span>
+          </a>
+          <a href="reporte.html" class="nav-link">
+            <span class="nav-icon">02</span>
+            <span>Reporte</span>
+          </a>
+          <a href="captura.html" class="nav-link">
+            <span class="nav-icon">03</span>
+            <span>Captura</span>
+          </a>
+          <a href="chat.html" class="nav-link is-active" aria-current="page">
+            <span class="nav-icon">✦</span>
+            <span>Dr. SIMI bot</span>
+          </a>
+
+          <div class="nav-divider"></div>
+          <span class="sidebar-label">PERFIL</span>
+
+          <a href="registro.html" class="nav-link" data-auth="logged-out">
+            <span class="nav-icon">⌨</span>
+            <span>Registro</span>
+          </a>
+
+          <a href="login.html" class="nav-link" data-auth="logged-out">
+            <span class="nav-icon">➔</span>
+            <span>Iniciar Sesión</span>
+          </a>
+
+          <button type="button" class="nav-link" id="logoutButton" data-auth="logged-in" hidden>
+            <span class="nav-icon">↪</span>
+            <span>Cerrar Sesión</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-user" data-auth="logged-in" hidden>
+            <svg class="sidebar-user-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4 21a8 8 0 0 1 16 0"></path>
+            </svg>
+            <span id="sidebarUserName">Usuario</span>
+          </div>
+          <span class="sidebar-copyright">Farmacias Similunares 2026</span>
+        </div>
+      </aside>
+    </div>
+
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+  </div>
+</body>
+</html>

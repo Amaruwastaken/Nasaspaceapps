@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "title": "Sleep and Circadian Rhythm",
+      "date": "2024",
+      "url": "https://humanresearchroadmap.nasa.gov/Evidence/",
+      "summary": "Los cambios de sueño y ritmos circadianos reducen la vigilancia, aumentan la fatiga, empeoran la velocidad de reacción y pueden afectar la cognición en misiones largas.",
+      "excerpts": [
+        "Sleep loss and circadian disruption reduce alertness, slow reaction time and can impair performance during long-duration missions.",
+        "Crewmembers should prioritize sleep opportunity, light exposure management and fatigue countermeasures to preserve mission performance."
+      ]
+    },
+    {
+      "title": "Cardiovascular and Behavioral Health",
+      "date": "2023",
+      "url": "https://humanresearchroadmap.nasa.gov/Evidence/",
+      "summary": "Mantener la salud cardiovascular y la respuesta al estrés es esencial durante misiones espaciales; la tolerancia al estrés y la recuperación influencian la seguridad operativa.",
+      "excerpts": [
+        "Cardiovascular deconditioning, stress and altered autonomic regulation must be tracked to protect crew performance and decision making.",
+        "Behavioral health countermeasures should monitor stress, workload, recovery and interpersonal factors during long missions."
+      ]
+    },
+    {
+      "title": "Vision and Visual Function",
+      "date": "2024",
+      "url": "https://humanresearchroadmap.nasa.gov/Evidence/",
+      "summary": "La salud visual y la respuesta ocular deben revisarse si aparecen cambios de visión, fatiga visual o molestias de enfoque durante la misión.",
+      "excerpts": [
+        "Eye and visual changes can affect task performance and should be monitored when symptoms appear during spaceflight.",
+        "Symptoms such as blurred vision, eye strain and visual discomfort warrant evaluation alongside workload and recovery context."
+      ]
+    },
+    {
+      "title": "Environmental Health and Air Quality",
+      "date": "2023",
+      "url": "https://humanresearchroadmap.nasa.gov/Evidence/",
+      "summary": "La calidad ambiental, la ventilación y el nivel de CO₂ afectan la vigilancia mental, la concentración y la respuesta cognitiva.",
+      "excerpts": [
+        "Environmental controls and air quality matter because elevated CO₂ and cabin stressors can affect crew alertness and performance.",
+        "Mission monitors should pay attention to ventilation, contamination risk and symptoms that relate to mental clarity or productivity."
+      ]
+    }
+  ]
+}
