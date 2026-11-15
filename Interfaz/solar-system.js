@@ -7,7 +7,7 @@
     ['tierra','Tierra','#66b9ed',1.00000261,100.46457166,35999.37244981,365.256],
     ['marte','Marte','#e57f57',1.52371034,-4.55343205,19140.30268499,686.98],
   ];
-  const TAU = Math.PI * 2, rad = d => d * Math.PI / 180, AU_KM = 149597870.7;
+  const TAU = Math.PI * 2, rad = d => d * Math.PI / 180, AU_KM = 149597870.7, ORBIT_SCALE = 190;
   const date = new Date();
   const T = (date.getTime() / 86400000 + 2440587.5 - 2451545) / 36525;
   const position = (p, angle) => [p.radius * Math.cos(angle), p.radius * Math.sin(angle)];
@@ -18,7 +18,7 @@
   svg.classList.add('solar-orbits'); space.append(svg);
   const moonOrbit = document.createElementNS(svg.namespaceURI,'circle');
   moonOrbit.classList.add('moon-orbit');
-  moonOrbit.setAttribute('r','30');
+  moonOrbit.setAttribute('r','70');
   svg.append(moonOrbit);
   const sun = document.createElement('div'); sun.className = 'solar-sun';
   sun.setAttribute('role','img');
@@ -32,7 +32,7 @@
     space.append(el); return el;
   }
   const planets = rows.map(([id,name,color,a,longitude,longitudeRate,periodDays]) => {
-    const p = {id,name,radius:a*150,angle:rad(longitude+longitudeRate*T),periodDays};
+    const p = {id,name,radius:a*ORBIT_SCALE,angle:rad(longitude+longitudeRate*T),periodDays};
     const orbit = document.createElementNS(svg.namespaceURI,'circle');
     orbit.setAttribute('cx','500');
     orbit.setAttribute('cy','500');
@@ -41,14 +41,14 @@
     return {...p,button:button(id,name,color),initialPosition:position(p,p.angle)};
   });
   const moon = button('luna','Luna','#cfced3');
-  const moonOrbitRadius = 30;
+  const moonOrbitRadius = 70;
   window.reportSolarSystem = {
     names:Object.fromEntries([...planets.map(p => [p.id,p.name]),['luna','Luna']]),
     distance(a,b) {
       if ([a,b].includes('luna') && [a,b].includes('tierra')) return 384400;
       const get = id => planets.find(p => p.id === (id === 'luna' ? 'tierra' : id)).initialPosition;
       const x = get(a), y = get(b);
-      return Math.hypot(x[0]-y[0],x[1]-y[1])*AU_KM/150;
+      return Math.hypot(x[0]-y[0],x[1]-y[1])*AU_KM/ORBIT_SCALE;
     },
   };
   const controls = document.createElement('div'); controls.className = 'orbit-controls';
