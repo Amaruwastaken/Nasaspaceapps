@@ -27,7 +27,7 @@ en `public."Registry"` y guarda el nombre en `"Usuario"`. La columna
 
 `Interfaz/report-data.js` define las métricas, sus rangos y si son manuales o
 automáticas. `captura.html` pregunta únicamente las manuales, una por una, y
-guarda esas respuestas localmente por cuenta. `report-source.js` consulta los
+guarda esas respuestas en Supabase por cuenta autenticada. `report-source.js` consulta los
 indicadores disponibles en `records`, `daily_sensor` y `telemetry`; los que aún
 no tienen una columna o conexión quedan como “Sin datos” en el reporte.
 
@@ -40,3 +40,16 @@ estados activos para mostrarlos en un panel inferior izquierdo. Aplica también
 `supabase/migrations/20261115020000_health_emergency_notifications.sql`,
 `supabase/migrations/20261115020300_health_alert_popup.sql` y
 `supabase/migrations/20261115024000_live_health_emergency_panel.sql`.
+
+### Captura conectada a Supabase en Vercel
+
+Proyecto Vercel: nasaspaceapps-farmacias-similunares. El directorio del proyecto es la raiz del repositorio.
+
+- npm run build copia Interfaz a dist y genera la configuracion publica desde SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY. Tambien admite los alias NEXT_PUBLIC_SUPABASE_* y SUPABASE_ANON_KEY. Nunca publica claves service_role ni sb_secret.
+- npm test ejecuta los tests de configuracion y persistencia.
+- Aplica supabase/migrations/20261115030000_manual_measurements.sql en el proyecto Supabase conectado, antes de usar Captura. Crea manual_measurements con validacion de los siete indicadores manuales, historial y politicas RLS por usuario.
+- Captura requiere iniciar sesion y confirma el INSERT antes de abrir Reporte. Si falla, mantiene las respuestas en la pagina; no simula un guardado local.
+- Reporte consulta la ultima captura en Supabase. Una prueba omitida en esa captura no se reemplaza por un valor antiguo de records. Los sensores y las alertas existentes mantienen sus conexiones actuales.
+- Los datos antiguos de localStorage no se importan automaticamente: ya no son la fuente del reporte.
+
+La migracion nueva no crea ni reemplaza las tablas legacy records, daily_sensor, telemetry o Registry. Deben existir en el Supabase actual junto con las migraciones anteriores. En un Supabase totalmente nuevo hay que configurar ese esquema antes de activar los sensores y alertas. No ejecutar seed en produccion.

@@ -125,19 +125,28 @@ async function render() {
   allMeasurements.replaceChildren(); measurementHistory.replaceChildren();
   const client = await supabaseReady;
   const userId = getCurrentUser()?.id;
-  let manual = null, localError = false;
-  try { manual = loadMeasurements(userId); } catch { localError = true; }
-  const database = await fetchDatabaseMeasurements(client,userId);
+  const [manualResult,database] = await Promise.all([
+    client && userId ? loadMeasurements(client,userId).then(data => ({data,error:null}),error => ({data:null,error})) : Promise.resolve({data:null,error:null}),
+    fetchDatabaseMeasurements(client,userId),
+  ]);
   if (request !== version || userId !== getCurrentUser()?.id) return;
-  const values = {...database.values,...manual?.values};
+  const manual = manualResult.data;
+  const values = {...database.values};
   const dates = {...database.dates};
+  // A saved snapshot is authoritative: skipped tests must not resurrect older records.
+  if (manual || manualResult.error) for (const metric of metrics.filter(m => m.source === 'manual')) {
+    delete values[metric.id]; delete dates[metric.id];
+  }
+  Object.assign(values,manual?.values);
   if (manual) for (const id of Object.keys(manual.values)) dates[id] = new Date(manual.savedAt).toLocaleDateString('es-MX');
   renderDetails(values,dates,database.history,userId);
+  const applicable = metrics.filter(m => m.group !== 'environment');
+  const classified = applicable.filter(m => ['green','yellow','red'].includes(classify(m,values[m.id],values))).length;
   const score = emergencyScore(values);
   let emergencyError = '';
-  if (client && userId) {
+  if (client && userId && !manualResult.error && !database.warnings.length && (score > 10 || classified === applicable.length)) {
     try {
-      const {error} = await client.rpc('sync_health_emergency',{p_score:score});
+      const {error} = await client.rpc('sync_health_emergency_for_user',{p_user_id:userId,p_score:score});
       if (error) emergencyError = ' No se pudo enviar la alerta a las cuentas registradas.';
       else document.dispatchEvent(new Event('healthstatuschange'));
     } catch {
@@ -147,8 +156,6 @@ async function render() {
   if (request !== version || userId !== getCurrentUser()?.id) return;
   const organs = affectedOrgans(values);
   list.replaceChildren(...organs.map(organ => organCard(organ,dates)));
-  const applicable = metrics.filter(m => m.group !== 'environment');
-  const classified = applicable.filter(m => ['green','yellow','red'].includes(classify(m,values[m.id],values))).length;
   const missingAutomatic = metrics.filter(m => m.source !== 'manual' && classify(m,values[m.id],values) === 'missing');
   const parts = [];
   if (!classified) parts.push('No hay datos suficientes para evaluar los órganos.');
@@ -157,7 +164,7 @@ async function render() {
   if (missingAutomatic.length) parts.push(`No hay suficiente información automática para ${missingAutomatic.length} ${missingAutomatic.length === 1 ? 'medición' : 'mediciones'}; las faltantes aparecen como “Sin datos” en la tabla.`);
   if (classified < applicable.length) parts.push('Evaluación parcial: hay mediciones sin datos o pendientes de conexión.');
   if (!userId) parts.push('Inicia sesión para consultar las mediciones de la base de datos.');
-  if (localError) parts.push('No se pudieron leer las pruebas de Captura.');
+  if (manualResult.error) parts.push(manualResult.error.message || 'No se pudieron consultar las pruebas de Captura en Supabase.');
   if (emergencyError) parts.push(emergencyError);
   parts.push(...database.warnings); message.textContent = parts.join(' ');
 }

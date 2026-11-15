@@ -16,6 +16,7 @@ const questions = manualMetrics.flatMap(metric => (metric.fields ?? [{
 }]).map(definition => ({metric,definition})));
 let activeUser = null, initialized = false, ready = false, saving = false;
 let currentIndex = 0, values = {};
+let loadRequest = 0;
 let digital = null;
 let testDrafts = {};
 const digitalIds = new Set(['pvt','tlx','amsler']);
@@ -102,37 +103,76 @@ function skipCurrent() {
   } else delete values[metric.id];
 }
 
-function saveAndViewReport() {
+async function saveAndViewReport() {
   if (!ready) { feedback('Espera a que termine de comprobarse la sesión.'); return; }
   if (saving) return;
-  saving = true; next.disabled = true; skip.disabled = true;
-  try { saveMeasurements(values,getCurrentUser()?.id); window.location.assign('reporte.html'); }
-  catch (error) { feedback(error.message || 'No se pudieron guardar las pruebas.',true); }
-  finally { saving = false; next.disabled = false; skip.disabled = false; }
+  const userId = getCurrentUser()?.id;
+  if (!userId) { feedback('Inicia sesión para guardar tus pruebas en Supabase.',true); return; }
+  const request = loadRequest;
+  const snapshot = structuredClone(values);
+  saving = true; next.disabled = true; skip.disabled = true; previous.disabled = true;
+  fields.inert = true;
+  feedback('Guardando tus pruebas en Supabase…');
+  try {
+    const client = await supabaseReady;
+    if (getCurrentUser()?.id !== userId || request !== loadRequest) return;
+    await saveMeasurements(client,userId,snapshot);
+    if (getCurrentUser()?.id !== userId || request !== loadRequest) return;
+    window.location.assign('reporte.html');
+  } catch (error) {
+    if (request === loadRequest) feedback(error.message || 'No se pudieron guardar las pruebas. Tus respuestas siguen en esta página.',true);
+  } finally {
+    saving = false;
+    if (request === loadRequest) { fields.inert = false; next.disabled = !ready; skip.disabled = !ready; previous.disabled = !ready; }
+  }
 }
 
-function syncUser() {
+async function syncUser() {
   const userId = getCurrentUser()?.id ?? null;
   if (initialized && userId === activeUser) return;
-  try { values = {...(loadMeasurements(userId)?.values ?? {})}; feedback(''); }
-  catch (error) { values = {}; feedback(error.message || 'No se pudieron cargar las pruebas locales.',true); }
-  activeUser = userId; initialized = true; currentIndex = 0; testDrafts = {}; renderCurrent();
+  const request = ++loadRequest;
+  activeUser = userId; initialized = true; ready = false;
+  values = {}; testDrafts = {}; currentIndex = 0;
+  digital?.destroy(); digital = null; fields.replaceChildren(); fields.inert = false;
+  next.disabled = true; skip.disabled = true; previous.disabled = true;
+  feedback('Cargando tus pruebas de Supabase…');
+  const client = await supabaseReady;
+  if (request !== loadRequest || userId !== (getCurrentUser()?.id ?? null)) return;
+  if (!userId || !client) {
+    feedback(!userId ? 'Inicia sesión para capturar y guardar tus pruebas.' : 'No hay conexión con Supabase. Intenta recargar la página.',true);
+    return;
+  }
+  try {
+    const saved = await loadMeasurements(client,userId);
+    if (request !== loadRequest || userId !== getCurrentUser()?.id) return;
+    values = {...(saved?.values ?? {})}; ready = true;
+    next.disabled = false; skip.disabled = false; previous.disabled = false;
+    renderCurrent(); feedback('');
+  } catch (error) {
+    if (request !== loadRequest) return;
+    feedback(error.message || 'No se pudieron cargar tus pruebas de Supabase.',true);
+    const retry = document.createElement('button'); retry.type = 'button'; retry.className = 'capture-secondary'; retry.textContent = 'Reintentar conexión';
+    retry.addEventListener('click',() => { initialized = false; void syncUser(); }); fields.append(retry);
+  }
 }
 
 document.addEventListener('sessionchange',syncUser);
 form.addEventListener('input',() => { rememberCurrent(); feedback('Cambios sin guardar.'); });
 previous.addEventListener('click',() => {
   if (!ready) { feedback('Espera a que termine de comprobarse la sesión.'); return; }
+  if (saving) return;
   rememberCurrent(); currentIndex--; renderCurrent(); feedback('');
 });
 skip.addEventListener('click',() => {
   if (!ready) { feedback('Espera a que termine de comprobarse la sesión.'); return; }
+  if (saving) return;
   skipCurrent();
   if (currentIndex === questions.length - 1) { saveAndViewReport(); return; }
   currentIndex++; renderCurrent(); feedback('');
 });
 form.addEventListener('submit',event => {
   event.preventDefault();
+  if (saving) return;
   if (!ready) { feedback('Espera a que termine de comprobarse la sesión.'); return; }
   if (digital) {
     if (!digital.validate()) { feedback('Completa la prueba o usa “Saltar”.',true); return; }
@@ -147,6 +187,6 @@ form.addEventListener('submit',event => {
   if (currentIndex < questions.length - 1) { currentIndex++; renderCurrent(); feedback(''); return; }
   saveAndViewReport();
 });
-await supabaseReady; ready = true; syncUser();
+await supabaseReady; void syncUser();
 window.addEventListener('pagehide',() => digital?.destroy());
 window.addEventListener('pageshow',event => { if (event.persisted) renderCurrent(); });
