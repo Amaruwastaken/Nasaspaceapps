@@ -68,6 +68,16 @@ test('empty snapshots supersede previous readings; missing and skipped fields st
   assert.deepEqual(validateValues({pvt:'',amsler:null,medication:{takenPercent:'',doubleDose:''}}),{});
 });
 
+test('simulated manual fields fill only unanswered values',async()=>{
+  const {client,rows}=database();
+  await saveMeasurements(client,'user-a',{tlx:50,medication:{takenPercent:90},orthostatic:{hrRise:0}});
+  const simulated=rows[0].simulated_data;
+  assert.equal(simulated.tlx,undefined);
+  assert.deepEqual(simulated.medication,{doubleDose:'no'});
+  assert.equal(simulated.orthostatic.hrRise,undefined);
+  assert.equal(typeof simulated.orthostatic.systolicDrop,'number');
+});
+
 test('generated simulation covers every metric with a valid display value',()=>{
   const values=generateSimulatedValues({hr:72,co2:800,gravity:0.38,spo2:98,resp:16,temp:36.7});
   assert.deepEqual(Object.keys(values).sort(),metrics.map(metric=>metric.id).sort());
