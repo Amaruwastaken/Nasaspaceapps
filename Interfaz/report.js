@@ -111,13 +111,13 @@ async function render() {
   let userId = viewerId;
   if (crewPage) {
     const controls = document.querySelector('.crew-controls'); controls.hidden = true;
-    if (!client || !viewerId) { message.textContent = 'Inicia sesión como doctor o capitán para consultar los reportes de la misión.'; return; }
+    if (!client || !viewerId) { message.textContent = 'Inicia sesión con una cuenta cuyo rol sea doctor o capitán para consultar los reportes.'; return; }
     const {data:members,error} = await client.rpc('get_mission_report_members');
     if (request !== version || viewerId !== getCurrentUser()?.id) return;
     if (error || !members?.length) {
       crewSelect.replaceChildren();
       message.textContent = error?.code === '42501'
-        ? 'El rol elegido al registrarse no concede permisos médicos. Un administrador debe asignar doctor o capitán en app_metadata de Supabase.'
+        ? 'Solo las cuentas con rol doctor o capitán pueden consultar los reportes.'
         : error ? 'No se pudieron consultar los integrantes. Revisa la conexión y las migraciones de Supabase.' : 'No hay integrantes en esta misión.';
       return;
     }
