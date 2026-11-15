@@ -80,16 +80,37 @@ healthPanel.setAttribute('aria-label','Estado crítico de la tripulación');
 healthPanel.setAttribute('role','alert');
 healthPanel.setAttribute('aria-live','assertive');
 healthPanel.hidden = true;
+const healthPanelHeader = document.createElement('div');
+healthPanelHeader.className = 'health-emergency-panel-header';
 const healthPanelHeading = document.createElement('h2');
 healthPanelHeading.textContent = 'Alerta: tripulante(s) en estado crítico';
+const healthPanelMinimize = document.createElement('button');
+healthPanelMinimize.className = 'health-emergency-minimize';
+healthPanelMinimize.type = 'button';
+healthPanelMinimize.textContent = '×';
+healthPanelMinimize.setAttribute('aria-label','Minimizar alertas críticas');
+healthPanelMinimize.setAttribute('aria-controls','healthEmergencyDetails');
+healthPanelMinimize.setAttribute('aria-expanded','true');
+healthPanelHeader.append(healthPanelHeading,healthPanelMinimize);
+const healthPanelContent = document.createElement('div');
+healthPanelContent.id = 'healthEmergencyDetails';
+healthPanelContent.className = 'health-emergency-content';
 const healthPanelList = document.createElement('ul');
-healthPanel.append(healthPanelHeading,healthPanelList);
+healthPanelContent.append(healthPanelList);
+const healthPanelRestore = document.createElement('button');
+healthPanelRestore.className = 'health-emergency-restore';
+healthPanelRestore.type = 'button';
+healthPanelRestore.hidden = true;
+healthPanel.append(healthPanelHeader,healthPanelContent,healthPanelRestore);
 document.body.append(healthPanel);
 
 let healthStatusLoading = false, healthStatusRequest = 0;
 function clearHealthPanel() {
   healthPanel.hidden = true;
+  healthPanel.classList.remove('is-minimized');
   healthPanelList.replaceChildren();
+  healthPanelRestore.hidden = true;
+  healthPanelMinimize.setAttribute('aria-expanded','true');
 }
 async function refreshHealthStatus() {
   const client = await supabaseReady;
@@ -112,11 +133,26 @@ async function refreshHealthStatus() {
       item.append(name,score);
       return item;
     }));
-    healthPanel.hidden = emergencies.length === 0;
+    if (emergencies.length) {
+      healthPanelRestore.textContent = `${emergencies.length} alerta(s) crítica(s)`;
+      healthPanel.hidden = false;
+    } else clearHealthPanel();
   } catch (error) {
     if (request === healthStatusRequest) console.error('No se pudo leer el estado de emergencia desde Supabase:',error);
   } finally { healthStatusLoading = false; }
 }
+healthPanelMinimize.addEventListener('click',() => {
+  healthPanel.classList.add('is-minimized');
+  healthPanelMinimize.setAttribute('aria-expanded','false');
+  healthPanelRestore.hidden = false;
+  healthPanelRestore.focus();
+});
+healthPanelRestore.addEventListener('click',() => {
+  healthPanel.classList.remove('is-minimized');
+  healthPanelMinimize.setAttribute('aria-expanded','true');
+  healthPanelRestore.hidden = true;
+  healthPanelMinimize.focus();
+});
 document.addEventListener('sessionchange',() => {
   healthStatusRequest++;
   clearHealthPanel();

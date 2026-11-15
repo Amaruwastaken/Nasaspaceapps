@@ -28,10 +28,17 @@ button:focus-visible, a:focus-visible {
 .app { min-height: 100vh; }
 
 .health-emergency-panel { position:fixed; z-index:1000; bottom:max(20px,env(safe-area-inset-bottom)); left:max(20px,env(safe-area-inset-left)); width:min(420px,calc(100vw - 40px)); max-height:min(50vh,420px); overflow:auto; padding:20px; border:2px solid #a5332d; border-radius:8px; background:#fff0ee; color:#76231f; box-shadow:0 18px 60px #061b3a55; }
-.health-emergency-panel h2 { margin:0 0 12px; color:#a5332d; font-size:17px; }
+.health-emergency-panel-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.health-emergency-panel h2 { margin:2px 0 12px; color:#a5332d; font-size:17px; }
+.health-emergency-minimize { flex:none; display:grid; width:32px; height:32px; place-items:center; margin:-6px -8px 0 0; border:0; border-radius:4px; background:transparent; color:#76231f; font-size:25px; line-height:1; cursor:pointer; }
+.health-emergency-minimize:hover { background:#a5332d18; }
 .health-emergency-panel ul { display:grid; gap:10px; margin:0; padding:0; list-style:none; }
 .health-emergency-panel li { padding:10px 0 0; border-top:1px solid #e8bbb7; line-height:1.5; }
 .health-emergency-panel small { display:block; margin-top:4px; color:#76231f; }
+.health-emergency-restore { min-height:44px; padding:10px 16px; border:0; border-radius:6px; background:#a5332d; color:#fff; font:inherit; font-weight:700; cursor:pointer; box-shadow:0 8px 24px #061b3a33; }
+.health-emergency-panel.is-minimized { width:auto; max-height:none; overflow:visible; padding:0; border:0; background:transparent; box-shadow:none; }
+.health-emergency-panel.is-minimized .health-emergency-panel-header,
+.health-emergency-panel.is-minimized .health-emergency-content { display:none; }
 
 .topbar {
   position: relative;

@@ -37,6 +37,9 @@ Cuando falta un valor, el reporte puede usar `telemetry.simulated_data`; lo
 identifica como “Simulado (prototipo)” y no lo utiliza para alertas ni puntajes
 de salud.
 
+La vista corporal usa `Interfaz/Imagenes/silueta-cuerpo.jpeg` y solo muestra
+regiones con mediciones disponibles.
+
 ### Sistema de emergencia
 
 El reporte suma 2 puntos por cada indicador rojo y 1.25 por cada amarillo
