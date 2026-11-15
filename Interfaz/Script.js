@@ -73,7 +73,7 @@ sidebar.querySelectorAll('a').forEach(link => {
   const space = document.querySelector('#planets');
   if (!space) return;
 
-  const PLANETS = { tierra: 'Tierra', luna: 'Luna', marte: 'Marte' };
+  const PLANETS = window.reportSolarSystem?.names ?? { tierra: 'Tierra', luna: 'Luna', marte: 'Marte' };
   const DIST = { // km promedio aproximados
     'tierra-luna': 384400,
     'tierra-marte': 225e6,
@@ -94,7 +94,7 @@ sidebar.querySelectorAll('a').forEach(link => {
 
   let a = null, b = null;
 
-  const distance = (x, y) => DIST[`${x}-${y}`] ?? DIST[`${y}-${x}`];
+  const distance = (x, y) => window.reportSolarSystem?.distance(x, y) ?? DIST[`${x}-${y}`] ?? DIST[`${y}-${x}`];
   const fmt = n => n.toLocaleString('es-MX', { maximumFractionDigits: 2 });
 
   function renderSummary() {
@@ -126,6 +126,7 @@ sidebar.querySelectorAll('a').forEach(link => {
     buttons.forEach(btn => {
       btn.classList.toggle('is-a', btn.dataset.planet === a);
       btn.classList.toggle('is-b', btn.dataset.planet === b);
+      btn.setAttribute('aria-pressed', String(btn.dataset.planet === a || btn.dataset.planet === b));
     });
 
     nameA.textContent = a ? PLANETS[a] : '—';
