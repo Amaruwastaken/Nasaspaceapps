@@ -1,57 +1,25 @@
-.report-main { max-width: 1550px; }
-.metric-label { font-size:12px; color:var(--ink); }
-.metric-value { margin:0; font-size:20px; font-weight:700; color:var(--navy); overflow-wrap:anywhere; }
-.capture-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
-.capture-section { margin:0; min-width:0; padding:20px; border:1px solid var(--line); border-radius:6px; background:white; }
-.capture-section legend { padding:0 10px; font-size:18px; font-weight:700; color:var(--navy); }
-.capture-actions { margin-top:24px; }
-.capture-save { padding:14px 24px; border:0; border-radius:4px; background:var(--blue); color:white; cursor:pointer; font:inherit; font-weight:700; }
-@media(max-width:600px) { .capture-grid { grid-template-columns:1fr; } }
-.report-main .intro { max-width: none; }
-.report-toolbar,.health-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; }
-.report-toolbar { margin-bottom:22px; color:var(--muted); font-size:13px; }
-.report-toolbar button,.region-tabs button { padding:9px 13px; border:1px solid var(--line); background:white; color:var(--navy); cursor:pointer; border-radius:4px; }
-.report-toolbar button:hover,.region-tabs button[aria-pressed=true] { border-color:var(--blue); background:#eaf3fb; }
-.report-grid { display:grid; grid-template-columns:minmax(0,1.8fr) minmax(280px,1fr); gap:24px; align-items:start; }
-.anatomy-card,.environment-card,.health-card { background:white; border:1px solid var(--line); border-top:3px solid var(--blue); border-radius:6px; padding:clamp(18px,2.5vw,30px); }
-.report-card-heading p,.environment-card>p,#organDescription { color:var(--muted); font-size:13px; line-height:1.6; }
-.anatomy-layout { display:grid; grid-template-columns:minmax(220px,1fr) minmax(220px,1fr); gap:22px; align-items:start; margin-top:22px; }
-.anatomy-stage { position:relative; background:radial-gradient(ellipse,#eaf3fa, #f8fafc 70%); border:1px solid #e4ecf3; border-radius:100px 100px 12px 12px; padding:12px 5px 30px; }
-.anatomy-svg { display:block; width:100%; max-height:650px; overflow:visible; }
-.anatomy-caption { position:absolute; bottom:12px; left:0; width:100%; text-align:center; font-size:8px; letter-spacing:1px; color:#6c8195; }
-.body-backdrop,.anatomy-region { transition:filter .25s,opacity .25s,transform .25s; }
-.anatomy-region { cursor:pointer; transform-box:fill-box; transform-origin:center; outline:none; }
-.region-hit { fill:transparent; stroke:none; pointer-events:all; }
-.anatomy-region text { font-size:8px; fill:#45677f; font-weight:700; letter-spacing:.3px; }
-.region-line { fill:none; stroke:#7a9bb4; stroke-width:1; }
-.region-dot { fill:#1769aa; stroke:white; stroke-width:3; }
-.anatomy-stage.is-focused .body-backdrop { filter:blur(3px); opacity:.4; }
-.anatomy-stage.is-focused .anatomy-region:not(.is-active) { filter:blur(3px); opacity:.25; }
-.anatomy-stage.is-focused .anatomy-region.is-active { transform:scale(1.08); filter:drop-shadow(0 0 5px #1769aa66); }
-.anatomy-region:focus-visible .region-hit { stroke:#1769aa; stroke-width:2; stroke-dasharray:4 3; }
-.organ-detail h3 { font-size:24px; color:var(--navy); margin:10px 0; }
-.metric-card { padding:15px 0; border-bottom:1px solid #e5ebf1; display:grid; grid-template-columns:minmax(0,1fr); gap:8px; }
-.metric-card label { font-size:12px; font-weight:700; color:var(--ink); line-height:1.5; }
-.metric-card input,.metric-card select { width:100%; min-height:40px; padding:9px; border:1px solid #cbd5df; border-radius:4px; background:#f8fafc; font:inherit; font-size:14px; color:var(--navy); }
+﻿.report-main { max-width:1100px; }
+.report-main .intro { max-width:700px; margin-bottom:24px; }
+.report-message { color:var(--muted); font-size:14px; line-height:1.7; margin:0 0 24px; }
+.affected-organs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.organ-alert { display:flex; align-items:center; gap:20px; padding:24px; background:#fff; border:1px solid var(--line); border-left:4px solid #bc810b; border-radius:6px; }
+.organ-alert[data-state=red] { border-left-color:#c5443d; }
+.organ-alert svg { width:90px; height:100px; flex:none; fill:#fff0d5; stroke:#b17b16; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+.organ-alert[data-state=red] svg { fill:#ffe2de; stroke:#bd4e47; }
+.organ-alert h2 { margin:0 0 8px; font-size:22px; }
+.organ-status { display:inline-block; padding:3px 9px; border-radius:20px; background:#fff1cf; color:#85600c; font-size:12px; font-weight:700; }
+[data-state=red]>.organ-status,.organ-alert[data-state=red] .organ-status { background:#ffe9e6; color:#a5332d; }
+.organ-reading { margin:10px 0 0; color:var(--ink); font-size:13px; line-height:1.6; overflow-wrap:anywhere; }
+.organ-reading small { display:block; color:var(--muted); font-size:11px; }
+.report-capture-link { display:inline-block; margin-top:24px; color:var(--blue); font-weight:700; font-size:14px; }
+.report-footnote { color:var(--muted); font-size:12px; line-height:1.7; margin-top:24px; max-width:650px; }
+.capture-form { max-width:580px; padding:24px; background:white; border:1px solid var(--line); border-radius:6px; }
+.metric-card { display:grid; gap:9px; margin-bottom:24px; }
+.metric-card label { color:var(--ink); font-size:14px; font-weight:700; }
+.metric-card input,.metric-card select { width:100%; min-height:44px; padding:10px 12px; border:1px solid #cbd5df; border-radius:4px; color:var(--ink); background:#fff; font:inherit; }
 .metric-card input:focus,.metric-card select:focus { outline:2px solid var(--blue); outline-offset:2px; }
-.metric-status { color:#65758a; font-size:11px; font-weight:700; display:flex; align-items:center; gap:6px; }
-.metric-status::before { content:''; width:7px; height:7px; border-radius:50%; background:currentColor; }
-[data-state=green] .metric-status { color:#157b54; }
-[data-state=yellow] .metric-status { color:#91600b; }
-[data-state=red] .metric-status,[data-state=invalid] .metric-status { color:#bf3f35; }
-.metric-ranges,.metric-note { margin:0; font-size:10px; line-height:1.7; color:var(--muted); }
-.metric-note { font-style:italic; }
-.region-tabs { display:flex; gap:7px; flex-wrap:wrap; margin-top:20px; }
-.region-tabs button { font-size:12px; }
-.health-card { margin-top:24px; border-top-color:#168361; }
-#healthScore { font-size:clamp(24px,3vw,40px); color:var(--navy); }
-.health-meter { margin-top:24px; height:20px; border-radius:20px; background:#e9eef3; overflow:hidden; }
-#healthFill { height:100%; width:0; border-radius:20px; background:linear-gradient(90deg,#db6657,#e9bd55 50%,#279d75); transition:width .4s ease; }
-.health-scale { display:flex; justify-content:space-between; margin-top:8px; font-size:10px; color:var(--muted); }
-#healthCoverage { font-size:13px; color:var(--navy); }
-.report-method,.report-source { font-size:12px; line-height:1.8; color:var(--muted); }
-.report-source { margin-top:20px; padding:18px; border:1px solid var(--line); }
-.report-source summary { cursor:pointer; font-weight:700; }
-@media(max-width:1100px) { .report-grid { grid-template-columns:1fr; } #environmentMetrics { display:grid; grid-template-columns:1fr 1fr; gap:0 24px; } }
-@media(max-width:600px) { .anatomy-layout { grid-template-columns:1fr; } .anatomy-stage { max-width:320px; width:100%; margin:auto; } .anatomy-svg { max-height:540px; } #environmentMetrics { grid-template-columns:1fr; } .report-toolbar>div { display:flex; gap:8px; } }
-@media(prefers-reduced-motion:reduce) { .body-backdrop,.anatomy-region,#healthFill { transition:none; } }
+.metric-ranges { margin:0; color:var(--muted); font-size:11px; line-height:1.7; }
+#captureMessage { font-size:13px; color:var(--muted); line-height:1.6; }
+#captureMessage[role=alert] { color:#a5332d; }
+.capture-save { border:0; border-radius:4px; background:var(--blue); color:#fff; padding:13px 20px; font:inherit; font-weight:700; cursor:pointer; }
+@media(max-width:700px) { .affected-organs { grid-template-columns:1fr; } .organ-alert { padding:18px; gap:15px; } .organ-alert svg { width:70px; height:85px; } }

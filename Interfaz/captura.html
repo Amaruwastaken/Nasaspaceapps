@@ -31,9 +31,9 @@
     <div class="shell">
       <!-- Landing-page content. -->
       <main class="main report-main" id="captura">
- <div class="intro"><span class="section-label">DATOS DE MISI&#211;N</span><h1>Captura tus mediciones.</h1><p>Ingresa los datos por regi&#243;n y las condiciones de tu entorno. Reporte muestra los resultados guardados.</p></div>
- <p class="report-method">Los datos se guardan localmente en este navegador; no se sincronizan con tu cuenta. Puedes dejar vac&#237;os los indicadores que no tengas.</p>
- <form id="captureForm"><div class="report-toolbar"><div><button type="button" id="captureExample">Cargar ejemplo</button><button type="button" id="captureClear">Vaciar formulario</button></div><a href="reporte.html">Consultar Reporte</a></div><p id="captureMessage" role="status" aria-live="polite"></p><div id="captureFields" class="capture-grid"></div><div class="capture-actions"><button class="capture-save" type="submit">Guardar y ver Reporte</button></div></form>
+ <div class="intro"><span class="section-label">CAPTURA</span><h1>Registra tus pruebas.</h1><p>Ingresa PVT, NASA-TLX y Amsler. Las dem&#225;s mediciones se consultan desde la base de datos.</p></div>
+ <form id="captureForm" class="capture-form"><div id="captureFields"></div><p id="captureMessage" role="status" aria-live="polite"></p><button class="capture-save" type="submit">Guardar y ver Reporte</button></form>
+ <p class="report-footnote">Estas tres pruebas se guardan en este navegador. Los sensores se consultan para tu cuenta al iniciar sesi&#243;n. Los datos pendientes de conexi&#243;n no se sustituyen por valores de ejemplo.</p>
 </main>
 
       <!-- Navigation drawer; auth.js shows links appropriate to the session. -->
