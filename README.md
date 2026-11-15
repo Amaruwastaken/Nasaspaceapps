@@ -27,9 +27,11 @@ en `public."Registry"` y guarda el nombre en `"Usuario"`. La columna
 
 `Interfaz/report-data.js` define las métricas, sus rangos y si son manuales o
 automáticas. `captura.html` pregunta únicamente las manuales, una por una, y
-guarda esas respuestas en Supabase por cuenta autenticada. `report-source.js` consulta los
-indicadores disponibles en `records`, `daily_sensor` y `telemetry`; los que aún
-no tienen una columna o conexión quedan como “Sin datos” en el reporte.
+guarda esas respuestas en Supabase por cuenta autenticada. `report-source.js`
+consulta los indicadores disponibles en `records`, `daily_sensor` y `telemetry`.
+Cuando falta un valor, el reporte puede usar `telemetry.simulated_data`; lo
+identifica como “Simulado (prototipo)” y no lo utiliza para alertas ni puntajes
+de salud.
 
 ### Sistema de emergencia
 
@@ -49,6 +51,7 @@ Proyecto Vercel: nasaspaceapps-farmacias-similunares. El directorio del proyecto
 - npm test ejecuta los tests de configuracion y persistencia.
 - Aplica las migraciones de `supabase/migrations/` en orden en el proyecto Supabase conectado. `20261115040000_unify_measurements_telemetry.sql` elimina únicamente la tabla anterior `manual_measurements` y agrega a `telemetry` el JSON validado de Captura, el JSON de telemetría y una marca de datos simulados.
 - `20261115050000_create_user_profiles.sql` completa perfiles faltantes de cuentas Auth existentes y los crea al registrar usuarios nuevos, para que las filas de `telemetry` cumplan su relación con `profiles`. Si no hay una misión en los metadatos de Auth, usa `Farmacias Similunares`.
+- `20261115060000_simulate_missing_report_metrics.sql` agrega `telemetry.simulated_data` y completa solo la fila más reciente de cada cuenta. Las capturas nuevas también generan valores de prototipo únicamente para campos omitidos; se etiquetan como simulados y no reemplazan respuestas reales.
 - Captura requiere iniciar sesion y confirma el INSERT antes de abrir Reporte. Si falla, mantiene las respuestas en la pagina; no simula un guardado local.
 - Cada envío de Captura agrega una sola fila a `telemetry`: incluye las respuestas manuales y una lectura automática genérica marcada como simulada. Las lecturas automáticas existentes pueden seguir usando las columnas de sensores; `manual_measurements` queda en `NULL` para esas filas.
 - Reporte consulta la última captura de `telemetry`. Una prueba omitida en esa captura no se reemplaza por un valor antiguo de `records`. Los sensores y las alertas existentes mantienen sus conexiones actuales.
