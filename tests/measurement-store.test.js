@@ -64,6 +64,11 @@ test('empty snapshots supersede previous readings; missing and skipped fields st
   assert.deepEqual(validateValues({pvt:'',amsler:null,medication:{takenPercent:'',doubleDose:''}}),{});
 });
 
+test('automatic-only telemetry rows are not treated as Captura snapshots',async()=>{
+  const {client}=database({rows:[{id:1,user_id:'user-a',manual_measurements:null,ts:'2026-11-15T01:00:00Z'}]});
+  assert.equal(await loadMeasurements(client,'user-a'),null);
+});
+
 test('valid partial questionnaires are retained but every supplied field is validated',()=>{
   assert.deepEqual(validateValues({medication:{takenPercent:'80'},orthostatic:{symptoms:'dizzy'}}),{medication:{takenPercent:80},orthostatic:{symptoms:'dizzy'}});
   for(const values of [
@@ -93,6 +98,7 @@ test('queries filter snapshots by account and reject mismatched returned owners'
   assert.equal(await loadMeasurements(client,'user-a'),null);
   assert(calls.some(([method,table])=>method==='from'&&table==='telemetry'));
   assert(calls.some(([method,key,value])=>method==='eq'&&key==='user_id'&&value==='user-a'));
+  assert(calls.some(([method,key,operator,value])=>method==='not'&&key==='manual_measurements'&&operator==='is'&&value===null));
   const wrong={id:2,user_id:'user-b',manual_measurements:{pvt:600},ts:'2026-11-15T00:00:00Z'};
   await assert.rejects(loadMeasurements(database({badRow:wrong}).client,'user-a'),/inválida/);
   await assert.rejects(saveMeasurements(database({badRow:wrong}).client,'user-a',{}),/inválida/);
