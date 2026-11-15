@@ -53,4 +53,4 @@ Proyecto Vercel: nasaspaceapps-farmacias-similunares. El directorio del proyecto
 - Reporte consulta la última captura de `telemetry`. Una prueba omitida en esa captura no se reemplaza por un valor antiguo de `records`. Los sensores y las alertas existentes mantienen sus conexiones actuales.
 - Los datos antiguos de localStorage no se importan automaticamente: ya no son la fuente del reporte.
 
-La migracion nueva no crea ni reemplaza las tablas legacy records, daily_sensor, telemetry o Registry. Deben existir en el Supabase actual junto con las migraciones anteriores. En un Supabase totalmente nuevo hay que configurar ese esquema antes de activar los sensores y alertas. No ejecutar seed en produccion.
+La migración no reemplaza las tablas existentes `records`, `daily_sensor`, `telemetry` o `Registry`; requiere que estén configuradas junto con las migraciones anteriores. La migración nueva solo elimina la tabla anterior `manual_measurements` y amplía `telemetry`. En un Supabase totalmente nuevo hay que configurar el esquema base antes de activar sensores y alertas. No ejecutar seed en producción.
