@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#061b3a" />
+  <meta name="description" content="Captura de mediciones para el reporte de salud" />
+  <title>Captura | Farmacias Similunares</title>
+  <!-- Shared layout, navigation behavior, and session-aware links. -->
+  <link rel="stylesheet" href="Style.css" />
+  <script src="Script.js" defer></script>
+  <link rel="stylesheet" href="report.css" />
+  <script type="module" src="captura.js"></script>
+  <script type="module" src="auth.js"></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <!-- Site header and menu toggle are shared by all pages. -->
+    <header class="topbar">
+      <a class="brand" href="Index.html" aria-label="Farmacias Similunares, ir al inicio">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Farmacias Similunares<span class="brand-dot">.</span></span>
+      </a>
+      <div class="topbar-actions">
+        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <div class="shell">
+      <!-- Landing-page content. -->
+      <main class="main report-main" id="captura">
+ <div class="intro"><span class="section-label">DATOS DE MISI&#211;N</span><h1>Captura tus mediciones.</h1><p>Ingresa los datos por regi&#243;n y las condiciones de tu entorno. Reporte muestra los resultados guardados.</p></div>
+ <p class="report-method">Los datos se guardan localmente en este navegador; no se sincronizan con tu cuenta. Puedes dejar vac&#237;os los indicadores que no tengas.</p>
+ <form id="captureForm"><div class="report-toolbar"><div><button type="button" id="captureExample">Cargar ejemplo</button><button type="button" id="captureClear">Vaciar formulario</button></div><a href="reporte.html">Consultar Reporte</a></div><p id="captureMessage" role="status" aria-live="polite"></p><div id="captureFields" class="capture-grid"></div><div class="capture-actions"><button class="capture-save" type="submit">Guardar y ver Reporte</button></div></form>
+</main>
+
+      <!-- Navigation drawer; auth.js shows links appropriate to the session. -->
+      <aside class="sidebar" id="sidebar" aria-label="Menú lateral" aria-hidden="true" inert>
+        <div class="sidebar-top">
+          <div class="sidebar-heading">NAVEGACIÓN</div>
+          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Cerrar menú">×</button>
+        </div>
+
+          <nav class="sidebar-nav" aria-label="Navegación principal">
+
+            <a href="Index.html" class="nav-link">
+              <span class="nav-icon">⌂</span>
+              <span>Inicio</span>
+            </a>
+
+            <!-- CON SESIÓN INICIADA -->
+            <a href="mision.html" class="nav-link">
+            <span class="nav-icon">01</span>
+            <span>Mision</span>
+          </a>
+
+           <a href="reporte.html" class="nav-link">
+            <span class="nav-icon">02</span>
+            <span>Reporte</span>
+          </a>
+          <a href="captura.html" class="nav-link is-active" aria-current="page"><span class="nav-icon">03</span><span>Captura</span></a>
+
+
+            <a href="registro.html" class="nav-link"
+              data-auth="logged-out">
+              <span class="nav-icon">⌨</span>
+              <span>Registro</span>
+            </a>
+
+            <div class="nav-divider"></div>
+            <span class="sidebar-label">PERFIL</span>
+
+            <!-- SIN INICIAR SESIÓN -->
+            <a href="login.html" class="nav-link"
+              data-auth="logged-out">
+              <span class="nav-icon">➔</span>
+              <span>Iniciar Sesión</span>
+            </a>
+
+            <!-- CON SESIÓN INICIADA -->
+            <button type="button" class="nav-link"
+                    id="logoutButton" data-auth="logged-in" hidden>
+              <span class="nav-icon">↪</span>
+              <span>Cerrar Sesión</span>
+            </button>
+
+          </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-user" data-auth="logged-in" hidden>
+            <svg class="sidebar-user-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4 21a8 8 0 0 1 16 0"></path>
+            </svg>
+            <span id="sidebarUserName">Usuario</span>
+          </div>
+          <span class="sidebar-copyright">Farmacias Similunares © 2026</span>
+        </div>
+      </aside>
+    </div>
+    <!-- Backdrop closes the drawer when clicked on compact layouts. -->
+    <div class="overlay" id="overlay" aria-hidden="true"></div>
+  </div>
+</body>
+</html>

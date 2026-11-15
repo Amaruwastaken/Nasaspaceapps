@@ -32,7 +32,7 @@
       <!-- Landing-page content. -->
       <main class="main report-main" id="reporte">
   <div class="intro"><span class="section-label">MONITOREO DE MISIÓN</span><h1>Tu cuerpo en misión.</h1><p>Explora la silueta para consultar tus indicadores por región.</p></div>
-  <div class="report-toolbar"><span id="reportMode">Sin mediciones personales</span><div><button type="button" id="reportDemo">Cargar ejemplo</button><button type="button" id="reportClear">Limpiar datos</button></div></div>
+  <div class="report-toolbar"><span id="reportMode">Sin mediciones guardadas</span><a href="captura.html">Ir a Captura</a></div>
   <div class="report-grid">
     <section class="anatomy-card" aria-labelledby="anatomyTitle">
       <div class="report-card-heading"><span class="section-label">01 / MAPA CORPORAL</span><h2 id="anatomyTitle">Explora tu anatomía</h2><p>Pasa el cursor, usa Tab o toca una región. Pulsa Escape para quitar el enfoque.</p></div>
@@ -76,7 +76,7 @@
     <aside class="environment-card" aria-labelledby="environmentTitle"><span class="section-label">02 / ENTORNO</span><h2 id="environmentTitle">Condiciones de misión</h2><p>Indicadores que no pertenecen a una región anatómica.</p><div id="environmentMetrics"></div></aside>
   </div>
   <section class="health-card" aria-labelledby="healthTitle"><div class="health-heading"><div><span class="section-label">03 / RESUMEN</span><h2 id="healthTitle">Indicador de salud</h2></div><strong id="healthScore">Sin datos</strong></div><div id="healthMeter" class="health-meter" role="progressbar" aria-label="Índice orientativo de indicadores" aria-valuemin="0" aria-valuemax="100" aria-valuetext="Sin datos"><div id="healthFill"></div></div><div class="health-scale"><span>Menor puntuación</span><span>Mayor puntuación</span></div><p id="healthCoverage" role="status"></p><p class="report-method">Índice orientativo, no diagnóstico: promedio de los semáforos disponibles (verde = 100, amarillo = 50, rojo = 0). Más lleno indica mejores resultados en los datos clasificados; los datos faltantes o sin umbral se excluyen. No es una fórmula clínica ni una puntuación definida por NASA.</p></section>
-  <details class="report-source"><summary>Fuente y criterios del reporte</summary><p>Umbrales transcritos de Informacion.pdf, proporcionado para este proyecto. Las referencias del estudio son contexto, no mediciones personales. Los intervalos decimales entre límites consecutivos se interpretan de forma continua; los rangos no cubiertos quedan sin clasificación. La gravedad se cuenta una sola vez. La radiación diaria y acumulada se muestran por separado. Los valores se mantienen únicamente mientras esta página está abierta.</p><p>Para sueño menor de 6 horas, indica cuántas noches consecutivas: el documento solo define rojo a partir de 3 noches.</p></details>
+  <details class="report-source"><summary>Fuente y criterios del reporte</summary><p>Umbrales transcritos de Informacion.pdf, proporcionado para este proyecto. Las referencias del estudio son contexto, no mediciones personales. Los intervalos decimales entre límites consecutivos se interpretan de forma continua; los rangos no cubiertos quedan sin clasificación. La gravedad se cuenta una sola vez. La radiación diaria y acumulada se muestran por separado. Las mediciones se ingresan en Captura y se guardan localmente en este navegador.</p><p>Para menos de 6 horas de descanso, Captura registra las noches consecutivas: el documento solo define rojo a partir de 3 noches.</p></details>
 </main>
 
       <!-- Navigation drawer; auth.js shows links appropriate to the session. -->
@@ -103,6 +103,7 @@
             <span class="nav-icon">02</span>
             <span>Reporte</span>
           </a>
+          <a href="captura.html" class="nav-link"><span class="nav-icon">03</span><span>Captura</span></a>
 
 
             <a href="registro.html" class="nav-link"

@@ -1,4 +1,12 @@
 .report-main { max-width: 1550px; }
+.metric-label { font-size:12px; color:var(--ink); }
+.metric-value { margin:0; font-size:20px; font-weight:700; color:var(--navy); overflow-wrap:anywhere; }
+.capture-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
+.capture-section { margin:0; min-width:0; padding:20px; border:1px solid var(--line); border-radius:6px; background:white; }
+.capture-section legend { padding:0 10px; font-size:18px; font-weight:700; color:var(--navy); }
+.capture-actions { margin-top:24px; }
+.capture-save { padding:14px 24px; border:0; border-radius:4px; background:var(--blue); color:white; cursor:pointer; font:inherit; font-weight:700; }
+@media(max-width:600px) { .capture-grid { grid-template-columns:1fr; } }
 .report-main .intro { max-width: none; }
 .report-toolbar,.health-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; }
 .report-toolbar { margin-bottom:22px; color:var(--muted); font-size:13px; }
