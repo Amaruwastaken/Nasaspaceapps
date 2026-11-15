@@ -56,7 +56,7 @@ function renderSession(session) {
   const nav = document.querySelector('.nav-link[href="reporte.html"]');
   if (!crewLink && nav) {
     crewLink = document.createElement('a'); crewLink.href = 'doctor.html'; crewLink.className = 'nav-link';
-    crewLink.dataset.crewLink = ''; crewLink.textContent = 'Doctor y capit?n'; crewLink.hidden = true; nav.after(crewLink);
+    crewLink.dataset.crewLink = ''; crewLink.textContent = 'Doctor y capitán'; crewLink.hidden = true; nav.after(crewLink);
     if (document.querySelector('[data-crew-report]')) { crewLink.classList.add('is-active'); crewLink.setAttribute('aria-current','page'); }
   }
   if (crewLink) {

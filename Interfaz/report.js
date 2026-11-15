@@ -111,12 +111,12 @@ async function render() {
   let userId = viewerId;
   if (crewPage) {
     const controls = document.querySelector('.crew-controls'); controls.hidden = true;
-    if (!client || !viewerId) { message.textContent = 'Inicia sesi?n como doctor o capit?n para consultar los reportes de la misi?n.'; return; }
+    if (!client || !viewerId) { message.textContent = 'Inicia sesión como doctor o capitán para consultar los reportes de la misión.'; return; }
     const {data:members,error} = await client.rpc('get_mission_report_members');
     if (request !== version || viewerId !== getCurrentUser()?.id) return;
     if (error || !members?.length) {
       crewSelect.replaceChildren();
-      message.textContent = error ? 'Acceso no disponible. Se requiere un rol de doctor o capit?n autorizado y la migraci?n de permisos en Supabase.' : 'No hay integrantes en esta misi?n.'; return;
+      message.textContent = error ? 'Acceso no disponible. Se requiere un rol de doctor o capitán autorizado y la migración de permisos en Supabase.' : 'No hay integrantes en esta misión.'; return;
     }
     const selected = crewSelect.value;
     crewSelect.replaceChildren(...members.map(member => {
@@ -126,8 +126,8 @@ async function render() {
     userId = crewSelect.value; controls.hidden = false;
   }
   const [manualResult,database] = await Promise.all([
-    client && userId ? loadMeasurements(client,userId).then(data => ({data,error:null}),error => ({data:null,error})) : Promise.resolve({data:null,error:null}),
-    fetchDatabaseMeasurements(client,userId),
+    client && userId ? loadMeasurements(client,userId,{missionRead:Boolean(crewPage)}).then(data => ({data,error:null}),error => ({data:null,error})) : Promise.resolve({data:null,error:null}),
+    fetchDatabaseMeasurements(client,userId,{missionRead:Boolean(crewPage)}),
   ]);
   if (request !== version || viewerId !== getCurrentUser()?.id) return;
   const manual = manualResult.data;
