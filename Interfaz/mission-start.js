@@ -50,10 +50,12 @@ async function loadMissionStart() {
       const timestamp = Date.parse(data);
       if (!Number.isFinite(timestamp)) throw new Error('Supabase devolvió una fecha de misión inválida.');
       dateInput.value = new Date(timestamp).toISOString().slice(0,10);
+    } else {
+      dateInput.value = new Date().toISOString().slice(0,10);
     }
     dateInput.disabled = false;
     saveButton.disabled = false;
-    feedback(data ? 'Fecha cargada. Puedes cambiarla y guardar.' : 'Selecciona la fecha de inicio de tu misión.');
+    feedback(data ? 'Fecha cargada. Puedes cambiarla y guardar.' : 'No hay fecha guardada; se usó hoy como inicio por defecto.');
   } catch (error) {
     if (currentRequest === request) feedback(error.message || 'No se pudo cargar la fecha de inicio.',true);
   }

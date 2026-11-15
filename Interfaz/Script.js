@@ -6,6 +6,41 @@ const sidebar = document.querySelector('#sidebar');
 const sidebarClose = document.querySelector('#sidebarClose');
 const overlay = document.querySelector('#overlay');
 
+const PLANET_GRAVITY = { tierra: 1, luna: 0.165, marte: 0.38 };
+
+function getMissionState({ missionStartDate, travelDays = 0, stayDays = 0, destination = null, planetNames = {}, today = new Date() } = {}) {
+  const start = missionStartDate ? new Date(missionStartDate) : null;
+  const current = new Date(today);
+  const travel = Number(travelDays) || 0;
+  const stay = Number(stayDays) || 0;
+
+  if (!start || Number.isNaN(start.getTime())) {
+    return { phase: 'Sin fecha de misión', gravity: 1, isOrbit: false, body: 'tierra' };
+  }
+
+  const elapsedDays = (current.getTime() - start.getTime()) / 86400000;
+  if (elapsedDays < 0) {
+    return { phase: 'Preparación previa al lanzamiento', gravity: 1, isOrbit: false, body: 'tierra' };
+  }
+
+  const totalDays = travel + stay;
+  if (totalDays <= 0) {
+    return { phase: 'En el espacio', gravity: 0, isOrbit: false, body: 'espacio' };
+  }
+
+  if (elapsedDays <= travel) {
+    return { phase: destination ? `En tránsito hacia ${planetNames[destination] ?? destination}` : 'En el espacio', gravity: 0, isOrbit: false, body: 'espacio' };
+  }
+
+  if (elapsedDays <= travel + stay) {
+    const body = destination && Object.prototype.hasOwnProperty.call(PLANET_GRAVITY, destination) ? destination : 'tierra';
+    const gravity = PLANET_GRAVITY[body] * 0.01;
+    return { phase: destination ? `En órbita de ${planetNames[destination] ?? destination}` : 'En órbita de un cuerpo celeste', gravity, isOrbit: true, body };
+  }
+
+  return { phase: 'Misión completada / fuera de órbita', gravity: 0, isOrbit: false, body: 'espacio' };
+}
+
 function setMenu(open) {
   app.classList.toggle('menu-open', open);
 
@@ -116,13 +151,24 @@ sidebar.querySelectorAll('a').forEach(link => {
     }
 
     const total = travel + stay;
+    const missionStartValue = document.querySelector('#missionStartDate')?.value || new Date().toISOString().slice(0,10);
+    const missionState = getMissionState({
+      missionStartDate: missionStartValue,
+      travelDays: travel,
+      stayDays: stay,
+      destination: b,
+      planetNames: PLANETS,
+      today: new Date(),
+    });
+
     route.innerHTML = `
       <h3>${PLANETS[a]} (A) ➔ ${PLANETS[b]} (B)</h3>
       <p><strong>Distancia:</strong> ${fmt(distance(a, b))} km (aprox.)</p>
       <p><strong>Llegada a ${PLANETS[b]}:</strong> día ${fmt(travel)}</p>
       <p><strong>Estancia en ${PLANETS[b]}:</strong> ${fmt(stay)} días</p>
       <p><strong>Salida de ${PLANETS[b]}:</strong> día ${fmt(total)}</p>
-      <p><strong>Duración total:</strong> ${fmt(total)} días (${fmt(total * 24)} horas)</p>`;
+      <p><strong>Duración total:</strong> ${fmt(total)} días (${fmt(total * 24)} horas)</p>
+      <p><strong>Estado actual:</strong> ${missionState.phase} · ${missionState.isOrbit ? `${missionState.gravity.toFixed(2)} G (microgravedad)` : `${missionState.gravity.toFixed(2)} G`}</p>`;
   }
 
   // Update planet highlights, progress text, fields, and summary together.
