@@ -13,6 +13,11 @@ create table if not exists public.profiles (
   updated_at timestamptz not null default now()
 );
 
+alter table public.profiles
+  add column if not exists sex text check (sex in ('male', 'female')),
+  add column if not exists sim_stress numeric check (sim_stress is null or (sim_stress >= 0 and sim_stress <= 100)),
+  add column if not exists updated_at timestamptz not null default now();
+
 create index if not exists profiles_mission_username_idx
   on public.profiles (mission, username);
 
@@ -21,12 +26,13 @@ revoke all on table public.profiles from public, anon, authenticated;
 grant select on table public.profiles to authenticated;
 grant update (username, mission, sex, sim_stress, mission_start_at, updated_at) on table public.profiles to authenticated;
 
+drop policy if exists "leer perfiles" on public.profiles;
 drop policy if exists "Users read mission profiles" on public.profiles;
-create policy "Users read mission profiles"
+create policy "Users read own profile"
   on public.profiles
   for select
   to authenticated
-  using (auth.uid() is not null);
+  using (id = (select auth.uid()));
 
 drop policy if exists "Users update own profile" on public.profiles;
 create policy "Users update own profile"

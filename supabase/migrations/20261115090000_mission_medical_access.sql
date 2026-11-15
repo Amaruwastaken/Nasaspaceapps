@@ -16,6 +16,27 @@ returns boolean language sql stable security definer set search_path = '' as $$
 $$;
 -- Mission membership is an authorization boundary and cannot be self-edited.
 revoke update (mission) on public.profiles from authenticated;
+
+alter table public.records enable row level security;
+revoke all on table public.records from public, anon, authenticated;
+grant select, insert, update on table public.records to authenticated;
+drop policy if exists "leer registros" on public.records;
+drop policy if exists "Users read own records" on public.records;
+create policy "Users read own records" on public.records
+  for select to authenticated using (user_id = (select auth.uid()));
+drop policy if exists "crear mis registros" on public.records;
+create policy "Users insert own records" on public.records
+  for insert to authenticated with check (user_id = (select auth.uid()));
+drop policy if exists "editar mis registros" on public.records;
+create policy "Users update own records" on public.records
+  for update to authenticated using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));
+
+-- daily_sensor is an invoker-secured view over telemetry and profiles, not a table.
+alter view public.daily_sensor set (security_invoker = true);
+revoke all on table public.daily_sensor from public, anon, authenticated;
+grant select on table public.daily_sensor to authenticated;
+
 create or replace function public.get_mission_report_members()
 returns table (id uuid, username text)
 language plpgsql stable security definer set search_path = '' as $$
@@ -38,6 +59,7 @@ revoke all on function public.can_read_mission_member(uuid) from public, anon;
 revoke all on function public.get_mission_report_members() from public, anon;
 revoke all on function public.get_report_mission_start(uuid) from public, anon;
 grant execute on function public.can_review_mission(), public.can_read_mission_member(uuid), public.get_mission_report_members(), public.get_report_mission_start(uuid) to authenticated;
+create policy "Mission medical profile readers" on public.profiles
+  for select to authenticated using (public.can_read_mission_member(id));
 create policy "Mission medical readers" on public.telemetry for select to authenticated using (public.can_read_mission_member(user_id));
 create policy "Mission medical readers" on public.records for select to authenticated using (public.can_read_mission_member(user_id));
-create policy "Mission medical readers" on public.daily_sensor for select to authenticated using (public.can_read_mission_member(user_id));
