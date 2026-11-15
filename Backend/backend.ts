@@ -83,11 +83,13 @@ async function auth(create: boolean): Promise<void> {
 
   let userId: string;
   if (create) {
-    const { data, error } = await sb.auth.signUp({ email: mail(u), password: p });
+    const { data, error } = await sb.auth.signUp({
+      email: mail(u),
+      password: p,
+      options: { data: { full_name: u, username: u, mission: MISSION } },
+    });
     if (error) { e.textContent = error.message; return; }
     if (!data.session || !data.user) { e.textContent = 'Desactiva «Confirm email» en Supabase → Auth → Providers → Email.'; return; }
-    const ins = await sb.from('profiles').insert({ id: data.user.id, username: u, mission: MISSION });
-    if (ins.error) { e.textContent = ins.error.message; return; }
     userId = data.user.id;
   } else {
     const { data, error } = await sb.auth.signInWithPassword({ email: mail(u), password: p });

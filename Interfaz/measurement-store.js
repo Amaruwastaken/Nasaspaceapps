@@ -57,7 +57,10 @@ async function requireUser(client,userId) {
 }
 function databaseError(error,operation) {
   if (['42P01','42703','PGRST204','PGRST205'].includes(error?.code)) return new Error('Falta aplicar la migración de telemetría unificada en Supabase.');
-  return new Error(`No se pudieron ${operation} las pruebas en Supabase. Intenta de nuevo.`);
+  if (error?.code === '23503') return new Error('Falta el perfil asociado a tu cuenta en Supabase. Cierra sesión y vuelve a iniciar sesión.');
+  if (error?.code === '42501') return new Error('Supabase rechazó el guardado por permisos. Inicia sesión de nuevo e inténtalo otra vez.');
+  const code = error?.code ? ` (código ${error.code})` : '';
+  return new Error(`No se pudieron ${operation} las pruebas en Supabase${code}. Intenta de nuevo.`);
 }
 function simulatedTelemetry() {
   const automatic = {
