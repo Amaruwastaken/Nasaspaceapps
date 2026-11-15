@@ -171,8 +171,10 @@ async function render() {
   const applicable = metrics.filter(m => m.group !== 'environment');
   const classified = applicable.filter(m => ['green','yellow','red'].includes(classify(m,actualValues[m.id],actualValues))).length;
   const score = emergencyScore(actualValues);
+  const canClearEmergency = !manualResult.error && !database.warnings.length && classified === applicable.length;
+  const shouldSyncEmergency = score > 10 || canClearEmergency;
   let emergencyError = '';
-  if (client && userId && !manualResult.error && !database.warnings.length && (score > 10 || classified === applicable.length)) {
+  if (client && userId && shouldSyncEmergency) {
     try {
       const {error} = await client.rpc('sync_health_emergency_for_user',{p_user_id:userId,p_score:score});
       if (error) emergencyError = ' No se pudo enviar la alerta a las cuentas registradas.';
