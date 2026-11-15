@@ -60,11 +60,8 @@ function renderSession(session) {
     if (document.querySelector('[data-crew-report]')) { crewLink.classList.add('is-active'); crewLink.setAttribute('aria-current','page'); }
   }
   if (crewLink) {
-    crewLink.hidden = true; const sessionUser = currentUser;
-    if (sessionUser) void supabaseReady.then(async client => {
-      const result = await client?.rpc('can_review_mission');
-      if (currentUser === sessionUser) crewLink.hidden = result?.data !== true;
-    }).catch(() => {});
+    const assignedRole = currentUser?.app_metadata?.role ?? currentUser?.user_metadata?.role;
+    crewLink.hidden = !['doctor','capitan'].includes(assignedRole);
   }
   document.dispatchEvent(new CustomEvent('sessionchange', { detail: currentUser }));
 }

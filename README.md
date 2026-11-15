@@ -82,7 +82,9 @@ Aplicar en orden las migraciones `20261115070000_mission_start_at.sql`,
 datos; solo las cuentas con `role: "doctor"` o `role: "capitan"` en
 `app_metadata`, asignado por un administrador, pueden consultar los reportes de
 compañeros de su misión. El rol elegido al registrarse en `user_metadata` no
-concede esos permisos. Conservar los demás campos de `app_metadata` al actualizarlo.
+concede esos permisos; solo controla la visibilidad del enlace junto con el rol
+administrativo. Mostrar el enlace no autoriza la lectura. Conservar los demás
+campos de `app_metadata` al actualizarlo.
 
 La pertenencia se determina por `profiles.mission`; su modificación queda
 reservada a la administración porque delimita el acceso a los reportes. La vista
