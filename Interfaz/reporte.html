@@ -33,6 +33,15 @@
       <main class="main report-main" id="reporte">
  <div class="intro"><span class="section-label">REPORTE</span><h1>Tu estado actual.</h1><p>Las regiones en atenci&#243;n o alerta aparecen primero. Puedes consultar todas las mediciones y su historial en m&#225;s detalles.</p></div>
  <p id="reportMessage" class="report-message" role="status" aria-live="polite">Consultando datos&#8230;</p>
+ <section id="emergencyPanel" class="emergency-panel" role="alert" aria-live="assertive" hidden>
+   <div><h2>Alerta de salud crítica</h2><p id="emergencyMessage"></p><p id="alarmStatus" class="alarm-status"></p></div>
+   <button id="alarmButton" type="button" class="alarm-button">Apagar alarma</button>
+ </section>
+ <section id="healthNotifications" class="health-notifications" aria-labelledby="notificationHeading" hidden>
+   <h2 id="notificationHeading">Notificaciones de salud crítica</h2>
+   <ul id="notificationList"></ul>
+   <p id="notificationMessage" role="status" aria-live="polite"></p>
+ </section>
  <section id="affectedOrgans" class="affected-organs" aria-label="Regiones que requieren atenci&#243;n"></section>
  <details id="reportDetails" class="report-details">
    <summary>M&#225;s detalles: todas las mediciones</summary>

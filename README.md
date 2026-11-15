@@ -30,3 +30,11 @@ automáticas. `captura.html` pregunta únicamente las manuales, una por una, y
 guarda esas respuestas localmente por cuenta. `report-source.js` consulta los
 indicadores disponibles en `records`, `daily_sensor` y `telemetry`; los que aún
 no tienen una columna o conexión quedan como “Sin datos” en el reporte.
+
+### Sistema de emergencia
+
+El reporte suma 2 puntos por cada indicador rojo y 1.25 por cada amarillo
+(redondeando el total al entero más cercano). Con un puntaje mayor que 10,
+activa una alarma con opción para apagar el sonido y registra una notificación
+para las demás cuentas de Supabase. Aplica también
+`supabase/migrations/20261115020000_health_emergency_notifications.sql`.

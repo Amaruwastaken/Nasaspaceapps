@@ -159,3 +159,12 @@ export function affectedOrgans(values) {
   }
   return [...organs.values()].sort((a,b) => Number(b.state === 'red')-Number(a.state === 'red'));
 }
+export function emergencyScore(values) {
+  const score = metrics
+    .filter(metric => metric.group !== 'environment')
+    .reduce((total,metric) => {
+      const state = classify(metric,values[metric.id],values);
+      return total + (state === 'red' ? 2 : state === 'yellow' ? 1.25 : 0);
+    },0);
+  return Math.round(score);
+}

@@ -1,4 +1,4 @@
-import {metrics,affectedOrgans,classify} from './report-data.js';
+import {metrics,affectedOrgans,classify,emergencyScore} from './report-data.js';
 import {loadMeasurements} from './measurement-store.js';
 import {fetchDatabaseMeasurements} from './report-source.js';
 import {supabaseReady,getCurrentUser} from './auth.js';
@@ -7,6 +7,13 @@ const message = document.querySelector('#reportMessage');
 const allMeasurements = document.querySelector('#allMeasurements');
 const measurementHistory = document.querySelector('#measurementHistory');
 const reportDetails = document.querySelector('#reportDetails');
+const emergencyPanel = document.querySelector('#emergencyPanel');
+const emergencyMessage = document.querySelector('#emergencyMessage');
+const alarmStatus = document.querySelector('#alarmStatus');
+const alarmButton = document.querySelector('#alarmButton');
+const healthNotifications = document.querySelector('#healthNotifications');
+const notificationList = document.querySelector('#notificationList');
+const notificationMessage = document.querySelector('#notificationMessage');
 const drawings = {
   brain:'M50 20C35 6 13 20 17 36C4 46 14 66 30 64Q38 78 50 65Q62 78 70 64C86 66 96 46 83 36C87 20 65 6 50 20ZM50 23V63M29 28Q45 30 35 46M70 28Q55 30 65 46M20 48L31 53M69 53L80 48',
   heart:'M50 80C39 68 10 50 13 30C15 10 41 9 50 28C59 9 85 10 87 30C90 50 61 68 50 80Z',
@@ -33,6 +40,101 @@ function organCard(organ,dates) {
   card.append(svg,content); return card;
 }
 const statusNames = {green:'Verde · Normal',yellow:'Amarillo · Atención',red:'Rojo · Alerta',missing:'Sin datos',unknown:'Sin clasificar',invalid:'Dato inválido'};
+const emergencyThreshold = 10;
+let alarmMuted = false, alarmInterval, alarmContext, alarmActive = false, alarmStarting = false, alarmGeneration = 0;
+function stopAlarm() {
+  alarmGeneration++;
+  alarmStarting = false;
+  clearInterval(alarmInterval);
+  alarmInterval = undefined;
+  if (alarmContext && alarmContext.state !== 'closed') void alarmContext.close();
+  alarmContext = undefined;
+}
+function playAlarmBeep() {
+  if (!alarmContext || alarmContext.state !== 'running') return;
+  const oscillator = alarmContext.createOscillator();
+  const gain = alarmContext.createGain();
+  oscillator.frequency.value = 880;
+  gain.gain.setValueAtTime(0.12,alarmContext.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,alarmContext.currentTime + 0.35);
+  oscillator.connect(gain); gain.connect(alarmContext.destination);
+  oscillator.start(); oscillator.stop(alarmContext.currentTime + 0.35);
+}
+async function startAlarm() {
+  if (alarmInterval || alarmStarting || alarmMuted) return;
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) { alarmStatus.textContent = 'El navegador no admite sonido; la alerta visual permanece activa.'; return; }
+  const generation = ++alarmGeneration;
+  alarmStarting = true;
+  try {
+    const context = new AudioContext();
+    alarmContext = context;
+    await context.resume();
+    if (generation !== alarmGeneration || alarmMuted) {
+      if (context.state !== 'closed') await context.close();
+      return;
+    }
+    playAlarmBeep();
+    alarmInterval = window.setInterval(playAlarmBeep,1200);
+    alarmStatus.textContent = 'Alarma sonora activa.';
+  } catch {
+    if (generation === alarmGeneration) alarmStatus.textContent = 'No se pudo iniciar el sonido. La alerta visual permanece activa.';
+  } finally {
+    if (generation === alarmGeneration) alarmStarting = false;
+  }
+}
+function setEmergency(score) {
+  const active = score > emergencyThreshold;
+  emergencyPanel.hidden = !active;
+  if (!active) {
+    alarmActive = false; alarmMuted = false; stopAlarm();
+    return;
+  }
+  emergencyMessage.textContent = `Puntaje de riesgo: ${score} (umbral: mayor que ${emergencyThreshold}).`;
+  if (!alarmActive) { alarmMuted = false; void startAlarm(); }
+  alarmActive = true;
+  alarmButton.textContent = alarmMuted ? 'Reactivar alarma' : 'Apagar alarma';
+  if (alarmMuted) alarmStatus.textContent = 'Alarma apagada; la alerta crítica sigue activa.';
+}
+alarmButton.addEventListener('click',() => {
+  alarmMuted = !alarmMuted;
+  if (alarmMuted) stopAlarm();
+  else void startAlarm();
+  alarmButton.textContent = alarmMuted ? 'Reactivar alarma' : 'Apagar alarma';
+  alarmStatus.textContent = alarmMuted ? 'Alarma apagada; la alerta crítica sigue activa.' : 'Alarma sonora activa.';
+});
+async function refreshNotifications(client,userId) {
+  if (!client || !userId) {
+    healthNotifications.hidden = true;
+    return;
+  }
+  try {
+    const {data,error} = await client.from('health_notifications')
+      .select('message,score,created_at').eq('recipient_id',userId)
+      .order('created_at',{ascending:false}).limit(10);
+    if (userId !== getCurrentUser()?.id) return;
+    healthNotifications.hidden = false;
+    if (error) {
+      notificationMessage.textContent = 'No se pudieron cargar las notificaciones de salud.';
+      notificationMessage.classList.add('is-error');
+      return;
+    }
+    notificationMessage.classList.remove('is-error');
+    notificationList.replaceChildren(...(data ?? []).map(item => {
+      const row = document.createElement('li');
+      row.append(document.createTextNode(item.message));
+      const timestamp = document.createElement('small');
+      timestamp.textContent = `Puntaje ${item.score} · ${new Date(item.created_at).toLocaleString('es-MX')}`;
+      row.append(timestamp);
+      return row;
+    }));
+    notificationMessage.textContent = data?.length ? '' : 'No hay alertas de salud crítica recientes.';
+  } catch {
+    if (userId !== getCurrentUser()?.id) return;
+    notificationMessage.textContent = 'No se pudieron cargar las notificaciones de salud.';
+    notificationMessage.classList.add('is-error');
+  }
+}
 function metricValue(metric,value) {
   if (value === undefined || value === null || value === '') return 'Sin datos';
   if (metric.fields && typeof value === 'object' && !Array.isArray(value)) {
@@ -119,11 +221,13 @@ function renderDetails(values,dates,history,userId) {
   measurementHistory.append(sensors);
 }
 let version = 0;
+let activeClient = null;
 async function render() {
   const request = ++version;
   list.replaceChildren(); message.textContent = 'Consultando datos…';
   allMeasurements.replaceChildren(); measurementHistory.replaceChildren();
   const client = await supabaseReady;
+  activeClient = client;
   const userId = getCurrentUser()?.id;
   let manual = null, localError = false;
   try { manual = loadMeasurements(userId); } catch { localError = true; }
@@ -133,6 +237,23 @@ async function render() {
   const dates = {...database.dates};
   if (manual) for (const id of Object.keys(manual.values)) dates[id] = new Date(manual.savedAt).toLocaleDateString('es-MX');
   renderDetails(values,dates,database.history,userId);
+  const score = emergencyScore(values);
+  setEmergency(score);
+  let emergencyError = '';
+  if (client && userId) {
+    try {
+      const {error} = await client.rpc('sync_health_emergency',{p_score:score});
+      if (error) emergencyError = ' No se pudo enviar la alerta a los demás usuarios.';
+      else if (score > emergencyThreshold) emergencyMessage.textContent += ' Notificación enviada a los demás usuarios.';
+    } catch {
+      emergencyError = ' No se pudo enviar la alerta a los demás usuarios.';
+    }
+    await refreshNotifications(client,userId);
+  } else {
+    if (score > emergencyThreshold) emergencyError = ' Inicia sesión para notificar a los demás usuarios.';
+    await refreshNotifications(client,userId);
+  }
+  if (request !== version || userId !== getCurrentUser()?.id) return;
   const organs = affectedOrgans(values);
   list.replaceChildren(...organs.map(organ => organCard(organ,dates)));
   const applicable = metrics.filter(m => m.group !== 'environment');
@@ -146,8 +267,14 @@ async function render() {
   if (classified < applicable.length) parts.push('Evaluación parcial: hay mediciones sin datos o pendientes de conexión.');
   if (!userId) parts.push('Inicia sesión para consultar las mediciones de la base de datos.');
   if (localError) parts.push('No se pudieron leer las pruebas de Captura.');
+  if (emergencyError) parts.push(emergencyError);
   parts.push(...database.warnings); message.textContent = parts.join(' ');
 }
 // Clear/reload on account changes; stale responses cannot show another user's data.
 document.addEventListener('sessionchange',render);
+window.setInterval(() => {
+  const userId = getCurrentUser()?.id;
+  if (userId) void refreshNotifications(activeClient,userId);
+},30000);
+window.addEventListener('pagehide',stopAlarm);
 void render();
