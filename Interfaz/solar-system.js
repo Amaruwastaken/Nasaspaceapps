@@ -12,7 +12,7 @@
     ['marte','Marte','#e57f57',1.52371034,-4.55343205,19140.30268499,686.98],
   ];
   const TAU = Math.PI * 2, rad = d => d * Math.PI / 180;
-  const AU_KM = 149597870.7, ORBIT_SCALE = 290, MOON_ORBIT_RADIUS = 60;
+  const AU_KM = 149597870.7, ORBIT_SCALE = 290, MOON_ORBIT_RADIUS = 80;
   const date = new Date();
   // Convert the current date to Julian centuries after the J2000 epoch.
   const T = (date.getTime() / 86400000 + 2440587.5 - 2451545) / 36525;
