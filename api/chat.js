@@ -10,6 +10,7 @@ const knowledgePath = path.join(__dirname, '..', 'Backend', 'nasa-knowledge.json
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
 
 function readJson(pathname) {
   return readFile(pathname, 'utf8').then((data) => JSON.parse(data));
@@ -133,7 +134,7 @@ async function callGemini(prompt) {
     throw new Error('GEMINI_API_KEY no está configurada.');
   }
 
-  const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2-flash-lite:generateContent', {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
