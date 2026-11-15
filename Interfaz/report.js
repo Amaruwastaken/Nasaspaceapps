@@ -3,8 +3,11 @@ import {loadMeasurements} from './measurement-store.js';
 import {fetchDatabaseMeasurements} from './report-source.js';
 import {supabaseReady,getCurrentUser} from './auth.js';
 const list = document.querySelector('#affectedOrgans');
+const bodyOverview = document.querySelector('#bodyOverview');
 const bodyIndicatorsLeft = document.querySelector('#bodyIndicatorsLeft');
 const bodyIndicatorsRight = document.querySelector('#bodyIndicatorsRight');
+const bodyMarkers = document.querySelector('#bodyMarkers');
+const bodyLegend = document.querySelector('.body-legend');
 const message = document.querySelector('#reportMessage');
 const allMeasurements = document.querySelector('#allMeasurements');
 const measurementHistory = document.querySelector('#measurementHistory');
@@ -42,7 +45,10 @@ const bodyAreas = [
   {id:'stomach',name:'Estómago y riñones',side:'right'},
   {id:'body',name:'Cuerpo',side:'right'},
 ];
-const bodyStateNames = {green:'Bien',yellow:'Atención',red:'Mal',unknown:'Sin clasificar',missing:'Sin datos'};
+const bodyStateNames = {green:'Bien',yellow:'Atención',red:'Mal',unknown:'Sin clasificar'};
+const bodyMarkerPositions = {
+  brain:{x:200,y:73},eyes:{x:174,y:107},heart:{x:218,y:255},stomach:{x:200,y:348},body:{x:200,y:470},
+};
 function metricValue(metric,value) {
   if (value === undefined || value === null || value === '') return 'Sin datos';
   if (metric.fields && typeof value === 'object' && !Array.isArray(value)) {
@@ -71,53 +77,68 @@ function bodyAreaState(states) {
 }
 function bodyIndicatorCard(area,values,dates) {
   const areaMetrics = metrics.filter(metric => metric.group === area.id || metric.organs?.includes(area.id));
-  const states = areaMetrics.map(metric => classify(metric,values[metric.id],values));
+  const available = areaMetrics.map(metric => ({metric,state:classify(metric,values[metric.id],values)}))
+    .filter(item => item.state !== 'missing');
+  if (!available.length) return null;
+  const states = available.map(item => item.state);
   const state = bodyAreaState(states);
-  const counts = Object.fromEntries(['green','yellow','red','missing'].map(name => [name,states.filter(item => item === name).length]));
+  const counts = Object.fromEntries(['green','yellow','red'].map(name => [name,states.filter(item => item === name).length]));
   counts.unclassified = states.filter(item => item === 'unknown' || item === 'invalid').length;
   const card = document.createElement('article'); card.className = 'body-stat-card'; card.dataset.state = state;
   const heading = document.createElement('div'); heading.className = 'body-stat-heading';
   const dot = document.createElement('span'); dot.className = 'body-stat-dot'; dot.dataset.state = state; dot.setAttribute('aria-hidden','true');
   const title = document.createElement('h3'); title.textContent = area.name;
   const label = document.createElement('span'); label.className = 'body-stat-state';
-  label.textContent = state === 'green' && (counts.missing || counts.unclassified) ? 'Bien · parcial' : bodyStateNames[state];
+  label.textContent = bodyStateNames[state];
   heading.append(dot,title,label);
   const summary = document.createElement('p'); summary.className = 'body-stat-counts';
-  summary.textContent = `${counts.green} verde · ${counts.yellow} atención · ${counts.red} rojo · ${counts.missing} sin datos · ${counts.unclassified} sin clasificar`;
+  summary.textContent = [
+    [counts.green,'verde'],[counts.yellow,'atención'],[counts.red,'rojo'],[counts.unclassified,'sin clasificar'],
+  ].filter(([count]) => count).map(([count,name]) => `${count} ${name}`).join(' · ');
   card.append(heading,summary);
 
   const priority = {red:0,yellow:1,green:2,unknown:3,invalid:4};
-  const available = areaMetrics.map(metric => ({metric,state:classify(metric,values[metric.id],values)}))
-    .filter(item => item.state !== 'missing')
-    .sort((a,b) => priority[a.state] - priority[b.state])
+  available.sort((a,b) => priority[a.state] - priority[b.state])
     .slice(0,3);
-  if (available.length) {
-    const readings = document.createElement('ul'); readings.className = 'body-stat-readings';
-    for (const {metric,state:metricState} of available) {
-      const item = document.createElement('li'); item.className = 'body-stat-reading'; item.dataset.state = metricState;
-      const readingDot = document.createElement('span'); readingDot.className = 'body-reading-dot'; readingDot.dataset.state = metricState; readingDot.setAttribute('aria-hidden','true');
-      const reading = document.createElement('span');
-      const name = document.createElement('strong'); name.textContent = metric.name;
-      const value = document.createElement('small'); value.textContent = `${metricValue(metric,values[metric.id])} · ${statusNames[metricState] ?? metricState}${dates[metric.id] ? ` · ${dates[metric.id]}` : ''}`;
-      reading.append(name,value); item.append(readingDot,reading); readings.append(item);
-    }
-    card.append(readings);
-  } else {
-    const empty = document.createElement('p'); empty.className = 'body-stat-empty'; empty.textContent = 'Todavía no hay mediciones disponibles.';
-    card.append(empty);
+  const readings = document.createElement('ul'); readings.className = 'body-stat-readings';
+  for (const {metric,state:metricState} of available) {
+    const item = document.createElement('li'); item.className = 'body-stat-reading'; item.dataset.state = metricState;
+    const readingDot = document.createElement('span'); readingDot.className = 'body-reading-dot'; readingDot.dataset.state = metricState; readingDot.setAttribute('aria-hidden','true');
+    const reading = document.createElement('span');
+    const name = document.createElement('strong'); name.textContent = metric.name;
+    const value = document.createElement('small'); value.textContent = `${metricValue(metric,values[metric.id])} · ${statusNames[metricState] ?? metricState}${dates[metric.id] ? ` · ${dates[metric.id]}` : ''}`;
+    reading.append(name,value); item.append(readingDot,reading); readings.append(item);
   }
+  card.append(readings);
   return {card,state,name:area.name};
 }
 function renderBodyOverview(values,dates) {
   bodyIndicatorsLeft.replaceChildren(); bodyIndicatorsRight.replaceChildren();
+  bodyMarkers.replaceChildren();
+  const displayedStates = new Set();
+  let visibleAreas = 0;
   for (const area of bodyAreas) {
-    const {card,state,name} = bodyIndicatorCard(area,values,dates);
+    const result = bodyIndicatorCard(area,values,dates);
+    if (!result) continue;
+    const {card,state,name} = result;
     (area.side === 'left' ? bodyIndicatorsLeft : bodyIndicatorsRight).append(card);
-    const marker = document.querySelector(`[data-body-marker="${area.id}"]`);
+    visibleAreas += 1;
+    const position = bodyMarkerPositions[area.id];
+    const marker = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    marker.classList.add('body-marker');
     marker.dataset.state = state;
-    marker.setAttribute('aria-label',`${name}: ${bodyStateNames[state]}`);
-    marker.querySelector('title').textContent = `${name}: ${bodyStateNames[state]}`;
+    marker.setAttribute('cx',position.x);
+    marker.setAttribute('cy',position.y);
+    marker.setAttribute('r','11');
+    const title = document.createElementNS(marker.namespaceURI,'title');
+    title.textContent = `${name}: ${bodyStateNames[state]}`;
+    marker.append(title);
+    bodyMarkers.append(marker);
+    marker.dataset.state = state;
+    for (const item of card.querySelectorAll('.body-stat-reading')) displayedStates.add(item.dataset.state);
   }
+  bodyOverview.hidden = visibleAreas === 0;
+  for (const item of bodyLegend.querySelectorAll('[data-state]')) item.hidden = !displayedStates.has(item.dataset.state);
 }
 function detailSection(title) {
   const section = document.createElement('section'); section.className = 'report-detail-section';
