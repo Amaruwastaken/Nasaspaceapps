@@ -116,7 +116,6 @@ sidebar.querySelectorAll('a').forEach(link => {
     }
 
     const total = travel + stay;
-    chip.textContent = 'Listo';
     route.innerHTML = `
       <h3>${PLANETS[a]} (A) ➔ ${PLANETS[b]} (B)</h3>
       <p><strong>Distancia:</strong> ${fmt(distance(a, b))} km (aprox.)</p>
