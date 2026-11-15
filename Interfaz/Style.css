@@ -1,409 +1,338 @@
-/* Global type, colors, and browser defaults shared by every page. */
 :root {
-  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #21263b;
-  background: #f7f8fc;
+  color-scheme: light;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  color: #17233b;
+  background: #f4f6f9;
   font-synthesis: none;
+  --navy: #061b3a;
+  --navy-light: #0c2e5b;
+  --blue: #1769aa;
+  --red: #fc3d21;
+  --ink: #17233b;
+  --muted: #5e6b7e;
+  --line: #d9e0e8;
+  --paper: #fff;
 }
+
 * { box-sizing: border-box; }
-html { 
-  scroll-behavior: smooth; 
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; background: #f4f6f9; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { font: inherit; }
+button:focus-visible, a:focus-visible {
+  outline: 3px solid #ff806b;
+  outline-offset: 3px;
 }
-body {
-   margin: 0; min-width: 320px; 
-  }
-button, a { 
-  -webkit-tap-highlight-color: transparent; 
-}
-button { 
-  font: inherit; 
-}
-button:focus-visible, a:focus-visible { 
-  outline: 3px solid #73a8d8; outline-offset: 3px;
- }
-.app { 
-  min-height: 100vh; 
-}
-/* Shared header, page frame, and introductory content. */
+[hidden] { display: none !important; }
+
+.app { min-height: 100vh; }
+
 .topbar {
-  position: relative; z-index: 30; height: 86px; padding: 0 clamp(24px, 5vw, 82px);
-  display: flex; align-items: center; justify-content: space-between;
-  background: #73a8d8; border-bottom: 1px solid #e9eaf2;
-}
-.brand { 
-  display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: #20243b; font-size: 28px; font-weight: 780; letter-spacing: -1.3px; 
-}
-.brand-mark { 
-  display: inline-block; width: 37px; height: 37px; border: 8px solid #6791cc; border-radius: 50%;
- }
-.brand-dot { 
-  color: #73a8d8; 
-}
-.topbar-actions { 
-  display: flex; align-items: center; gap: 25px; 
-}
-.eyebrow { 
-  font-size: 13px; font-weight: 600; color: #8790a7; 
-}
-.menu-toggle { 
-  background: #f0eefc; 
-  border: 0; border-radius: 13px; 
-  width: 47px; height: 45px; 
-  display: flex; 
-  flex-direction: column; 
-  justify-content: center; 
-  align-items: center; 
-  gap: 5px; 
-  cursor: pointer; 
-  transition: background .2s; 
-}
-.menu-toggle:hover { 
-  background: #e2f7fc; 
+  position: relative;
+  z-index: 30;
+  min-height: 78px;
+  padding: 0 clamp(20px, 5vw, 76px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+  background: var(--navy);
+  border-bottom: 4px solid var(--red);
 }
 
-.menu-toggle span { 
-  width: 20px; height: 2px; background: #73a8d8; border-radius: 6px; 
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  text-decoration: none;
+  font-size: clamp(19px, 2.2vw, 26px);
+  font-weight: 750;
+  letter-spacing: -.7px;
 }
 
-.shell {
-   min-height: calc(100vh - 86px); 
-  }
-
-.main { 
-  width: 100%; margin: 0 auto; padding: clamp(40px, 5vw, 75px) clamp(24px, 6vw, 90px) 52px; transition: padding-right .35s ease; 
+.brand-mark {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 39px;
+  height: 39px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--red);
 }
-
-.intro { 
-  max-width: 650px; margin-bottom: 33px; 
+.brand-mark::before {
+  position: absolute;
+  content: "";
+  width: 47px;
+  height: 17px;
+  left: -5px;
+  top: 10px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  transform: rotate(-35deg);
 }
-
-.section-label { 
-  color: #73a8d8; font-size: 11px; letter-spacing: 2px; font-weight: 800; 
+.brand-mark::after {
+  position: absolute;
+  content: "";
+  width: 5px;
+  height: 5px;
+  right: 8px;
+  top: 8px;
+  border-radius: 50%;
+  background: #fff;
 }
+.brand-dot { color: var(--red); }
 
-h1 { 
-  font-size: clamp(31px, 4vw, 49px); letter-spacing: -1.8px; margin: 12px 0; line-height: 1.14; 
+.topbar-actions { display: flex; align-items: center; gap: 20px; }
+.eyebrow { color: #d7e4f4; font-size: 13px; font-weight: 600; }
+.menu-toggle {
+  display: flex;
+  width: 46px;
+  height: 44px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  border: 1px solid #ffffff55;
+  border-radius: 3px;
+  background: transparent;
+  transition: background .2s, border-color .2s;
 }
+.menu-toggle:hover { background: #ffffff19; border-color: #fff; }
+.menu-toggle span { width: 20px; height: 2px; border-radius: 2px; background: #fff; }
 
-.intro p { 
-  color: #81899d; font-size: 16px; line-height: 1.7; margin: 0; 
+.shell { min-height: calc(100vh - 78px); }
+.main {
+  width: min(100%, 1440px);
+  margin: 0 auto;
+  padding: clamp(40px, 6vw, 82px) clamp(22px, 6vw, 88px) 60px;
+  transition: padding-right .35s ease;
 }
+.intro { max-width: 760px; margin-bottom: 38px; }
+.section-label {
+  display: inline-block;
+  color: var(--red);
+  font-size: 11px;
+  letter-spacing: 1.8px;
+  font-weight: 800;
+}
+h1 {
+  margin: 13px 0 12px;
+  color: var(--navy);
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 1.08;
+  letter-spacing: -1.7px;
+}
+h2 { margin: 8px 0 0; color: var(--navy); font-size: 23px; letter-spacing: -.5px; }
+.intro p { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.7; }
 
-/* Landing-page cards and the interactive organ-selection stage. */
-.organ-card { 
-  background: #fff; border: 1px solid #e8eaf3; box-shadow: 0 16px 65px rgba(59, 66, 117, .05); border-radius: 24px; max-width: 1120px; padding: clamp(20px, 3.2vw, 35px); 
-}
-
-.organ-card-header { 
-  display: flex; justify-content: space-between; align-items: center; gap: 15px; 
-}
-
-h2 { 
-  font-size: 21px; letter-spacing: -.6px; margin: 8px 0 0; 
-}
-
-.card-chip { 
-  flex: none; font-size: 12px; font-weight: 650; color: #73a8d8; padding: 10px 14px; background: #f3f0ff; border-radius: 999px; 
-}
-
-.organ-stage { 
-  margin-top: 27px; min-height: 360px; border: 1px dashed #dcdff2; border-radius: 18px; position: relative; background: radial-gradient(circle at 50% 48%, #f3f0ff 0, #fafaff 60%, #fff 100%); display: flex; align-items: center; justify-content: center; gap: clamp(15px, 4vw, 70px); padding: 45px 16px 125px; 
-}
-
-.organ { 
-  border: 0; cursor: pointer; background: #fff; width: clamp(75px, 13vw, 150px); height: clamp(75px, 13vw, 150px); border-radius: 24px; box-shadow: 0 12px 40px #52449a14; transition: transform .32s cubic-bezier(.2,.8,.2,1), filter .32s ease, box-shadow .32s ease, opacity .32s ease; display: grid; place-items: center; 
-}
-
-.organ-emoji { 
-  font-size: clamp(42px, 8vw, 85px); line-height: 1; 
-}
-
-.organ-stage:has(.organ:hover) .organ:not(:hover), .organ-stage:has(.organ:focus-visible) .organ:not(:focus-visible), .organ-stage.has-selection .organ:not(.is-selected) { 
-  filter: blur(3px); opacity: .4; transform: scale(.96); 
-}
-
-.organ:hover, .organ:focus-visible, .organ.is-selected { 
-  transform: scale(1.14); z-index: 1; box-shadow: 0 17px 45px #7267b933; 
-}
-
-.organ-tip { 
-  position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); width: min(450px, calc(100% - 30px)); background: #fff; border: 1px solid #ebe9fa; box-shadow: 0 10px 35px #534b8514; border-radius: 14px; display: flex; gap: 14px; align-items: center; padding: 14px 18px; 
-}
-
-.organ-tip-icon { 
-  color: #73a8d8; background: #f1edff; border-radius: 11px; width: 35px; height: 35px; flex: none; display: grid; place-items: center; 
-}
-
-.organ-tip strong { 
-  font-size: 14px; 
-}
-
-.organ-tip p { 
-  margin: 3px 0 0; color: #8a90a4; font-size: 12px; line-height: 1.45; 
-}
-
-.under-card { 
-  color: #969bad; font-size: 13px; margin-top: 22px; 
-}
-
-/* Drawer navigation, its open state, and the mobile backdrop. */
-.sidebar { 
-  position: fixed; z-index: 25; top: 86px; bottom: 0; right: 0; width: min(300px, 88vw); background: #fff; border-left: 1px solid #e9eaf2; box-shadow: -14px 0 40px #2422400b; transform: translateX(102%); opacity: 0; visibility: hidden; transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .35s, visibility .35s; display: flex; flex-direction: column; padding: 30px 18px 18px; 
-}
-
-.app.menu-open .sidebar { 
-  transform: translateX(0); opacity: 1; visibility: visible; 
-}
-
-.sidebar-top { 
-  display: flex; justify-content: space-between; align-items: center; padding: 0 11px 22px; 
-}
-
-.sidebar-heading, .sidebar-label { 
-  font-size: 11px; letter-spacing: 1.6px; color: #a3a8ba; font-weight: 800; 
-}
-
-.sidebar-close { 
-  font-size: 25px; background: transparent; border: 0; cursor: pointer; color: #7c8194; 
-}
-
-.sidebar-nav { 
-  display: flex; flex-direction: column; gap: 6px; 
-}
-
-.nav-link { 
-  width: 100%; border: 0; text-decoration: none; color: #6d738a; background: transparent; text-align: left; padding: 13px 14px; border-radius: 11px; display: flex; gap: 15px; align-items: center; cursor: pointer; font-size: 14px; transition: background .2s, color .2s; 
-}
-
-.nav-link:hover, .nav-link.is-active { 
-  color: #527ab6; background: #eff9ff; 
-}
-
-.nav-icon { 
-  width: 24px; text-align: center; color: #6088c4; font-size: 17px; 
-}
-
-.nav-divider { 
-  height: 1px; background: #ecf0f5; margin: 16px 8px 23px; 
-}
-
-.sidebar-label { 
-  padding: 0 14px 12px; 
-}
-
-.sidebar-footer {
-  display: grid; gap: 18px; margin-top: auto; padding: 15px; color: #abbac0; font-size: 12px;
-}
-
-.sidebar-user {
-  display: flex; align-items: center; gap: 12px; min-width: 0;
-  color: #21263b; font-size: 13px; font-weight: 650;
-}
-
-.sidebar-user span {
-  overflow-wrap: anywhere;
-}
-
-.sidebar-user-icon {
-  width: 38px; height: 38px; flex: none; padding: 8px;
-  border-radius: 50%; background: #eff9ff; color: #6088c4;
-  fill: none; stroke: currentColor; stroke-width: 1.8;
-}
-
-.sidebar-copyright {
-  color: #abbac0; font-size: 12px;
-}
-
-.overlay { 
-  display: none; 
-}
-
-/* Wide screens reserve room for the open navigation drawer. */
-@media (min-width: 900px) { 
-  .app.menu-open .main { padding-right: 340px; } 
-}
-
-/* The backdrop appears behind the drawer on compact screens. */
-@media (max-width: 899px) { 
-  .overlay { display: block; position: fixed; inset: 86px 0 0; background: #17162c70; z-index: 20; opacity: 0; visibility: hidden; transition: opacity .3s, visibility .3s; } .app.menu-open .overlay { opacity: 1; visibility: visible; } 
-}
-
-/* Reduce header, card, and organ-picker dimensions on phones. */
-@media (max-width: 560px) { 
-  .topbar { height: 72px; padding: 0 20px; } .shell { min-height: calc(100vh - 72px); } .sidebar { top: 72px; } .overlay { top: 72px; } .eyebrow { display: none; } .brand { font-size: 25px; } .brand-mark { width: 32px; height: 32px; border-width: 7px; } .main { padding: 36px 17px; } .intro p { font-size: 14px; } .organ-card { border-radius: 18px; padding: 18px; } .card-chip { font-size: 10px; padding: 8px; } .organ-stage { gap: 12px; min-height: 320px; padding-bottom: 125px; } .organ { width: 76px; height: 76px; border-radius: 16px; } .organ-emoji { font-size: 43px; } 
-}
-/* ===== Report page background, star fallback, and readable text ===== */
-#reporte {
-  position: relative; isolation: isolate;
-  min-height: calc(100vh - 86px);
+/* The landing page uses a restrained deep-space treatment. */
+.main#inicio {
+  position: relative;
+  display: flex;
+  min-height: calc(100vh - 78px);
+  width: 100%;
+  max-width: none;
+  align-items: center;
+  overflow: hidden;
+  padding: clamp(70px, 12vw, 160px) clamp(24px, 11vw, 165px);
   background:
-    url("img/fondo-espacio.jpg") center / cover no-repeat,
-    radial-gradient(ellipse at 18% 12%, #3b2a6b88 0, transparent 55%),
-    radial-gradient(ellipse at 88% 85%, #12507a88 0, transparent 52%),
-    radial-gradient(ellipse at 50% 50%, #101a3a 0, #05070f 85%);
+    radial-gradient(1px 1px at 13% 28%, #ffffffb3 99%, transparent),
+    radial-gradient(1.5px 1.5px at 84% 21%, #ffffff9c 99%, transparent),
+    radial-gradient(1px 1px at 72% 77%, #ffffffa6 99%, transparent),
+    radial-gradient(1px 1px at 37% 81%, #ffffff80 99%, transparent),
+    radial-gradient(ellipse at 82% 50%, #123e70 0, transparent 38%),
+    linear-gradient(118deg, #061b3a 4%, #09264c 60%, #061b3a 100%);
 }
-/* Estrellas (respaldo si no carga la imagen; puedes borrarlo si no las quieres) */
-#reporte::before {
-  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background-image:
-    radial-gradient(1.5px 1.5px at 6% 22%, #fff, transparent),
-    radial-gradient(1px 1px at 14% 74%, #fff, transparent),
-    radial-gradient(1.5px 1.5px at 27% 40%, #fff, transparent),
-    radial-gradient(1px 1px at 33% 90%, #fff, transparent),
-    radial-gradient(1px 1px at 44% 12%, #fff, transparent),
-    radial-gradient(1.5px 1.5px at 57% 66%, #fff, transparent),
-    radial-gradient(1px 1px at 68% 30%, #fff, transparent),
-    radial-gradient(1.5px 1.5px at 79% 82%, #fff, transparent),
-    radial-gradient(1px 1px at 88% 18%, #fff, transparent),
-    radial-gradient(1px 1px at 95% 56%, #fff, transparent);
+.main#inicio::after {
+  position: absolute;
+  content: "";
+  width: min(52vw, 620px);
+  aspect-ratio: 1;
+  right: -9%;
+  top: 50%;
+  border: 1px solid #ffffff22;
+  border-radius: 50%;
+  box-shadow: 0 0 0 35px #ffffff08, 0 0 0 90px #ffffff05;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
+.main#inicio .intro { position: relative; z-index: 1; max-width: 720px; margin: 0; }
+.main#inicio .section-label { color: #ff806b; }
+.main#inicio h1 { max-width: 680px; color: #fff; font-size: clamp(42px, 7vw, 78px); }
 
-/* Textos claros sobre el fondo oscuro */
-#reporte h1, #reporte h2 { color: #fff; }
-#reporte .intro p { color: #b8c4e0; }
-#reporte .section-label { color: #8fc1ee; }
-#reporte .card-chip { background: #ffffff1a; color: #cfe6ff; border: 1px solid #ffffff26; }
-
-/* Tarjeta de cristal */
-#reporte .organ-card {
-  background: #ffffff0f; border: 1px solid #ffffff2b;
-  box-shadow: 0 20px 60px #00000066;
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+/* Shared mission card and interactive planet selector. */
+.organ-card {
+  max-width: 1120px;
+  padding: clamp(22px, 3.2vw, 38px);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--red);
+  border-radius: 3px;
+  background: var(--paper);
+  box-shadow: 0 12px 32px #071a3310;
 }
-
-/* ===== Mission selector, route fields, and trip summary ===== */
-.missions-hint { color: #b8c4e0; font-size: 15px; margin: 18px 0 16px; }
-
-/* Barra A -> B */
-.trip { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 16px; }
-.trip-slot { flex: 1; max-width: 190px; padding: 12px 14px; background: #ffffff12; border: 1px dashed #ffffff40; border-radius: 14px; }
-.trip-slot span { display: block; font-size: 10px; letter-spacing: 1.5px; font-weight: 800; color: #9fb0d4; }
-.trip-slot strong { font-size: 17px; color: #fff; }
-.trip-arrow { color: #8fc1ee; font-size: 20px; }
-
-/* Planetas en fila, flotando sobre el espacio */
-.space {
-  position: relative; display: flex; align-items: center; justify-content: space-around;
-  width: 100%; max-width: 640px; height: 240px; margin: 0 auto; padding: 0 12px 26px;
+.organ-card-header { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+.card-chip {
+  flex: none;
+  padding: 9px 13px;
+  border: 1px solid #bed3e7;
+  border-radius: 2px;
+  color: var(--blue);
+  background: #f0f6fb;
+  font-size: 12px;
+  font-weight: 700;
 }
-.space-line {
-  position: absolute; left: 12%; right: 12%; top: calc(50% - 13px);
-  border-top: 2px dashed #ffffff33; pointer-events: none;
+.organ-stage {
+  position: relative;
+  display: flex;
+  min-height: 360px;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(15px, 4vw, 70px);
+  margin-top: 27px;
+  padding: 45px 16px 125px;
+  border: 1px solid #d5e0eb;
+  border-radius: 3px;
+  background: radial-gradient(circle at 50% 48%, #e8f1f8 0, #f8fafc 65%, #fff 100%);
 }
+.organ {
+  display: grid;
+  width: clamp(75px, 13vw, 150px);
+  height: clamp(75px, 13vw, 150px);
+  place-items: center;
+  cursor: pointer;
+  border: 1px solid #e1e7ee;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 8px 25px #061b3a15;
+  transition: transform .25s ease, box-shadow .25s ease, opacity .25s ease;
+}
+.organ-emoji { font-size: clamp(42px, 8vw, 85px); line-height: 1; }
+.organ-stage:has(.organ:hover) .organ:not(:hover),
+.organ-stage:has(.organ:focus-visible) .organ:not(:focus-visible),
+.organ-stage.has-selection .organ:not(.is-selected) { opacity: .48; transform: scale(.96); }
+.organ:hover, .organ:focus-visible, .organ.is-selected {
+  z-index: 1;
+  transform: scale(1.1);
+  box-shadow: 0 12px 32px #061b3a24;
+}
+.organ-tip {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  display: flex;
+  width: min(450px, calc(100% - 30px));
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--blue);
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 6px 20px #061b3a12;
+  transform: translateX(-50%);
+}
+.organ-tip-icon {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--blue);
+  background: #eaf2f8;
+}
+.organ-tip strong { font-size: 14px; }
+.organ-tip p, .under-card { color: var(--muted); }
+.organ-tip p { margin: 3px 0 0; font-size: 12px; line-height: 1.45; }
+.under-card { margin-top: 22px; font-size: 13px; }
 
-/* Botones de planetas (imágenes) */
-.planet {
-  position: relative; display: grid; place-items: center;
-  padding: 0; background: none; border: 0; cursor: pointer;
-  transition: transform .25s cubic-bezier(.2,.8,.2,1);
+/* Navigation drawer and compact-screen backdrop. */
+.sidebar {
+  position: fixed;
+  z-index: 25;
+  top: 78px;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  width: min(320px, 88vw);
+  flex-direction: column;
+  padding: 28px 18px 18px;
+  visibility: hidden;
+  border-left: 1px solid #d9e0e8;
+  background: #fff;
+  box-shadow: -14px 0 40px #061b3a18;
+  opacity: 0;
+  transform: translateX(102%);
+  transition: transform .3s ease, opacity .3s, visibility .3s;
 }
-.planet img {
-  width: 100%; height: 100%; object-fit: contain;
-  pointer-events: none; user-select: none;
-  filter: drop-shadow(0 8px 18px #000000a0);
+.app.menu-open .sidebar { visibility: visible; opacity: 1; transform: translateX(0); }
+.sidebar-top { display: flex; align-items: center; justify-content: space-between; padding: 0 11px 22px; }
+.sidebar-heading, .sidebar-label {
+  color: #6b7787;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  font-weight: 800;
 }
-.planet.earth { width: 112px; height: 112px; }
-.planet.moon  { width: 78px;  height: 78px; }
-.planet.mars  { width: 94px;  height: 94px; }
-.planet:hover { transform: scale(1.1); }
-.planet:active { transform: scale(.95); }
-.planet:focus-visible { outline: 3px solid #73a8d8; outline-offset: 6px; border-radius: 50%; }
+.sidebar-close { cursor: pointer; border: 0; background: transparent; color: var(--navy); font-size: 25px; }
+.sidebar-nav { display: flex; flex-direction: column; gap: 5px; }
+.nav-link {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 14px;
+  cursor: pointer;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-radius: 0;
+  color: #39495e;
+  background: transparent;
+  text-align: left;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background .2s, color .2s;
+}
+.nav-link:hover, .nav-link.is-active { color: var(--navy); border-left-color: var(--red); background: #eef3f8; }
+.nav-icon { width: 24px; color: var(--blue); text-align: center; font-size: 17px; }
+.nav-divider { height: 1px; margin: 16px 8px 23px; background: var(--line); }
+.sidebar-label { padding: 0 14px 12px; }
+.sidebar-footer { display: grid; gap: 18px; margin-top: auto; padding: 15px; color: #67768a; font-size: 12px; }
+.sidebar-user { display: flex; min-width: 0; align-items: center; gap: 12px; color: var(--ink); font-size: 13px; font-weight: 650; }
+.sidebar-user span { overflow-wrap: anywhere; }
+.sidebar-user-icon { width: 38px; height: 38px; flex: none; padding: 8px; border-radius: 50%; color: var(--blue); background: #eaf2f8; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.sidebar-copyright { color: #67768a; font-size: 12px; }
+.overlay { display: none; }
 
-.planet small {
-  position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%);
-  padding: 3px 10px; border-radius: 999px; pointer-events: none; white-space: nowrap;
-  background: #0b1020cc; border: 1px solid #ffffff26;
-  color: #fff; font-size: 12px; font-weight: 700;
+@media (min-width: 900px) {
+  .app.menu-open .main:not(#inicio) { padding-right: 370px; }
 }
-
-/* Anillo de selección */
-.planet::before {
-  content: ""; position: absolute; inset: -8px; border-radius: 50%; pointer-events: none;
-  border: 2px solid transparent; transition: border-color .25s, box-shadow .25s;
+@media (max-width: 899px) {
+  .overlay { position: fixed; z-index: 20; inset: 78px 0 0; display: block; visibility: hidden; background: #061b3a88; opacity: 0; transition: opacity .25s, visibility .25s; }
+  .app.menu-open .overlay { visibility: visible; opacity: 1; }
 }
-.planet.is-a::before { border-color: #73a8d8; box-shadow: 0 0 22px #73a8d8, inset 0 0 18px #73a8d855; }
-.planet.is-b::before { border-color: #3fae85; box-shadow: 0 0 22px #3fae85, inset 0 0 18px #3fae8555; }
-.planet.is-a small { background: #527ab6; border-color: #73a8d8; }
-.planet.is-b small { background: #2f8f69; border-color: #3fae85; }
-
-/* Insignia A / B */
-.planet.is-a::after, .planet.is-b::after {
-  position: absolute; top: -4px; right: -4px; width: 22px; height: 22px; border-radius: 50%;
-  display: grid; place-items: center; font-size: 12px; font-weight: 800; color: #fff;
-}
-.planet.is-a::after { content: "A"; background: #527ab6; }
-.planet.is-b::after { content: "B"; background: #2f8f69; }
-
-/* Campos de días: burbujas de cristal */
-.mission-form { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 24px; }
-.mission-form[hidden] { display: none; }
-.field { display: flex; flex-direction: column; gap: 10px; }
-.field-label { font-size: 13px; font-weight: 650; color: #c9d4ee; line-height: 1.35; }
-.field-label b { color: #7ee0b5; }
-
-.bubble {
-  position: relative; display: block; border-radius: 999px;
-  background: linear-gradient(145deg, #ffffff38, #ffffff0d);
-  border: 1px solid #ffffff59;
-  backdrop-filter: blur(16px) saturate(170%); -webkit-backdrop-filter: blur(16px) saturate(170%);
-  box-shadow: inset 0 1px 2px #ffffff8c, inset 0 -10px 18px #8fc1ee1f, 0 12px 32px #00000059;
-  transition: box-shadow .25s, border-color .25s, transform .25s;
-}
-/* Brillo de burbuja en la parte de arriba */
-.bubble::before {
-  content: ""; position: absolute; top: 5px; left: 16px; right: 16px; height: 42%;
-  border-radius: 999px; pointer-events: none;
-  background: linear-gradient(#ffffff52, #ffffff00);
-}
-.bubble:focus-within {
-  border-color: #8fc1eee6; transform: translateY(-1px);
-  box-shadow: inset 0 1px 2px #ffffff8c, 0 0 0 4px #73a8d840, 0 0 28px #73a8d88c;
-}
-.bubble input {
-  position: relative; z-index: 1; width: 100%; padding: 15px 24px;
-  font: inherit; font-size: 17px; font-weight: 600; color: #fff;
-  background: transparent; border: 0; border-radius: 999px; outline: none;
-  color-scheme: dark; -moz-appearance: textfield; appearance: textfield;
-}
-.bubble input::placeholder { color: #ffffff73; font-weight: 400; }
-.bubble input::-webkit-outer-spin-button,
-.bubble input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-/* Resumen */
-.route { margin-top: 22px; padding: 20px; background: #ffffff12; border: 1px dashed #ffffff40; border-radius: 18px; }
-.route[hidden] { display: none; }
-.route h3 { margin: 0 0 10px; font-size: 18px; letter-spacing: -.4px; color: #fff; }
-.route p { margin: 5px 0; color: #c9d4ee; font-size: 14px; }
-.route strong { color: #fff; }
-
-/* Botón reiniciar (también de cristal) */
-.reset-btn {
-  display: flex; align-items: center; gap: 8px; margin: 20px auto 0;
-  padding: 12px 24px; border-radius: 999px; cursor: pointer;
-  background: linear-gradient(145deg, #73a8d8a6, #73a8d82e);
-  border: 1px solid #ffffff59; color: #fff; font-size: 14px; font-weight: 700;
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 2px #ffffff80, 0 8px 22px #00000059;
-  transition: transform .2s, box-shadow .2s;
-}
-.reset-btn[hidden] { display: none; }
-.reset-btn:hover { transform: translateY(-2px); box-shadow: inset 0 1px 2px #ffffff80, 0 0 24px #73a8d8aa; }
-.reset-btn:active { transform: scale(.97); }
-
-/* Celular */
 @media (max-width: 560px) {
-  #reporte { min-height: calc(100vh - 72px); }
-  .space { height: 200px; padding-bottom: 24px; }
-  .planet.earth { width: 80px; height: 80px; }
-  .planet.moon  { width: 56px; height: 56px; }
-  .planet.mars  { width: 68px; height: 68px; }
-  .planet small { font-size: 11px; padding: 2px 8px; }
-  .mission-form { grid-template-columns: 1fr; }
+  .topbar { min-height: 70px; padding: 0 17px; }
+  .shell { min-height: calc(100vh - 70px); }
+  .sidebar { top: 70px; }
+  .overlay { top: 70px; }
+  .brand { gap: 8px; font-size: clamp(16px, 4.7vw, 22px); letter-spacing: -.5px; }
+  .brand-mark { width: 31px; height: 31px; }
+  .brand-mark::before { width: 38px; height: 14px; top: 8px; }
+  .topbar-actions { margin-left: 10px; }
+  .main { padding: 38px 18px 46px; }
+  .main#inicio { min-height: calc(100vh - 70px); padding: 72px 22px; }
+  .main#inicio::after { width: 90vw; right: -45%; }
+  .intro p { font-size: 14px; }
+  .organ-card { padding: 19px; }
+  .organ-card-header { flex-wrap: wrap; }
+  .card-chip { font-size: 11px; padding: 8px 10px; }
+  .organ-stage { min-height: 320px; gap: 12px; padding-bottom: 125px; }
+  .organ { width: 76px; height: 76px; }
+  .organ-emoji { font-size: 43px; }
 }
-
-@media (prefers-reduced-motion: reduce) { .arm, .upright { animation: none; } }
-
-/* Keep session-only controls hidden even when their component uses flex/grid. */
-[hidden] { display:none !important; }
-.auth-notice { margin:24px; padding:20px; border:1px solid #dcdff2; border-radius:14px; background:#fff; }
-@media(max-width:560px) { .brand {font-size:clamp(16px,4.7vw,25px); letter-spacing:-.7px; gap:8px;} .brand-mark {flex-shrink:0; width:26px; height:26px; border-width:6px;} .topbar-actions {margin-left:10px;} .organ-card-header {flex-wrap:wrap;} }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}

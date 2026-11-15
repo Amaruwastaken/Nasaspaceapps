@@ -1,136 +1,223 @@
+/* Authentication, records, and mission-planner components. */
+.login-container, .register-container {
+  max-width: 560px;
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid #d9e0e8;
+  border-top: 4px solid #fc3d21;
+  border-radius: 3px;
+  background: #fff;
+  box-shadow: 0 12px 32px #071a3310;
+}
+.login-form, .register-form, .record-form { display: grid; gap: 20px; }
+.form-group { display: grid; gap: 8px; }
+.form-group label, .field-label { color: #17233b; font-size: 14px; font-weight: 650; }
+.form-group input, .form-group select {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 13px;
+  border: 1px solid #cbd5df;
+  border-radius: 2px;
+  color: #17233b;
+  background: #fff;
+  font: inherit;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: #1769aa;
+  outline: 2px solid #1769aa;
+  outline-offset: 1px;
+}
+.form-group input[type=range] { min-height: 0; padding: 0; accent-color: #1769aa; }
+.login-button, .register-button {
+  min-height: 48px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 2px;
+  color: #fff;
+  background: #1769aa;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.login-button:hover, .register-button:hover { background: #0c4d83; }
+.login-button:active, .register-button:active { transform: translateY(1px); }
+.login-button:disabled, .register-button:disabled { cursor: wait; opacity: .65; }
+.register-text, .login-text {
+  margin: 0;
+  color: #5e6b7e;
+  font-size: 14px;
+  text-align: center;
+}
+.register-text a, .login-text a { color: #1769aa; font-weight: 700; }
+#authMessage { margin: 0; color: #1769aa; font-size: 14px; }
 
-/* Shared card and field styles for signing in and creating an account. */
-    .login-container {
-      max-width: 520px;
-      padding: clamp(22px, 4vw, 36px);
-      background: #fff;
-      border: 1px solid #e8eaf3;
-      border-radius: 20px;
-      box-shadow: 0 16px 65px rgba(59, 66, 117, .05);
-    }
+.auth-notice {
+  margin: 24px 0;
+  padding: 20px;
+  border: 1px solid #bed3e7;
+  border-left: 4px solid #1769aa;
+  border-radius: 2px;
+  background: #f0f6fb;
+}
+.form-message { min-height: 1.5em; color: #1769aa; }
+.form-message.is-error { color: #b42318; }
 
-    .login-form {
-      display: grid;
-      gap: 20px;
-    }
+.record-form { max-width: 760px; }
+.pvt {
+  width: 100%;
+  min-height: 100px;
+  padding: 28px;
+  border: 2px solid #bed3e7;
+  border-radius: 3px;
+  color: #173a5e;
+  background: #eaf2f8;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color .2s, background .2s, border-color .2s;
+}
+.pvt.waiting { border-color: #e4a126; color: #63420a; background: #fff4d8; }
+.pvt.ready { border-color: #16834b; color: #fff; background: #16834b; }
+.report-table { width: 100%; border-collapse: collapse; background: #fff; }
+.report-table caption { padding: 14px; color: #17233b; font-weight: 700; text-align: left; }
+.report-table th, .report-table td {
+  padding: 12px;
+  border-bottom: 1px solid #d9e0e8;
+  text-align: left;
+  white-space: nowrap;
+}
+.report-table th { color: #fff; background: #0c2e5b; font-size: 13px; }
+.report-table tbody tr:nth-child(even) { background: #f4f6f9; }
+.table-scroll { overflow-x: auto; }
+.report-content { margin-bottom: 24px; }
 
-    .form-group {
-      display: grid;
-      gap: 8px;
-    }
+/* The route planner remains bright and readable while retaining a space motif. */
+#reporte { max-width: 1280px; }
+#reporte .intro { margin-bottom: 30px; }
+#reporte .missions { max-width: 1040px; }
+.missions-hint { margin: 20px 0 16px; color: #5e6b7e; font-size: 15px; }
+.trip { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 8px; }
+.trip-slot {
+  flex: 1;
+  max-width: 220px;
+  padding: 12px 14px;
+  border: 1px solid #d9e0e8;
+  border-radius: 2px;
+  background: #f4f6f9;
+}
+.trip-slot span { display: block; color: #5e6b7e; font-size: 10px; letter-spacing: 1.3px; font-weight: 800; }
+.trip-slot strong { color: #061b3a; font-size: 17px; }
+.trip-arrow { color: #fc3d21; font-size: 20px; }
+.space {
+  position: relative;
+  display: flex;
+  width: 100%;
+  max-width: 640px;
+  height: 240px;
+  align-items: center;
+  justify-content: space-around;
+  margin: 0 auto;
+  padding: 0 12px 26px;
+}
+.space-line { position: absolute; top: calc(50% - 13px); right: 12%; left: 12%; border-top: 2px dashed #9cb4c9; pointer-events: none; }
+.planet { position: relative; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer; transition: transform .25s ease; }
+.planet img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; filter: drop-shadow(0 8px 12px #061b3a30); }
+.planet.earth { width: 112px; height: 112px; }
+.planet.moon { width: 78px; height: 78px; }
+.planet.mars { width: 94px; height: 94px; }
+.planet:hover { transform: scale(1.08); }
+.planet:active { transform: scale(.96); }
+.planet:focus-visible { outline: 3px solid #fc3d21; outline-offset: 6px; border-radius: 50%; }
+.planet small {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  padding: 3px 10px;
+  border: 1px solid #d9e0e8;
+  border-radius: 2px;
+  color: #17233b;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+.planet::before { position: absolute; inset: -8px; border: 2px solid transparent; border-radius: 50%; content: ""; pointer-events: none; }
+.planet.is-a::before { border-color: #1769aa; box-shadow: 0 0 0 4px #1769aa20; }
+.planet.is-b::before { border-color: #fc3d21; box-shadow: 0 0 0 4px #fc3d2120; }
+.planet.is-a small { border-color: #1769aa; color: #fff; background: #1769aa; }
+.planet.is-b small { border-color: #fc3d21; color: #fff; background: #fc3d21; }
+.planet.is-a::after, .planet.is-b::after {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+.planet.is-a::after { content: "A"; background: #1769aa; }
+.planet.is-b::after { content: "B"; background: #fc3d21; }
+.mission-form { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 24px; }
+.mission-form[hidden], .route[hidden], .reset-btn[hidden] { display: none; }
+.field { display: flex; flex-direction: column; gap: 9px; }
+.field-label b { color: #1769aa; }
+.bubble { border: 1px solid #cbd5df; border-radius: 2px; background: #fff; transition: border-color .2s, box-shadow .2s; }
+.bubble:focus-within { border-color: #1769aa; box-shadow: 0 0 0 3px #1769aa20; }
+.bubble input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 2px;
+  outline: none;
+  color: #17233b;
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  appearance: textfield;
+}
+.bubble input::placeholder { color: #778496; font-weight: 400; }
+.bubble input::-webkit-outer-spin-button, .bubble input::-webkit-inner-spin-button { margin: 0; -webkit-appearance: none; }
+.route { margin-top: 22px; padding: 20px; border: 1px solid #bed3e7; border-left: 4px solid #1769aa; border-radius: 2px; background: #f0f6fb; }
+.route h3 { margin: 0 0 10px; color: #061b3a; font-size: 18px; }
+.route p { margin: 5px 0; color: #39495e; font-size: 14px; }
+.route strong { color: #061b3a; }
+.reset-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px auto 0;
+  padding: 12px 24px;
+  cursor: pointer;
+  border: 1px solid #1769aa;
+  border-radius: 2px;
+  color: #1769aa;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  transition: color .2s, background .2s;
+}
+.reset-btn:hover { color: #fff; background: #1769aa; }
+.orbit-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.orbit-controls p, .orbit-note { color: #5e6b7e; font-size: 12px; line-height: 1.7; }
+.orbit-controls button { padding: 10px 16px; cursor: pointer; border: 1px solid #1769aa; border-radius: 2px; color: #1769aa; background: #fff; }
+.orbit-controls button:hover { color: #fff; background: #1769aa; }
+.orbit-note a { color: #1769aa; }
 
-    .form-group label {
-      font-size: 14px;
-      font-weight: 650;
-    }
-
-    .form-group input {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #dcdff2;
-      border-radius: 10px;
-      color: #21263b;
-      font: inherit;
-    }
-
-    .form-group input:focus {
-      border-color: #73a8d8;
-      outline: 2px solid #73a8d8;
-      outline-offset: 2px;
-    }
-
-    .login-button {
-      padding: 13px 18px;
-      border: 0;
-      border-radius: 10px;
-      background: #73a8d8;
-      color: #21263b;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .login-button:disabled {
-      cursor: wait;
-      opacity: .65;
-    }
-
-    .register-text {
-      margin: 0;
-      color: #81899d;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .register-text a {
-      color: #527ab6;
-      font-weight: 650;
-    }
-
-    #authMessage {
-      margin: 0;
-      color: #527ab6;
-      font-size: 14px;
-    }
-  
-
-/* Registration uses the same field layout with its own submit and return link. */
-    .register-container {
-      max-width: 520px;
-      padding: clamp(22px, 4vw, 36px);
-      background: #fff;
-      border: 1px solid #e8eaf3;
-      border-radius: 20px;
-      box-shadow: 0 16px 65px rgba(59, 66, 117, .05);
-    }
-
-    .register-form {
-      display: grid;
-      gap: 20px;
-    }
-
-    .register-button {
-      padding: 13px 18px;
-      border: 0;
-      border-radius: 10px;
-      background: #73a8d8;
-      color: #21263b;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .register-button:hover {
-      background: #6791cc;
-    }
-
-    .register-button:disabled {
-      cursor: wait;
-      opacity: .65;
-    }
-
-    .login-text {
-      margin: 0;
-      color: #81899d;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .login-text a {
-      color: #527ab6;
-      font-weight: 650;
-    }
-  
-/* Controls and feedback for daily records and the generated report table. */
-.form-group select { width:100%; padding:12px; border:1px solid #dcdff2; border-radius:10px; font:inherit; background:white; }
-.form-group input[type=range] { padding:0; }
-.form-message { min-height:1.5em; color:#527ab6; }
-.form-message.is-error { color:#a52635; }
-.record-form { display:grid; gap:20px; }
-.pvt { padding:28px; border:2px solid #dcdff2; border-radius:14px; background:#f0eefc; cursor:pointer; }
-.pvt.waiting { background:#ffe2e2; }
-.pvt.ready { background:#b9f2d1; }
-.report-table { width:100%; border-collapse:collapse; }
-.report-table th,.report-table td { padding:12px; border-bottom:1px solid #e8eaf3; text-align:left; white-space:nowrap; }
-.table-scroll { overflow-x:auto; }
-.report-content { margin-bottom:24px; }
+@media (max-width: 560px) {
+  .space { height: 200px; padding-bottom: 24px; }
+  .planet.earth { width: 80px; height: 80px; }
+  .planet.moon { width: 56px; height: 56px; }
+  .planet.mars { width: 68px; height: 68px; }
+  .planet small { padding: 2px 8px; font-size: 11px; }
+  .mission-form { grid-template-columns: 1fr; }
+  .trip { gap: 8px; }
+  .trip-slot { padding: 10px; }
+  .trip-slot strong { font-size: 14px; }
+}
