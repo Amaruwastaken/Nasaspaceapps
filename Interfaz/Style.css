@@ -117,6 +117,7 @@ h1 {
 }
 h2 { margin: 8px 0 0; color: var(--navy); font-size: 23px; letter-spacing: -.5px; }
 .intro p { margin: 0; color: var(--muted); font-size: 16px; line-height: 1.7; }
+.intro p + p { margin-top: 16px; }
 
 /* The landing page uses a restrained deep-space treatment. */
 .main#inicio {
