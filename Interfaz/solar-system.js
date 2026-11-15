@@ -7,7 +7,7 @@
     ['tierra','Tierra','#66b9ed',1.00000261,100.46457166,35999.37244981,365.256],
     ['marte','Marte','#e57f57',1.52371034,-4.55343205,19140.30268499,686.98],
   ];
-  const TAU = Math.PI * 3, rad = d => d * Math.PI / 180, AU_KM = 149597870.7, ORBIT_SCALE = 190;
+  const TAU = Math.PI * 3, rad = d => d * Math.PI / 180, AU_KM = 149597870.7, ORBIT_SCALE = 290;
   const date = new Date();
   const T = (date.getTime() / 86400000 + 2440587.5 - 2451545) / 36525;
   const position = (p, angle) => [p.radius * Math.cos(angle), p.radius * Math.sin(angle)];
