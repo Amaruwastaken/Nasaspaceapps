@@ -1,136 +1,104 @@
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './supabase-config.js';
 
-const message = document.querySelector('#authMessage');
-const registerForm = document.querySelector('#registerForm');
 const loginForm = document.querySelector('#loginForm');
+const registerForm = document.querySelector('#registerForm');
+const message = document.querySelector('#authMessage');
+const protectedPage = document.querySelector('[data-requires-auth]');
+let currentUser = null;
+let notice;
 
-function showMessage(text, isError = false) {
+function showMessage(text, error = false) {
+  if (!message) return;
   message.textContent = text;
-  message.setAttribute('role', isError ? 'alert' : 'status');
+  message.classList.toggle('is-error', error);
+  message.setAttribute('role', error ? 'alert' : 'status');
+}
+function renderSession(session) {
+  currentUser = session?.user ?? null;
+  document.querySelectorAll('[data-auth]').forEach(el => {
+    el.hidden = (el.dataset.auth === 'logged-in') !== Boolean(currentUser);
+  });
+  if (protectedPage) {
+    protectedPage.hidden = !currentUser;
+    if (!currentUser && !notice) {
+      notice = document.createElement('p');
+      notice.className = 'auth-notice';
+      notice.setAttribute('role', 'status');
+      const link = document.createElement('a');
+      link.href = 'login.html';
+      link.textContent = 'Inicia sesión para continuar.';
+      notice.append(link);
+      protectedPage.before(notice);
+    }
+    if (notice) notice.hidden = Boolean(currentUser);
+  }
+  document.dispatchEvent(new CustomEvent('sessionchange', { detail: currentUser }));
+}
+function busy(form, value) {
+  const button = form.querySelector('[type="submit"]');
+  button.disabled = value;
+  button.textContent = value ? 'Procesando…' : form === loginForm ? 'Iniciar sesión' : 'Crear cuenta';
 }
 
-function setFormBusy(form, busy) {
-  const button = form.querySelector('button[type="submit"]');
-  button.disabled = busy;
-  button.textContent = busy
-    ? 'Procesando…'
-    : form === registerForm
-      ? 'Registrarme'
-      : 'Iniciar Sesión';
-}
+export const supabaseReady = (async () => {
+  try {
+    if (!SUPABASE_URL.startsWith('https://') || !SUPABASE_PUBLISHABLE_KEY || SUPABASE_PUBLISHABLE_KEY.includes('YOUR_')) {
+      throw new Error('La conexión no está configurada.');
+    }
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm');
+    const client = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+    client.auth.onAuthStateChange((_event, session) => renderSession(session));
+    const { data, error } = await client.auth.getSession();
+    if (error) throw error;
+    renderSession(data.session);
+    [loginForm, registerForm].filter(Boolean).forEach(form => busy(form, false));
+    return client;
+  } catch (error) {
+    renderSession(null);
+    const text = `No se pudo conectar. ${error.message || 'Intenta recargar la página.'}`;
+    showMessage(text, true);
+    if (notice) notice.textContent = text;
+    return null;
+  }
+})();
+export const getCurrentUser = () => currentUser;
 
-const isConfigured =
-  SUPABASE_URL.startsWith('https://') &&
-  !SUPABASE_URL.includes('YOUR_PROJECT_ID') &&
-  SUPABASE_PUBLISHABLE_KEY !== 'YOUR_SUPABASE_PUBLISHABLE_KEY';
-
-const supabaseReady = isConfigured
-  ? import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm')
-      .then(({ createClient }) => {
-        const client = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-        [registerForm, loginForm].filter(Boolean).forEach(form => {
-          setFormBusy(form, false);
-        });
-        return client;
-      })
-      .catch(error => {
-        showMessage(
-          error instanceof Error
-            ? `No se pudo cargar Supabase: ${error.message}`
-            : 'No se pudo cargar Supabase.',
-          true
-        );
-        return null;
-      })
-  : Promise.resolve(null);
-
-if (!isConfigured) {
-  showMessage(
-    'Configura la URL y la publishable key de Supabase en supabase-config.js.',
-    true
-  );
-}
-
-if (registerForm) {
-  registerForm.addEventListener('submit', async event => {
+for (const form of [loginForm, registerForm].filter(Boolean)) {
+  form.addEventListener('submit', async event => {
     event.preventDefault();
-    const formData = new FormData(registerForm);
-    const name = formData.get('nombre')?.toString().trim();
-    const email = formData.get('correo')?.toString().trim();
-    const password = formData.get('contrasena')?.toString();
-
-    if (!name || !email || !password) {
-      showMessage('Completa todos los campos.', true);
-      return;
-    }
-
-    setFormBusy(registerForm, true);
-    showMessage('Creando tu cuenta…');
+    if (!form.reportValidity()) return;
+    busy(form, true);
+    showMessage('Conectando…');
     try {
-      const supabase = await supabaseReady;
-      if (!supabase) {
-        showMessage('Supabase no está configurado o no se pudo cargar.', true);
-        return;
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: name } },
-      });
+      const client = await supabaseReady;
+      if (!client) throw new Error('La conexión no está disponible.');
+      const fields = new FormData(form);
+      const credentials = { email: fields.get('correo').trim(), password: fields.get('contrasena') };
+      const { data, error } = form === loginForm
+        ? await client.auth.signInWithPassword(credentials)
+        : await client.auth.signUp({ ...credentials, options: { data: { full_name: fields.get('nombre').trim() } } });
       if (error) throw error;
-
-      showMessage(
-        data.session
-          ? 'Cuenta creada. Ya puedes iniciar sesión.'
-          : 'Cuenta creada. Revisa tu correo para confirmar el registro.'
-      );
-      registerForm.reset();
-    } catch (error) {
-      showMessage(
-        error instanceof Error ? error.message : 'No se pudo crear la cuenta.',
-        true
-      );
-    } finally {
-      setFormBusy(registerForm, false);
-    }
+      if (data.session) window.location.assign('Index.html');
+      else {
+        showMessage('Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.');
+        form.reset();
+      }
+    } catch (error) { showMessage(error.message || 'No se pudo completar la solicitud.', true); }
+    finally { busy(form, false); }
   });
 }
 
-if (loginForm) {
-  loginForm.addEventListener('submit', async event => {
-    event.preventDefault();
-    const formData = new FormData(loginForm);
-    const email = formData.get('correo')?.toString().trim();
-    const password = formData.get('contrasena')?.toString();
-
-    if (!email || !password) {
-      showMessage('Ingresa tu correo y contraseña.', true);
-      return;
-    }
-
-    setFormBusy(loginForm, true);
-    showMessage('Iniciando sesión…');
-    try {
-      const supabase = await supabaseReady;
-      if (!supabase) {
-        showMessage('Supabase no está configurado o no se pudo cargar.', true);
-        return;
-      }
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      window.location.assign('Index.html');
-    } catch (error) {
-      showMessage(
-        error instanceof Error ? error.message : 'No se pudo iniciar sesión.',
-        true
-      );
-    } finally {
-      setFormBusy(loginForm, false);
-    }
-  });
-}
+document.querySelector('#logoutButton')?.addEventListener('click', async event => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    const client = await supabaseReady;
+    if (!client) throw new Error('La conexión no está disponible.');
+    const { error } = await client.auth.signOut();
+    if (error) throw error;
+    window.location.assign('Index.html');
+  } catch (error) {
+    button.textContent = 'No se pudo cerrar sesión. Reintentar';
+    button.title = error.message;
+  } finally { button.disabled = false; }
+});

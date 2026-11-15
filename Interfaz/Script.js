@@ -16,12 +16,32 @@ function setMenu(open) {
 
   sidebar.setAttribute('aria-hidden', String(!open));
   sidebar.inert = !open;
+  if (open) sidebarClose.focus();
 
   if (!open && sidebar.contains(document.activeElement)) {
     menuToggle.focus();
   }
 }
 
+// Highlight the current page consistently across all navigation menus.
+const currentPage = window.location.pathname.split('/').pop() || 'Index.html';
+sidebar.querySelectorAll('a').forEach(link => {
+  const active = link.getAttribute('href') === currentPage;
+  link.classList.toggle('is-active', active);
+  if (active) link.setAttribute('aria-current', 'page');
+  else link.removeAttribute('aria-current');
+});
+// Keep keyboard navigation within the open drawer and its toggle.
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Tab' || !app.classList.contains('menu-open')) return;
+  const controls = [menuToggle, ...sidebar.querySelectorAll('button:not([disabled]), a[href]')]
+    .filter(el => !el.hidden && el.getClientRects().length);
+  const index = controls.indexOf(document.activeElement);
+  if (event.shiftKey && index <= 0) { event.preventDefault(); controls.at(-1).focus(); }
+  else if (!event.shiftKey && (index === controls.length - 1 || index === -1)) {
+    event.preventDefault(); controls[0].focus();
+  }
+});
 // Abrir y cerrar el menú
 menuToggle.addEventListener('click', () => {
   setMenu(!app.classList.contains('menu-open'));
@@ -82,6 +102,7 @@ sidebar.querySelectorAll('a').forEach(link => {
     buttons.forEach(btn => {
       btn.classList.toggle('is-a', btn.dataset.planet === a);
       btn.classList.toggle('is-b', btn.dataset.planet === b);
+      btn.setAttribute('aria-pressed', String(btn.dataset.planet === a || btn.dataset.planet === b));
     });
     resetBtn.hidden = !a;
     nameA.textContent = a ? PLANETS[a] : '—';
