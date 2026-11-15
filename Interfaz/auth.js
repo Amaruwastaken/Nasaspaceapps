@@ -74,6 +74,86 @@ export const supabaseReady = (async () => {
 })();
 export const getCurrentUser = () => currentUser;
 
+const healthPopup = document.createElement('dialog');
+healthPopup.className = 'health-alert-popup';
+healthPopup.setAttribute('aria-labelledby','healthPopupTitle');
+const healthPopupContent = document.createElement('div');
+healthPopupContent.className = 'health-alert-popup-content';
+const healthPopupTitle = document.createElement('h2');
+healthPopupTitle.id = 'healthPopupTitle';
+healthPopupTitle.textContent = 'Alerta de salud crítica';
+const healthPopupMessage = document.createElement('p');
+const healthPopupButton = document.createElement('button');
+healthPopupButton.type = 'button';
+healthPopupButton.textContent = 'Entendido';
+healthPopupContent.append(healthPopupTitle,healthPopupMessage,healthPopupButton);
+healthPopup.append(healthPopupContent);
+document.body.append(healthPopup);
+
+let notificationLoading = false, notificationRequest = 0, currentNotificationId = null, currentNotificationUser = null;
+function dismissHealthPopup() {
+  if (healthPopup.open) healthPopup.close();
+  currentNotificationId = null;
+  currentNotificationUser = null;
+}
+async function refreshHealthPopup() {
+  const client = await supabaseReady;
+  const user = currentUser;
+  if (!client || !user) { dismissHealthPopup(); return; }
+  if (notificationLoading) return;
+  notificationLoading = true;
+  const request = ++notificationRequest;
+  try {
+    const {data,error} = await client.from('health_notifications')
+      .select('id,message').eq('recipient_id',user.id).is('read_at',null)
+      .order('created_at',{ascending:true}).limit(1).maybeSingle();
+    if (error) throw error;
+    if (request !== notificationRequest || user.id !== currentUser?.id) return;
+    if (!data) { dismissHealthPopup(); return; }
+    if (currentNotificationId === data.id && currentNotificationUser === user.id) return;
+    currentNotificationId = data.id;
+    currentNotificationUser = user.id;
+    healthPopupMessage.textContent = data.message;
+    if (!healthPopup.open) healthPopup.showModal();
+  } catch (error) {
+    if (request === notificationRequest) console.error('No se pudo actualizar la alerta de salud:',error);
+  } finally { notificationLoading = false; }
+}
+healthPopupButton.addEventListener('click',async () => {
+  const userId = currentNotificationUser;
+  const notificationId = currentNotificationId;
+  if (!userId || !notificationId) return;
+  healthPopupButton.disabled = true;
+  try {
+    const client = await supabaseReady;
+    if (!client || userId !== currentUser?.id) return;
+    const {error} = await client.from('health_notifications')
+      .update({read_at:new Date().toISOString()})
+      .eq('id',notificationId).eq('recipient_id',userId).is('read_at',null);
+    if (error) throw error;
+    notificationRequest++;
+    dismissHealthPopup();
+    await refreshHealthPopup();
+  } catch (error) {
+    healthPopupMessage.textContent = `No se pudo cerrar la alerta. Intenta de nuevo. ${error.message || ''}`;
+    console.error('No se pudo marcar la alerta de salud como leída:',error);
+  } finally { healthPopupButton.disabled = false; }
+});
+healthPopup.addEventListener('cancel',event => {
+  event.preventDefault();
+  healthPopupButton.click();
+});
+document.addEventListener('sessionchange',() => {
+  notificationRequest++;
+  dismissHealthPopup();
+  void refreshHealthPopup();
+});
+void supabaseReady.then(client => {
+  if (!client) return;
+  void refreshHealthPopup();
+  window.setInterval(() => void refreshHealthPopup(),15000);
+});
+
 // Use the same handler for sign-in and registration forms.
 for (const form of [loginForm, registerForm].filter(Boolean)) {
   form.addEventListener('submit', async event => {

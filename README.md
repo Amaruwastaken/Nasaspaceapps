@@ -35,6 +35,9 @@ no tienen una columna o conexión quedan como “Sin datos” en el reporte.
 
 El reporte suma 2 puntos por cada indicador rojo y 1.25 por cada amarillo
 (redondeando el total al entero más cercano). Con un puntaje mayor que 10,
-activa una alarma con opción para apagar el sonido y registra una notificación
-para las demás cuentas de Supabase. Aplica también
+muestra el estado crítico y registra una notificación emergente para todas las
+cuentas registradas. Aplica también
 `supabase/migrations/20261115020000_health_emergency_notifications.sql`.
+Aplica también `supabase/migrations/20261115020300_health_alert_popup.sql` para
+que cada cuenta reciba un popup descartable y las alertas no se repitan después
+de marcarlas como leídas.
