@@ -26,6 +26,9 @@ Aplica `supabase/migrations/20261114223000_registry_auth.sql` al proyecto.
 Supabase Auth almacena las credenciales; el trigger crea el perfil relacionado
 en `public."Registry"` y guarda el nombre en `"Usuario"`. La columna
 `"Contraseña"` no se usa para autenticar ni debe contener contraseñas.
+El registro también solicita un rol (capitán, ingeniero, piloto, doctor o
+científico) y lo guarda en los metadatos de Supabase Auth. Por ahora solo se
+muestra junto al nombre de usuario; no habilita permisos ni acciones.
 
 ### Métricas y reporte
 

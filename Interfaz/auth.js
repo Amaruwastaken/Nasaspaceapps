@@ -6,6 +6,13 @@ const registerForm = document.querySelector('#registerForm');
 const message = document.querySelector('#authMessage');
 const protectedPage = document.querySelector('[data-requires-auth]');
 const sidebarUserName = document.querySelector('#sidebarUserName');
+const userRoles = Object.freeze({
+  capitan:'Capitán',
+  ingeniero:'Ingeniero',
+  piloto:'Piloto',
+  doctor:'Doctor',
+  cientifico:'Científico',
+});
 let currentUser = null;
 let notice;
 
@@ -20,10 +27,13 @@ function renderSession(session) {
   currentUser = session?.user ?? null;
   if (sidebarUserName) {
     const fullName = currentUser?.user_metadata?.full_name;
-    sidebarUserName.textContent =
+    const displayName =
       typeof fullName === 'string' && fullName.trim()
         ? fullName.trim()
         : currentUser?.email ?? 'Usuario';
+    const role = currentUser?.user_metadata?.role;
+    const roleName = typeof role === 'string' && Object.hasOwn(userRoles,role) ? userRoles[role] : 'Sin rol';
+    sidebarUserName.textContent = `${displayName} · ${roleName}`;
   }
   document.querySelectorAll('[data-auth]').forEach(el => {
     el.hidden = (el.dataset.auth === 'logged-in') !== Boolean(currentUser);
@@ -177,9 +187,16 @@ for (const form of [loginForm, registerForm].filter(Boolean)) {
       if (!client) throw new Error('La conexión no está disponible.');
       const fields = new FormData(form);
       const credentials = { email: fields.get('correo').trim(), password: fields.get('contrasena') };
-      const { data, error } = form === loginForm
-        ? await client.auth.signInWithPassword(credentials)
-        : await client.auth.signUp({ ...credentials, options: { data: { full_name: fields.get('nombre').trim() } } });
+      let result;
+      if (form === loginForm) result = await client.auth.signInWithPassword(credentials);
+      else {
+        const name = fields.get('nombre');
+        const role = fields.get('rol');
+        if (typeof role !== 'string' || !Object.hasOwn(userRoles,role)) throw new Error('Selecciona un rol válido.');
+        if (typeof name !== 'string' || !name.trim()) throw new Error('Escribe tu nombre completo.');
+        result = await client.auth.signUp({ ...credentials, options: { data: { full_name: name.trim(), role } } });
+      }
+      const { data, error } = result;
       if (error) throw error;
       if (data.session) window.location.assign('Index.html');
       else {
