@@ -70,62 +70,80 @@ sidebar.querySelectorAll('a').forEach(link => {
 });
 // ===== Misiones (solo existe en reporte.html) =====
 (() => {
-  const planetsBox = document.querySelector('#planets');
-  if (!planetsBox) return;
+  const space = document.querySelector('#planets');
+  if (!space) return;
 
-  const PLANETS = { tierra: 'Tierra', luna: 'Luna', marte: 'Marte', titan: 'Titán' };
+  const PLANETS = { tierra: 'Tierra', luna: 'Luna', marte: 'Marte' };
   const DIST = { // km promedio aproximados
     'tierra-luna': 384400,
     'tierra-marte': 225e6,
     'luna-marte': 225e6,
   };
-  const SPEED = 58000; // km/h (nave ficticia)
 
-  const nameA = document.querySelector('#slotAName');
-  const nameB = document.querySelector('#slotBName');
   const hint = document.querySelector('#missionsHint');
   const chip = document.querySelector('#missionsChip');
+  const nameA = document.querySelector('#slotAName');
+  const nameB = document.querySelector('#slotBName');
+  const form = document.querySelector('#missionForm');
+  const travelInput = document.querySelector('#travelDays');
+  const stayInput = document.querySelector('#stayDays');
+  const stayPlace = document.querySelector('#stayPlace');
   const route = document.querySelector('#route');
   const resetBtn = document.querySelector('#missionsReset');
-  const buttons = planetsBox.querySelectorAll('.planet');
+  const buttons = space.querySelectorAll('.planet');
+
   let a = null, b = null;
 
   const distance = (x, y) => DIST[`${x}-${y}`] ?? DIST[`${y}-${x}`];
+  const fmt = n => n.toLocaleString('es-MX', { maximumFractionDigits: 2 });
 
-  function formatTime(h) {
-    if (h < 48) return `${Math.round(h)} horas`;
-    const d = h / 24;
-    return d < 730 ? `${Math.round(d)} días` : `${(d / 365).toFixed(1)} años`;
+  function renderSummary() {
+    if (!a || !b) { route.hidden = true; return; }
+
+    const travel = parseFloat(travelInput.value);
+    const stay = parseFloat(stayInput.value);
+    const valid = !isNaN(travel) && travel >= 0 && !isNaN(stay) && stay >= 0;
+
+    route.hidden = false;
+    if (!valid) {
+      chip.textContent = 'Paso 3 de 3';
+      route.innerHTML = '<p>Escribe los días de viaje y los días de estancia para ver el resumen.</p>';
+      return;
+    }
+
+    const total = travel + stay;
+    chip.textContent = 'Listo';
+    route.innerHTML = `
+      <h3>${PLANETS[a]} (A) ➔ ${PLANETS[b]} (B)</h3>
+      <p><strong>Distancia:</strong> ${fmt(distance(a, b))} km (aprox.)</p>
+      <p><strong>Llegada a ${PLANETS[b]}:</strong> día ${fmt(travel)}</p>
+      <p><strong>Estancia en ${PLANETS[b]}:</strong> ${fmt(stay)} días</p>
+      <p><strong>Salida de ${PLANETS[b]}:</strong> día ${fmt(total)}</p>
+      <p><strong>Duración total:</strong> ${fmt(total)} días (${fmt(total * 24)} horas)</p>`;
   }
 
   function render() {
     buttons.forEach(btn => {
       btn.classList.toggle('is-a', btn.dataset.planet === a);
       btn.classList.toggle('is-b', btn.dataset.planet === b);
-      btn.setAttribute('aria-pressed', String(btn.dataset.planet === a || btn.dataset.planet === b));
     });
-    resetBtn.hidden = !a;
+
     nameA.textContent = a ? PLANETS[a] : '—';
     nameB.textContent = b ? PLANETS[b] : '—';
+    resetBtn.hidden = !a;
+    form.hidden = !(a && b);
 
     if (!a) {
       hint.textContent = 'Toca tu punto de partida (A).';
-      chip.textContent = 'Paso 1 de 2';
-      route.hidden = true;
+      chip.textContent = 'Paso 1 de 3';
     } else if (!b) {
       hint.textContent = `Partida: ${PLANETS[a]}. Ahora toca tu destino (B).`;
-      chip.textContent = 'Paso 2 de 2';
-      route.hidden = true;
+      chip.textContent = 'Paso 2 de 3';
     } else {
-      const km = distance(a, b);
-      hint.textContent = '¡Misión lista!';
-      chip.textContent = 'Listo';
-      route.hidden = false;
-      route.innerHTML = `
-        <h3>${PLANETS[a]} (A) ➔ ${PLANETS[b]} (B)</h3>
-        <p><strong>Distancia:</strong> ${km.toLocaleString('es-MX')} km (aprox.)</p>
-        <p><strong>Duración:</strong> ${formatTime(km / SPEED)}</p>`;
+      hint.textContent = 'Ahora escribe los días de tu misión.';
+      stayPlace.textContent = PLANETS[b];
     }
+    renderSummary();
   }
 
   buttons.forEach(btn => btn.addEventListener('click', () => {
@@ -136,6 +154,15 @@ sidebar.querySelectorAll('a').forEach(link => {
     render();
   }));
 
-  resetBtn.addEventListener('click', () => { a = b = null; render(); });
+  travelInput.addEventListener('input', renderSummary);
+  stayInput.addEventListener('input', renderSummary);
+
+  resetBtn.addEventListener('click', () => {
+    a = b = null;
+    travelInput.value = '';
+    stayInput.value = '';
+    render();
+  });
+
   render();
 })();

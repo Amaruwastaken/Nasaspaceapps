@@ -36,49 +36,44 @@
         </div>
 
         <section class="report-content">
-          <section class="report-content">
+         <section class="report-content">
   <div class="organ-card missions" id="misiones">
     <div class="organ-card-header">
       <div>
         <span class="section-label">MISIONES</span>
         <h2>Planea tu viaje</h2>
       </div>
-      <span class="card-chip" id="missionsChip">Paso 1 de 2</span>
+      <span class="card-chip" id="missionsChip">Paso 1 de 3</span>
     </div>
 
     <p class="missions-hint" id="missionsHint">Toca tu punto de partida (A).</p>
 
-  <div class="trip">
-  <div class="trip-slot"><span>A · PARTIDA</span><strong id="slotAName">—</strong></div>
-  <span class="trip-arrow">➔</span>
-  <div class="trip-slot"><span>B · DESTINO</span><strong id="slotBName">—</strong></div>
-</div>
+    <div class="trip">
+      <div class="trip-slot"><span>A · PARTIDA</span><strong id="slotAName">—</strong></div>
+      <span class="trip-arrow">➔</span>
+      <div class="trip-slot"><span>B · DESTINO</span><strong id="slotBName">—</strong></div>
+    </div>
 
-<div class="space" id="planets">
-
-  <!-- Órbita de la Tierra (con la Luna) -->
-  <div class="orbit orbit-earth">
-    <div class="arm" style="--t:45s"><div class="slot"><div class="upright" style="--t:45s">
-      <div class="moon-orbit">
-        <div class="arm" style="--t:12s"><div class="slot"><div class="upright" style="--t:12s">
-          <button class="planet moon" type="button" data-planet="luna" aria-label="Luna">🌙<small>Luna</small></button>
-        </div></div></div>
-      </div>
-      <button class="planet" type="button" data-planet="tierra" aria-label="Tierra">🌍<small>Tierra</small></button>
-    </div></div></div>
-  </div>
-
-  <!-- Órbita de Marte -->
-  <div class="orbit orbit-mars">
-    <div class="arm" style="--t:80s"><div class="slot"><div class="upright" style="--t:80s">
+    <div class="space" id="planets">
+      <div class="space-line" aria-hidden="true"></div>
+      <button class="planet earth" type="button" data-planet="tierra" aria-label="Tierra">🌍<small>Tierra</small></button>
+      <button class="planet moon" type="button" data-planet="luna" aria-label="Luna">🌙<small>Luna</small></button>
       <button class="planet mars" type="button" data-planet="marte" aria-label="Marte">🔴<small>Marte</small></button>
-    </div></div></div>
-  </div>
-</div>
+    </div>
 
+    <div class="mission-form" id="missionForm" hidden>
+      <label class="field">
+        <span>Días de viaje (días terrestres)</span>
+        <input type="number" id="travelDays" min="0" step="any" inputmode="decimal" placeholder="Ej. 3.5">
+      </label>
+      <label class="field">
+        <span>Días de estancia en <b id="stayPlace">B</b> (días terrestres)</span>
+        <input type="number" id="stayDays" min="0" step="any" inputmode="decimal" placeholder="Ej. 10.25">
+      </label>
+    </div>
 
     <div class="route" id="route" aria-live="polite" hidden></div>
-   <button class="reset-btn" id="missionsReset" type="button" hidden>↺ Reiniciar</button>
+    <button class="reset-btn" id="missionsReset" type="button" hidden>↺ Reiniciar</button>
   </div>
 </section>
         </section>
