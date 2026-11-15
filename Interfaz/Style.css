@@ -89,6 +89,7 @@ h1 {
   color: #81899d; font-size: 16px; line-height: 1.7; margin: 0; 
 }
 
+/* Landing-page cards and the interactive organ-selection stage. */
 .organ-card { 
   background: #fff; border: 1px solid #e8eaf3; box-shadow: 0 16px 65px rgba(59, 66, 117, .05); border-radius: 24px; max-width: 1120px; padding: clamp(20px, 3.2vw, 35px); 
 }
@@ -217,15 +218,17 @@ h2 {
   display: none; 
 }
 
-/* Adjust drawer layout and shared spacing for tablet and mobile widths. */
+/* Wide screens reserve room for the open navigation drawer. */
 @media (min-width: 900px) { 
   .app.menu-open .main { padding-right: 340px; } 
 }
 
+/* The backdrop appears behind the drawer on compact screens. */
 @media (max-width: 899px) { 
   .overlay { display: block; position: fixed; inset: 86px 0 0; background: #17162c70; z-index: 20; opacity: 0; visibility: hidden; transition: opacity .3s, visibility .3s; } .app.menu-open .overlay { opacity: 1; visibility: visible; } 
 }
 
+/* Reduce header, card, and organ-picker dimensions on phones. */
 @media (max-width: 560px) { 
   .topbar { height: 72px; padding: 0 20px; } .shell { min-height: calc(100vh - 72px); } .sidebar { top: 72px; } .overlay { top: 72px; } .eyebrow { display: none; } .brand { font-size: 25px; } .brand-mark { width: 32px; height: 32px; border-width: 7px; } .main { padding: 36px 17px; } .intro p { font-size: 14px; } .organ-card { border-radius: 18px; padding: 18px; } .card-chip { font-size: 10px; padding: 8px; } .organ-stage { gap: 12px; min-height: 320px; padding-bottom: 125px; } .organ { width: 76px; height: 76px; border-radius: 16px; } .organ-emoji { font-size: 43px; } 
 }

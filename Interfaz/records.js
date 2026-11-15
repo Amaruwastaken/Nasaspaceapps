@@ -60,8 +60,8 @@ if (form) {
   form.addEventListener('submit', async event => {
     event.preventDefault();
     if (!form.reportValidity()) return;
+    // A record is accepted only after the user completes all three attempts.
     if (state !== 'done') { setMessage('recordMessage', 'Completa los 3 intentos de reacción.', true); return; }
-    // Validate the reaction test before calculating and saving a daily record.
     const button = form.querySelector('[type=submit]'); button.disabled = true;
     setMessage('recordMessage', 'Guardando…');
     try {
