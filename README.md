@@ -35,9 +35,8 @@ no tienen una columna o conexión quedan como “Sin datos” en el reporte.
 
 El reporte suma 2 puntos por cada indicador rojo y 1.25 por cada amarillo
 (redondeando el total al entero más cercano). Con un puntaje mayor que 10,
-muestra el estado crítico y registra una notificación emergente para todas las
-cuentas registradas. Aplica también
-`supabase/migrations/20261115020000_health_emergency_notifications.sql`.
-Aplica también `supabase/migrations/20261115020300_health_alert_popup.sql` para
-que cada cuenta reciba un popup descartable y las alertas no se repitan después
-de marcarlas como leídas.
+registra al tripulante como crítico en Supabase y la interfaz consulta los
+estados activos para mostrarlos en un panel inferior izquierdo. Aplica también
+`supabase/migrations/20261115020000_health_emergency_notifications.sql`,
+`supabase/migrations/20261115020300_health_alert_popup.sql` y
+`supabase/migrations/20261115024000_live_health_emergency_panel.sql`.

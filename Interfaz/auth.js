@@ -74,86 +74,59 @@ export const supabaseReady = (async () => {
 })();
 export const getCurrentUser = () => currentUser;
 
-const healthPopup = document.createElement('dialog');
-healthPopup.className = 'health-alert-popup';
-healthPopup.setAttribute('aria-labelledby','healthPopupTitle');
-healthPopup.setAttribute('aria-live','assertive');
-const healthPopupContent = document.createElement('div');
-healthPopupContent.className = 'health-alert-popup-content';
-const healthPopupTitle = document.createElement('h2');
-healthPopupTitle.id = 'healthPopupTitle';
-healthPopupTitle.textContent = 'Alerta de salud crítica';
-const healthPopupMessage = document.createElement('p');
-const healthPopupButton = document.createElement('button');
-healthPopupButton.type = 'button';
-healthPopupButton.textContent = 'Entendido';
-healthPopupContent.append(healthPopupTitle,healthPopupMessage,healthPopupButton);
-healthPopup.append(healthPopupContent);
-document.body.append(healthPopup);
+const healthPanel = document.createElement('aside');
+healthPanel.className = 'health-emergency-panel';
+healthPanel.setAttribute('aria-label','Estado crítico de la tripulación');
+healthPanel.setAttribute('role','alert');
+healthPanel.setAttribute('aria-live','assertive');
+healthPanel.hidden = true;
+const healthPanelHeading = document.createElement('h2');
+healthPanelHeading.textContent = 'Alerta: tripulante(s) en estado crítico';
+const healthPanelList = document.createElement('ul');
+healthPanel.append(healthPanelHeading,healthPanelList);
+document.body.append(healthPanel);
 
-let notificationLoading = false, notificationRequest = 0, currentNotificationId = null, currentNotificationUser = null;
-function dismissHealthPopup() {
-  if (healthPopup.open) healthPopup.close();
-  currentNotificationId = null;
-  currentNotificationUser = null;
+let healthStatusLoading = false, healthStatusRequest = 0;
+function clearHealthPanel() {
+  healthPanel.hidden = true;
+  healthPanelList.replaceChildren();
 }
-async function refreshHealthPopup() {
+async function refreshHealthStatus() {
   const client = await supabaseReady;
   const user = currentUser;
-  if (!client || !user) { dismissHealthPopup(); return; }
-  if (notificationLoading) return;
-  notificationLoading = true;
-  const request = ++notificationRequest;
+  if (!client || !user) { clearHealthPanel(); return; }
+  if (healthStatusLoading) return;
+  healthStatusLoading = true;
+  const request = ++healthStatusRequest;
   try {
-    const {data,error} = await client.from('health_notifications')
-      .select('id,message').eq('recipient_id',user.id).is('read_at',null)
-      .order('created_at',{ascending:true}).limit(1).maybeSingle();
+    const {data,error} = await client.rpc('get_active_health_emergencies');
     if (error) throw error;
-    if (request !== notificationRequest || user.id !== currentUser?.id) return;
-    if (!data) { dismissHealthPopup(); return; }
-    if (currentNotificationId === data.id && currentNotificationUser === user.id) return;
-    currentNotificationId = data.id;
-    currentNotificationUser = user.id;
-    healthPopupMessage.textContent = data.message;
-    if (!healthPopup.open) healthPopup.show();
+    if (request !== healthStatusRequest || user.id !== currentUser?.id) return;
+    const emergencies = data ?? [];
+    healthPanelList.replaceChildren(...emergencies.map(emergency => {
+      const item = document.createElement('li');
+      const name = document.createElement('strong');
+      name.textContent = `Alerta, ${emergency.crew_name} en estado crítico`;
+      const score = document.createElement('small');
+      score.textContent = `Puntaje de riesgo: ${emergency.score}`;
+      item.append(name,score);
+      return item;
+    }));
+    healthPanel.hidden = emergencies.length === 0;
   } catch (error) {
-    if (request === notificationRequest) console.error('No se pudo actualizar la alerta de salud:',error);
-  } finally { notificationLoading = false; }
+    if (request === healthStatusRequest) console.error('No se pudo leer el estado de emergencia desde Supabase:',error);
+  } finally { healthStatusLoading = false; }
 }
-healthPopupButton.addEventListener('click',async () => {
-  const userId = currentNotificationUser;
-  const notificationId = currentNotificationId;
-  if (!userId || !notificationId) return;
-  healthPopupButton.disabled = true;
-  try {
-    const client = await supabaseReady;
-    if (!client || userId !== currentUser?.id) return;
-    const {error} = await client.from('health_notifications')
-      .update({read_at:new Date().toISOString()})
-      .eq('id',notificationId).eq('recipient_id',userId).is('read_at',null);
-    if (error) throw error;
-    notificationRequest++;
-    dismissHealthPopup();
-    await refreshHealthPopup();
-  } catch (error) {
-    healthPopupMessage.textContent = `No se pudo cerrar la alerta. Intenta de nuevo. ${error.message || ''}`;
-    console.error('No se pudo marcar la alerta de salud como leída:',error);
-  } finally { healthPopupButton.disabled = false; }
-});
-healthPopup.addEventListener('cancel',event => {
-  event.preventDefault();
-  healthPopupButton.click();
-});
 document.addEventListener('sessionchange',() => {
-  notificationRequest++;
-  dismissHealthPopup();
-  void refreshHealthPopup();
+  healthStatusRequest++;
+  clearHealthPanel();
+  void refreshHealthStatus();
 });
-document.addEventListener('healthnotificationschange',() => void refreshHealthPopup());
+document.addEventListener('healthstatuschange',() => void refreshHealthStatus());
 void supabaseReady.then(client => {
   if (!client) return;
-  void refreshHealthPopup();
-  window.setInterval(() => void refreshHealthPopup(),10000);
+  void refreshHealthStatus();
+  window.setInterval(() => void refreshHealthStatus(),10000);
 });
 
 // Use the same handler for sign-in and registration forms.
