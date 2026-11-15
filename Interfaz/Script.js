@@ -25,9 +25,9 @@ function setMenu(open) {
 }
 
 // Mark the current link and expose it to assistive technology.
-const currentPage = window.location.pathname.split('/').pop() || 'Index.html';
+const currentPage = (window.location.pathname.split('/').pop() || 'Index.html').toLowerCase();
 sidebar.querySelectorAll('a').forEach(link => {
-  const active = link.getAttribute('href') === currentPage;
+  const active = link.getAttribute('href')?.toLowerCase() === currentPage;
   link.classList.toggle('is-active', active);
   if (active) link.setAttribute('aria-current', 'page');
   else link.removeAttribute('aria-current');
