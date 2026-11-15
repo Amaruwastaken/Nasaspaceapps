@@ -1,4 +1,5 @@
 
+// Shared elements used to open, close, and label the navigation drawer.
 const app = document.querySelector('#app');
 const menuToggle = document.querySelector('#menuToggle');
 const sidebar = document.querySelector('#sidebar');
@@ -23,7 +24,7 @@ function setMenu(open) {
   }
 }
 
-// Highlight the current page consistently across all navigation menus.
+// Mark the current link and expose it to assistive technology.
 const currentPage = window.location.pathname.split('/').pop() || 'Index.html';
 sidebar.querySelectorAll('a').forEach(link => {
   const active = link.getAttribute('href') === currentPage;
@@ -31,7 +32,7 @@ sidebar.querySelectorAll('a').forEach(link => {
   if (active) link.setAttribute('aria-current', 'page');
   else link.removeAttribute('aria-current');
 });
-// Keep keyboard navigation within the open drawer and its toggle.
+// Trap keyboard focus in the drawer while it is open.
 document.addEventListener('keydown', event => {
   if (event.key !== 'Tab' || !app.classList.contains('menu-open')) return;
   const controls = [menuToggle, ...sidebar.querySelectorAll('button:not([disabled]), a[href]')]
@@ -42,7 +43,7 @@ document.addEventListener('keydown', event => {
     event.preventDefault(); controls[0].focus();
   }
 });
-// Abrir y cerrar el menú
+// Wire up mouse, touch, and Escape-key actions for the drawer.
 menuToggle.addEventListener('click', () => {
   setMenu(!app.classList.contains('menu-open'));
 });
@@ -70,6 +71,7 @@ sidebar.querySelectorAll('a').forEach(link => {
 });
 // ===== Misiones (solo existe en reporte.html) =====
 (() => {
+  // Skip mission setup on pages without the planet selector.
   const space = document.querySelector('#planets');
   if (!space) return;
 
@@ -92,11 +94,13 @@ sidebar.querySelectorAll('a').forEach(link => {
   const resetBtn = document.querySelector('#missionsReset');
   const buttons = space.querySelectorAll('.planet');
 
+  // Keep the selected departure (A) and destination (B) between renders.
   let a = null, b = null;
 
   const distance = (x, y) => window.reportSolarSystem?.distance(x, y) ?? DIST[`${x}-${y}`] ?? DIST[`${y}-${x}`];
   const fmt = n => n.toLocaleString('es-MX', { maximumFractionDigits: 2 });
 
+  // Show the summary after both locations and day counts are available.
   function renderSummary() {
     if (!a || !b) { route.hidden = true; return; }
 
@@ -122,6 +126,7 @@ sidebar.querySelectorAll('a').forEach(link => {
       <p><strong>Duración total:</strong> ${fmt(total)} días (${fmt(total * 24)} horas)</p>`;
   }
 
+  // Update planet highlights, progress text, fields, and summary together.
   function render() {
     buttons.forEach(btn => {
       btn.classList.toggle('is-a', btn.dataset.planet === a);
@@ -147,6 +152,7 @@ sidebar.querySelectorAll('a').forEach(link => {
     renderSummary();
   }
 
+  // First click selects A, second selects B; a later click starts a new route.
   buttons.forEach(btn => btn.addEventListener('click', () => {
     const p = btn.dataset.planet;
     if (!a || b) { a = p; b = null; }   // empezar o reiniciar con nuevo A
@@ -155,9 +161,11 @@ sidebar.querySelectorAll('a').forEach(link => {
     render();
   }));
 
+  // Keep the summary current as travel and stay durations change.
   travelInput.addEventListener('input', renderSummary);
   stayInput.addEventListener('input', renderSummary);
 
+  // Clear the route and day counts to begin another mission.
   resetBtn.addEventListener('click', () => {
     a = b = null;
     travelInput.value = '';

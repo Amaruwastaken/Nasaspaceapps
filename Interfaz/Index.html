@@ -6,12 +6,14 @@
   <meta name="theme-color" content="#f7f8fc" />
   <meta name="description" content="Explora el universo!" />
   <title>Farmacias Similunares | Explora el universo!</title>
+  <!-- Shared layout, navigation behavior, and session-aware links. -->
   <link rel="stylesheet" href="Style.css" />
   <script src="Script.js" defer></script>
   <script type="module" src="auth.js"></script>
 </head>
 <body>
   <div class="app" id="app">
+    <!-- Site header and menu toggle are shared by all pages. -->
     <header class="topbar">
       <a class="brand" href="#inicio" aria-label="Farmacias Similunares, ir al inicio">
         <span class="brand-mark" aria-hidden="true"></span>
@@ -25,6 +27,7 @@
     </header>
 
     <div class="shell">
+      <!-- Landing-page content. -->
       <main class="main" id="inicio">
         <div class="intro">
           <span class="section-label">BIENVENIDO A FARMACIAS SIMILUNARES</span>
@@ -32,6 +35,7 @@
         </div>
       </main>
 
+      <!-- Navigation drawer; auth.js shows links appropriate to the session. -->
       <aside class="sidebar" id="sidebar" aria-label="Menú lateral" aria-hidden="true" inert>
         <div class="sidebar-top">
           <div class="sidebar-heading">NAVEGACIÓN</div>
@@ -89,6 +93,7 @@
         </div>
       </aside>
     </div>
+    <!-- Backdrop closes the drawer when clicked on compact layouts. -->
     <div class="overlay" id="overlay" aria-hidden="true"></div>
   </div>
 </body>

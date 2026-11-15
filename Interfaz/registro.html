@@ -6,9 +6,11 @@
   <meta name="theme-color" content="#f7f8fc" />
   <meta name="description" content="Crea una cuenta en Farmacias Similunares" />
   <title>Registro | Farmacias Similunares</title>
+  <!-- Shared navigation styles/scripts; local styles tune the registration form. -->
   <link rel="stylesheet" href="Style.css" />
   <script src="Script.js" defer></script>
   <script type="module" src="auth.js"></script>
+  <!-- Page-specific presentation for account creation and feedback. -->
   <style>
     .register-container {
       max-width: 520px;
@@ -90,6 +92,7 @@
 </head>
 <body>
   <div class="app" id="app">
+    <!-- Shared brand header and menu control. -->
     <header class="topbar">
       <a class="brand" href="Index.html" aria-label="Farmacias Similunares, ir al inicio">
         <span class="brand-mark" aria-hidden="true"></span>
@@ -110,6 +113,7 @@
           <p>Regístrate para continuar.</p>
         </div>
 
+        <!-- The required fields and password length are browser-validated. -->
         <section class="register-container" aria-label="Formulario de registro">
           <form class="register-form" id="registerForm" method="post">
             <p id="authMessage" role="status" aria-live="polite"></p>
@@ -135,6 +139,7 @@
         </section>
       </main>
 
+      <!-- Shared drawer; auth.js updates links when registration succeeds. -->
       <aside class="sidebar" id="sidebar" aria-label="Menú lateral" aria-hidden="true" inert>
         <div class="sidebar-top">
           <div class="sidebar-heading">NAVEGACIÓN</div>
@@ -164,6 +169,7 @@
       </aside>
     </div>
 
+    <!-- Click target for closing the open drawer. -->
     <div class="overlay" id="overlay" aria-hidden="true"></div>
   </div>
 </body>

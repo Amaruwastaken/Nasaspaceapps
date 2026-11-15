@@ -1,5 +1,6 @@
 /* Keep the top-down SVG coordinate system square so circular tracks stay circular. */
 .space { width: min(100%, 520px); height: auto; max-width: 520px; aspect-ratio: 1; padding: 0; }
+/* Orbit artwork sits behind the interactive planet buttons. */
 .solar-orbits { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .solar-orbits circle { fill: none; stroke: #b4d5ff38; stroke-width: 1.4; }
 .solar-orbits .moon-orbit { fill: none; stroke: #b4d5ff55; stroke-width: 1; stroke-dasharray: 4 5; }
@@ -14,6 +15,7 @@
 .space .solar-planet.is-b { outline: 2px solid #3fae85; outline-offset: 3px; }
 .space .luna { width: clamp(14px, 2.4vw, 20px); }
 .space .saturno { border: 3px solid #cbb783; }
+/* Animation controls and the scale/source note below the diagram. */
 .orbit-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
 .orbit-controls p, .orbit-note { font-size: 12px; color: #626e86; line-height: 1.7; }
 .orbit-controls button { border: 1px solid #b9cce3; border-radius: 999px; background: #eff6ff; color: #365579; padding: 10px 16px; cursor: pointer; }

@@ -1,5 +1,6 @@
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './supabase-config.js';
 
+// Page-specific forms and shared navigation/session elements.
 const loginForm = document.querySelector('#loginForm');
 const registerForm = document.querySelector('#registerForm');
 const message = document.querySelector('#authMessage');
@@ -14,6 +15,7 @@ function showMessage(text, error = false) {
   message.classList.toggle('is-error', error);
   message.setAttribute('role', error ? 'alert' : 'status');
 }
+// Reflect the Supabase session in navigation, protected content, and listeners.
 function renderSession(session) {
   currentUser = session?.user ?? null;
   if (sidebarUserName) {
@@ -48,6 +50,7 @@ function busy(form, value) {
   button.textContent = value ? 'Procesando…' : form === loginForm ? 'Iniciar sesión' : 'Crear cuenta';
 }
 
+// Load Supabase, restore the current session, and publish client readiness.
 export const supabaseReady = (async () => {
   try {
     if (!SUPABASE_URL.startsWith('https://') || !SUPABASE_PUBLISHABLE_KEY || SUPABASE_PUBLISHABLE_KEY.includes('YOUR_')) {
@@ -71,6 +74,7 @@ export const supabaseReady = (async () => {
 })();
 export const getCurrentUser = () => currentUser;
 
+// Use the same handler for sign-in and registration forms.
 for (const form of [loginForm, registerForm].filter(Boolean)) {
   form.addEventListener('submit', async event => {
     event.preventDefault();
@@ -96,6 +100,7 @@ for (const form of [loginForm, registerForm].filter(Boolean)) {
   });
 }
 
+// Sign out and keep an actionable message on failure.
 document.querySelector('#logoutButton')?.addEventListener('click', async event => {
   const button = event.currentTarget;
   button.disabled = true;

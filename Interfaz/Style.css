@@ -1,3 +1,4 @@
+/* Global type, colors, and browser defaults shared by every page. */
 :root {
   font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #21263b;
@@ -23,6 +24,7 @@ button:focus-visible, a:focus-visible {
 .app { 
   min-height: 100vh; 
 }
+/* Shared header, page frame, and introductory content. */
 .topbar {
   position: relative; z-index: 30; height: 86px; padding: 0 clamp(24px, 5vw, 82px);
   display: flex; align-items: center; justify-content: space-between;
@@ -143,6 +145,7 @@ h2 {
   color: #969bad; font-size: 13px; margin-top: 22px; 
 }
 
+/* Drawer navigation, its open state, and the mobile backdrop. */
 .sidebar { 
   position: fixed; z-index: 25; top: 86px; bottom: 0; right: 0; width: min(300px, 88vw); background: #fff; border-left: 1px solid #e9eaf2; box-shadow: -14px 0 40px #2422400b; transform: translateX(102%); opacity: 0; visibility: hidden; transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .35s, visibility .35s; display: flex; flex-direction: column; padding: 30px 18px 18px; 
 }
@@ -214,6 +217,7 @@ h2 {
   display: none; 
 }
 
+/* Adjust drawer layout and shared spacing for tablet and mobile widths. */
 @media (min-width: 900px) { 
   .app.menu-open .main { padding-right: 340px; } 
 }
@@ -225,7 +229,7 @@ h2 {
 @media (max-width: 560px) { 
   .topbar { height: 72px; padding: 0 20px; } .shell { min-height: calc(100vh - 72px); } .sidebar { top: 72px; } .overlay { top: 72px; } .eyebrow { display: none; } .brand { font-size: 25px; } .brand-mark { width: 32px; height: 32px; border-width: 7px; } .main { padding: 36px 17px; } .intro p { font-size: 14px; } .organ-card { border-radius: 18px; padding: 18px; } .card-chip { font-size: 10px; padding: 8px; } .organ-stage { gap: 12px; min-height: 320px; padding-bottom: 125px; } .organ { width: 76px; height: 76px; border-radius: 16px; } .organ-emoji { font-size: 43px; } 
 }
-/* ===== FONDO DE ESPACIO (solo en reporte.html, el menú lateral no se toca) ===== */
+/* ===== Report page background, star fallback, and readable text ===== */
 #reporte {
   position: relative; isolation: isolate;
   min-height: calc(100vh - 86px);
@@ -264,7 +268,7 @@ h2 {
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
 }
 
-/* ===== MISIONES ===== */
+/* ===== Mission selector, route fields, and trip summary ===== */
 .missions-hint { color: #b8c4e0; font-size: 15px; margin: 18px 0 16px; }
 
 /* Barra A -> B */

@@ -1,9 +1,11 @@
 import { supabaseReady, getCurrentUser } from './auth.js';
 
+// Form and report controls are optional because this module serves two pages.
 const form = document.querySelector('#recordForm');
 const refresh = document.querySelector('#refreshRecords');
 const test = document.querySelector('#reactionTest');
 let attempts = [], falseStarts = 0, state = 'idle', timer, started;
+// Write accessible feedback as text instead of interpreting it as HTML.
 const setMessage = (id, text, error = false) => {
   const el = document.getElementById(id);
   if (!el) return;
@@ -16,6 +18,7 @@ function resetTest() {
   attempts = []; falseStarts = 0; state = 'idle';
   if (test) { test.className = 'pvt'; test.textContent = 'Toca para comenzar'; }
 }
+// Start one reaction-time attempt after a random delay.
 function nextAttempt() {
   state = 'waiting';
   test.className = 'pvt waiting'; test.textContent = 'Espera al verde…';
@@ -25,6 +28,7 @@ function nextAttempt() {
   }, 2000 + Math.random() * 3000);
 }
 if (form) {
+  // Initialize today's date and keep each range value visible beside its slider.
   const date = new Date();
   document.querySelector('#recordDate').value = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
   for (const id of ['mental', 'physical', 'frustration']) {
@@ -32,6 +36,7 @@ if (form) {
       document.getElementById(`${id}Value`).value = event.target.value;
     });
   }
+  // Track early clicks and collect three valid reaction-time measurements.
   test.addEventListener('click', () => {
     if (state === 'idle' || state === 'done') { resetTest(); nextAttempt(); return; }
     if (state === 'waiting') {
@@ -56,6 +61,7 @@ if (form) {
     event.preventDefault();
     if (!form.reportValidity()) return;
     if (state !== 'done') { setMessage('recordMessage', 'Completa los 3 intentos de reacción.', true); return; }
+    // Validate the reaction test before calculating and saving a daily record.
     const button = form.querySelector('[type=submit]'); button.disabled = true;
     setMessage('recordMessage', 'Guardando…');
     try {
@@ -78,6 +84,7 @@ if (form) {
   });
 }
 let request = 0;
+// Load the signed-in user's recent records and ignore stale responses.
 async function loadRecords() {
   const client = await supabaseReady;
   const user = getCurrentUser();
@@ -94,6 +101,7 @@ async function loadRecords() {
     if (error) throw error;
     if (!data?.length) { setMessage('recordsMessage', 'Aún no hay registros. Agrega uno desde Registro.'); return; }
     setMessage('recordsMessage', `${data.length} registro(s). Se muestran los 90 más recientes.`);
+    // Build the report with text nodes so database values are not interpreted as markup.
     const table = document.createElement('table'); table.className = 'report-table';
     const caption = table.createCaption(); caption.textContent = 'Historial de registros diarios';
     const row = table.createTHead().insertRow();
@@ -118,6 +126,7 @@ function updateSession() {
   }
   if (refresh) void loadRecords();
 }
+// Refresh protected controls whenever authentication state changes.
 document.addEventListener('sessionchange', updateSession);
 refresh?.addEventListener('click', loadRecords);
 await supabaseReady;
