@@ -106,9 +106,9 @@ test('queries filter snapshots by account and reject mismatched returned owners'
 
 test('database and network errors are surfaced; missing tables have an actionable error',async()=>{
   await assert.rejects(loadMeasurements(database({readThrows:true}).client,'user-a'),/consultar/);
-  await assert.rejects(loadMeasurements(database({readError:{code:'42501'}}).client,'user-a'),/denegó el guardado/);
+  await assert.rejects(loadMeasurements(database({readError:{code:'42501'}}).client,'user-a'),/rechazó el guardado/);
   await assert.rejects(saveMeasurements(database({writeThrows:true}).client,'user-a',{}),/guardar/);
-  await assert.rejects(saveMeasurements(database({writeError:{code:'42501'}}).client,'user-a',{}),/denegó el guardado/);
+  await assert.rejects(saveMeasurements(database({writeError:{code:'42501'}}).client,'user-a',{}),/rechazó el guardado/);
   await assert.rejects(saveMeasurements(database({writeError:{code:'23503'}}).client,'user-a',{}),/perfil asociado/);
   for(const code of ['42P01','42703','PGRST204','PGRST205'])await assert.rejects(loadMeasurements(database({readError:{code}}).client,'user-a'),/migración de telemetría/);
   await assert.rejects(loadMeasurements(database({authThrows:true}).client,'user-a'),/sesión/);
