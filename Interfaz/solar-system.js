@@ -41,7 +41,7 @@
     return {...p,button:button(id,name,color),initialPosition:position(p,p.angle)};
   });
   const moon = button('luna','Luna','#cfced3');
-  const moonOrbitRadius = 70;
+  const moonOrbitRadius = 100;
   window.reportSolarSystem = {
     names:Object.fromEntries([...planets.map(p => [p.id,p.name]),['luna','Luna']]),
     distance(a,b) {
