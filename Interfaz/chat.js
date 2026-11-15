@@ -43,19 +43,41 @@ function setupWidget() {
 
   widget.innerHTML = `
     <div class="dr-simi-header">
-      <span class="dr-simi-badge">AI</span>
-      <strong>Dr. SIMI bot</strong>
+      <button class="dr-simi-toggle" type="button" aria-label="Minimizar Dr. SIMI bot" aria-expanded="true" aria-controls="drSimiContent">
+        <img src="Imagenes/farmacias-similunares.png" alt="" />
+      </button>
+      <strong class="dr-simi-title">Dr. SIMI bot</strong>
     </div>
-    <div class="dr-simi-output" id="drSimiOutput">¿Qué quieres revisar hoy?</div>
-    <form id="drSimiForm" class="dr-simi-form">
-      <input id="drSimiInput" type="text" maxlength="280" placeholder="Pregunta aquí..." aria-label="Pregunta para Dr. SIMI bot" />
-      <button type="submit">Enviar</button>
-    </form>
+    <div class="dr-simi-content" id="drSimiContent">
+      <div class="dr-simi-output" id="drSimiOutput">¿Qué quieres revisar hoy?</div>
+      <form id="drSimiForm" class="dr-simi-form">
+        <input id="drSimiInput" type="text" maxlength="280" placeholder="Pregunta aquí..." aria-label="Pregunta para Dr. SIMI bot" />
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
   `;
 
   const output = widget.querySelector('#drSimiOutput');
   const form = widget.querySelector('#drSimiForm');
   const input = widget.querySelector('#drSimiInput');
+  const toggle = widget.querySelector('.dr-simi-toggle');
+
+  toggle.addEventListener('click', () => {
+    const collapsed = widget.classList.toggle('is-collapsed');
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.setAttribute('aria-label', `${collapsed ? 'Abrir' : 'Minimizar'} Dr. SIMI bot`);
+  });
+
+  const updateSessionMessage = (user) => {
+    output.textContent = user
+      ? '¿Qué quieres revisar hoy?'
+      : 'Inicia sesión para consultar Dr. SIMI bot.';
+  };
+
+  document.addEventListener('sessionchange', (event) => {
+    updateSessionMessage(event.detail);
+  });
+  void supabaseReady.then(() => updateSessionMessage(getCurrentUser()));
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -98,9 +120,4 @@ function setupChatPage() {
 document.addEventListener('DOMContentLoaded', () => {
   setupWidget();
   setupChatPage();
-  const currentUser = getCurrentUser();
-  const widget = document.querySelector('#drSimiWidget');
-  if (widget && !currentUser) {
-    widget.querySelector('#drSimiOutput').textContent = 'Inicia sesión para consultar Dr. SIMI bot.';
-  }
 });
