@@ -284,9 +284,7 @@ h2 {
   border-top: 2px dashed #ffffff33; pointer-events: none;
 }
 
-<<<<<<< HEAD
-/* Botones de planetas (imágenes) */
-=======
+
 /* Órbitas */
 .orbit, .moon-orbit { position: absolute; border: 1px dashed #ffffff33; border-radius: 50%; }
 .orbit { top: 50%; left: 50%; transform: translate(-50%, -50%); aspect-ratio: 1; }
@@ -302,25 +300,14 @@ h2 {
 .space:hover .arm, .space:hover .upright { animation-play-state: paused; }
 
 /* Botones de planetas */
->>>>>>> 280ffa2852c9ce2daf2cf4760908cff691478a53
+
 .planet {
   position: relative; display: grid; place-items: center;
   padding: 0; background: none; border: 0; cursor: pointer;
   transition: transform .25s cubic-bezier(.2,.8,.2,1);
 }
-<<<<<<< HEAD
-.planet img {
-  width: 100%; height: 100%; object-fit: contain;
-  pointer-events: none; user-select: none;
-  filter: drop-shadow(0 8px 18px #000000a0);
-}
-.planet.earth { width: 112px; height: 112px; }
-.planet.moon  { width: 78px;  height: 78px; }
-.planet.mars  { width: 94px;  height: 94px; }
-.planet:hover { transform: scale(1.1); }
-.planet:active { transform: scale(.95); }
-.planet:focus-visible { outline: 3px solid #73a8d8; outline-offset: 6px; border-radius: 50%; }
-=======
+
+
 .planet.moon { width: 44px; height: 44px; font-size: 24px; }
 .planet.mars { width: 50px; height: 50px; font-size: 28px; }
 .planet.earth { left: 50%; top: 24%; }
@@ -329,7 +316,7 @@ h2 {
 .planet:hover { transform: translate(-50%, -50%) scale(1.15); border-color: #fff; }
 .planet:active { transform: translate(-50%, -50%) scale(.95); }
 .planet:focus-visible { outline: 3px solid #73a8d8; outline-offset: 4px; }
->>>>>>> 280ffa2852c9ce2daf2cf4760908cff691478a53
+
 
 .planet small {
   position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%);
@@ -414,20 +401,12 @@ h2 {
 
 /* Celular */
 @media (max-width: 560px) {
-<<<<<<< HEAD
-  #reporte { min-height: calc(100vh - 72px); }
-  .space { height: 200px; padding-bottom: 24px; }
-  .planet.earth { width: 80px; height: 80px; }
-  .planet.moon  { width: 56px; height: 56px; }
-  .planet.mars  { width: 68px; height: 68px; }
-  .planet small { font-size: 11px; padding: 2px 8px; }
-  .mission-form { grid-template-columns: 1fr; }
-=======
+
   .planet { width: 48px; height: 48px; font-size: 26px; }
   .planet.moon { width: 38px; height: 38px; font-size: 20px; }
   .planet.mars { width: 42px; height: 42px; font-size: 23px; }
   .planet small { font-size: 10px; padding: 2px 7px; }
->>>>>>> 280ffa2852c9ce2daf2cf4760908cff691478a53
+
 }
 
 @media (prefers-reduced-motion: reduce) { .arm, .upright { animation: none; } }
