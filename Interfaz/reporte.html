@@ -33,6 +33,33 @@
       <!-- Landing-page content. -->
       <main class="main report-main" id="reporte">
  <div class="intro"><span class="section-label">REPORTE</span><h1>Tu estado actual.</h1><p>Las regiones en atenci&#243;n o alerta aparecen primero. Puedes consultar todas las mediciones y su historial en m&#225;s detalles.</p></div>
+ <section id="bodyOverview" class="body-overview" aria-labelledby="bodyOverviewTitle">
+   <div class="body-overview-heading">
+     <div><h2 id="bodyOverviewTitle">Vista general del cuerpo</h2><p>Estado de las mediciones reales disponibles por regi&#243;n.</p></div>
+     <div class="body-legend" aria-label="Leyenda de estados">
+       <span data-state="green">Verde</span><span data-state="yellow">Atenci&#243;n</span><span data-state="red">Rojo</span><span data-state="missing">Sin datos</span>
+     </div>
+   </div>
+   <div class="body-map">
+     <div id="bodyIndicatorsLeft" class="body-indicators" aria-label="Estad&#237;sticas de cerebro y ojos"></div>
+     <svg class="body-figure" viewBox="0 0 240 520" role="img" aria-labelledby="bodyFigureTitle bodyFigureDescription">
+       <title id="bodyFigureTitle">Mapa corporal de indicadores</title>
+       <desc id="bodyFigureDescription">Silueta con marcadores en cabeza, ojos, coraz&#243;n, abdomen y cuerpo. Cada marcador cambia seg&#250;n sus mediciones disponibles.</desc>
+       <g class="body-silhouette">
+         <ellipse cx="120" cy="48" rx="25" ry="31"></ellipse>
+         <path d="M108 76v18h24V76M102 91Q88 91 78 103L61 163l13 5 17-44-1 75 7 70-5 80-1 111h17l8-164 4-15 4 15 8 164h17l-1-111-5-80 7-70-1-75 17 44 13-5-17-60Q152 91 138 91Z"></path>
+         <path class="body-detail" d="M105 51q15 9 30 0M120 108v72m0 14v56"></path>
+       </g>
+       <path class="body-connector" d="M105 48H18M105 78H18M133 143h89M132 202h90M132 251h90"></path>
+       <circle class="body-marker" data-body-marker="brain" data-state="missing" cx="105" cy="48" r="9"><title>Cerebro: sin datos</title></circle>
+       <circle class="body-marker" data-body-marker="eyes" data-state="missing" cx="105" cy="78" r="9"><title>Ojos: sin datos</title></circle>
+       <circle class="body-marker" data-body-marker="heart" data-state="missing" cx="133" cy="143" r="9"><title>Coraz&#243;n: sin datos</title></circle>
+       <circle class="body-marker" data-body-marker="stomach" data-state="missing" cx="132" cy="202" r="9"><title>Est&#243;mago y ri&#241;ones: sin datos</title></circle>
+       <circle class="body-marker" data-body-marker="body" data-state="missing" cx="132" cy="251" r="9"><title>Cuerpo: sin datos</title></circle>
+     </svg>
+     <div id="bodyIndicatorsRight" class="body-indicators" aria-label="Estad&#237;sticas de coraz&#243;n, abdomen y cuerpo"></div>
+   </div>
+ </section>
  <p id="reportMessage" class="report-message" role="status" aria-live="polite">Consultando datos&#8230;</p>
  <section id="affectedOrgans" class="affected-organs" aria-label="Regiones que requieren atenci&#243;n"></section>
  <details id="reportDetails" class="report-details">
