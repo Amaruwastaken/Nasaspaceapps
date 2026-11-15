@@ -2,14 +2,14 @@ import {metrics,classify} from './report-data.js';
 
 const areas = {
   brain:{name:'Cerebro',x:183,y:65},
-  eyes:{name:'Ojos',x:128,y:117},
+  eyes:{name:'Ojos',x:129,y:96},
   lungs:{name:'Pulmones',x:260,y:269,ids:['spo2','respiratoryRate','sleepApnea']},
   heart:{name:'Corazón',x:216,y:298},
   liver:{name:'Hígado',x:169,y:355,ids:[]},
   stomach:{name:'Estómago',x:232,y:386},
   kidneys:{name:'Riñones',x:263,y:409},
   intestines:{name:'Intestinos',x:205,y:460,ids:[]},
-  body:{name:'Cuerpo',x:205,y:620},
+  body:{name:'Cuerpo',x:197,y:178},
 };
 const names = {green:'Normal',yellow:'Atención',red:'Alerta',unknown:'Sin clasificar',invalid:'Dato inválido',missing:'Sin datos'};
 const priority = {red:0,yellow:1,unknown:2,invalid:3,green:4,missing:5};
