@@ -2,53 +2,13 @@ import {metrics,affectedOrgans,classify,emergencyScore} from './report-data.js';
 import {loadMeasurements} from './measurement-store.js';
 import {fetchDatabaseMeasurements} from './report-source.js';
 import {supabaseReady,getCurrentUser} from './auth.js';
-const list = document.querySelector('#affectedOrgans');
+import {createAnatomyView} from './body-anatomy.js';
 const bodyOverview = document.querySelector('#bodyOverview');
-const bodyIndicatorsLeft = document.querySelector('#bodyIndicatorsLeft');
-const bodyIndicatorsRight = document.querySelector('#bodyIndicatorsRight');
-const bodyMarkers = document.querySelector('#bodyMarkers');
-const bodyLegend = document.querySelector('.body-legend');
 const message = document.querySelector('#reportMessage');
 const allMeasurements = document.querySelector('#allMeasurements');
 const measurementHistory = document.querySelector('#measurementHistory');
 const reportDetails = document.querySelector('#reportDetails');
-const drawings = {
-  brain:'M50 20C35 6 13 20 17 36C4 46 14 66 30 64Q38 78 50 65Q62 78 70 64C86 66 96 46 83 36C87 20 65 6 50 20ZM50 23V63M29 28Q45 30 35 46M70 28Q55 30 65 46M20 48L31 53M69 53L80 48',
-  heart:'M50 80C39 68 10 50 13 30C15 10 41 9 50 28C59 9 85 10 87 30C90 50 61 68 50 80Z',
-  eyes:'M5 48Q25 18 47 48Q25 78 5 48ZM53 48Q75 18 95 48Q75 78 53 48ZM26 39A9 9 0 1 0 26 57A9 9 0 1 0 26 39M74 39A9 9 0 1 0 74 57A9 9 0 1 0 74 39',
-  stomach:'M49 10L49 33Q85 19 84 50C83 77 52 88 28 71Q13 59 25 46Q35 38 40 51Q53 56 58 43L39 35 39 10Z',
-  kidneys:'M33 18C5 15 6 75 29 77Q46 77 41 59L31 48Q47 30 33 18ZM67 18C95 15 94 75 71 77Q54 77 59 59L69 48Q53 30 67 18Z',
-  body:'M50 7A11 11 0 1 0 50 29A11 11 0 1 0 50 7M36 34L24 64 32 68 40 49 39 69 35 91 45 91 50 72 55 91 65 91 61 69 60 49 68 68 76 64 64 34Z',
-};
-function organCard(organ,dates) {
-  const card = document.createElement('article'); card.className = 'organ-alert'; card.dataset.organ = organ.id; card.dataset.state = organ.state;
-  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg'); svg.setAttribute('viewBox','0 0 100 100'); svg.setAttribute('aria-hidden','true');
-  const path = document.createElementNS(svg.namespaceURI,'path'); path.setAttribute('d',drawings[organ.id]); svg.append(path);
-  const content = document.createElement('div');
-  const heading = document.createElement('h2'); heading.textContent = organ.name;
-  const badge = document.createElement('span'); badge.className = 'organ-status'; badge.textContent = organ.state === 'red' ? 'Alerta' : 'Atención';
-  content.append(heading,badge);
-  for (const {metric,value,state} of organ.items) {
-    const line = document.createElement('p'); line.className = 'organ-reading'; line.dataset.state = state;
-    const formatted = metricValue(metric,value);
-    line.textContent = `${metric.name}: ${formatted}`;
-    if (dates[metric.id]) { const date = document.createElement('small'); date.textContent = ` · ${dates[metric.id]}`; line.append(date); }
-    content.append(line);
-  }
-  card.append(svg,content); return card;
-}
 const statusNames = {green:'Verde · Normal',yellow:'Amarillo · Atención',red:'Rojo · Alerta',missing:'Sin datos',unknown:'Sin clasificar',invalid:'Dato inválido'};
-const bodyAreas = [
-  {id:'brain',name:'Cerebro',side:'left'},
-  {id:'eyes',name:'Ojos',side:'left'},
-  {id:'heart',name:'Corazón',side:'right'},
-  {id:'stomach',name:'Estómago y riñones',side:'right'},
-  {id:'body',name:'Cuerpo',side:'right'},
-];
-const bodyStateNames = {green:'Bien',yellow:'Atención',red:'Mal',unknown:'Sin clasificar'};
-const bodyMarkerPositions = {
-  brain:{x:181,y:54},eyes:{x:128,y:111},heart:{x:242,y:266},stomach:{x:205,y:411},body:{x:205,y:618},
-};
 function metricValue(metric,value) {
   if (value === undefined || value === null || value === '') return 'Sin datos';
   if (metric.fields && typeof value === 'object' && !Array.isArray(value)) {
@@ -68,77 +28,7 @@ function metricValue(metric,value) {
   if (metric.options) return metric.options.find(([key]) => key === value)?.[1] ?? String(value);
   return `${value}${metric.unit ? ` ${metric.unit}` : ''}`;
 }
-function bodyAreaState(states) {
-  if (states.includes('red')) return 'red';
-  if (states.includes('yellow')) return 'yellow';
-  if (states.includes('green')) return 'green';
-  if (states.includes('unknown') || states.includes('invalid')) return 'unknown';
-  return 'missing';
-}
-function bodyIndicatorCard(area,values,dates) {
-  const areaMetrics = metrics.filter(metric => metric.group === area.id || metric.organs?.includes(area.id));
-  const available = areaMetrics.map(metric => ({metric,state:classify(metric,values[metric.id],values)}))
-    .filter(item => item.state !== 'missing');
-  if (!available.length) return null;
-  const states = available.map(item => item.state);
-  const state = bodyAreaState(states);
-  const counts = Object.fromEntries(['green','yellow','red'].map(name => [name,states.filter(item => item === name).length]));
-  counts.unclassified = states.filter(item => item === 'unknown' || item === 'invalid').length;
-  const card = document.createElement('article'); card.className = 'body-stat-card'; card.dataset.state = state;
-  const heading = document.createElement('div'); heading.className = 'body-stat-heading';
-  const dot = document.createElement('span'); dot.className = 'body-stat-dot'; dot.dataset.state = state; dot.setAttribute('aria-hidden','true');
-  const title = document.createElement('h3'); title.textContent = area.name;
-  const label = document.createElement('span'); label.className = 'body-stat-state';
-  label.textContent = bodyStateNames[state];
-  heading.append(dot,title,label);
-  const summary = document.createElement('p'); summary.className = 'body-stat-counts';
-  summary.textContent = [
-    [counts.green,'verde'],[counts.yellow,'atención'],[counts.red,'rojo'],[counts.unclassified,'sin clasificar'],
-  ].filter(([count]) => count).map(([count,name]) => `${count} ${name}`).join(' · ');
-  card.append(heading,summary);
-
-  const priority = {red:0,yellow:1,green:2,unknown:3,invalid:4};
-  available.sort((a,b) => priority[a.state] - priority[b.state])
-    .slice(0,3);
-  const readings = document.createElement('ul'); readings.className = 'body-stat-readings';
-  for (const {metric,state:metricState} of available) {
-    const item = document.createElement('li'); item.className = 'body-stat-reading'; item.dataset.state = metricState;
-    const readingDot = document.createElement('span'); readingDot.className = 'body-reading-dot'; readingDot.dataset.state = metricState; readingDot.setAttribute('aria-hidden','true');
-    const reading = document.createElement('span');
-    const name = document.createElement('strong'); name.textContent = metric.name;
-    const value = document.createElement('small'); value.textContent = `${metricValue(metric,values[metric.id])} · ${statusNames[metricState] ?? metricState}${dates[metric.id] ? ` · ${dates[metric.id]}` : ''}`;
-    reading.append(name,value); item.append(readingDot,reading); readings.append(item);
-  }
-  card.append(readings);
-  return {card,state,name:area.name};
-}
-function renderBodyOverview(values,dates) {
-  bodyIndicatorsLeft.replaceChildren(); bodyIndicatorsRight.replaceChildren();
-  bodyMarkers.replaceChildren();
-  const displayedStates = new Set();
-  let visibleAreas = 0;
-  for (const area of bodyAreas) {
-    const result = bodyIndicatorCard(area,values,dates);
-    if (!result) continue;
-    const {card,state,name} = result;
-    (area.side === 'left' ? bodyIndicatorsLeft : bodyIndicatorsRight).append(card);
-    visibleAreas += 1;
-    const position = bodyMarkerPositions[area.id];
-    const marker = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    marker.classList.add('body-marker');
-    marker.dataset.state = state;
-    marker.setAttribute('cx',position.x);
-    marker.setAttribute('cy',position.y);
-    marker.setAttribute('r','11');
-    const title = document.createElementNS(marker.namespaceURI,'title');
-    title.textContent = `${name}: ${bodyStateNames[state]}`;
-    marker.append(title);
-    bodyMarkers.append(marker);
-    for (const item of card.querySelectorAll('.body-stat-reading')) displayedStates.add(item.dataset.state);
-  }
-  bodyOverview.hidden = visibleAreas === 0;
-  for (const item of bodyLegend.querySelectorAll('[data-state]')) item.hidden = !displayedStates.has(item.dataset.state);
-}
+const anatomyView = createAnatomyView(bodyOverview,metricValue);
 function detailSection(title) {
   const section = document.createElement('section'); section.className = 'report-detail-section';
   const heading = document.createElement('h2'); heading.textContent = title; section.append(heading);
@@ -211,7 +101,7 @@ function renderDetails(values,dates,history,userId,simulatedMetrics,partiallySim
 let version = 0;
 async function render() {
   const request = ++version;
-  list.replaceChildren(); message.textContent = 'Consultando datos…';
+  anatomyView.update({},{}); message.textContent = 'Consultando datos\u2026';
   allMeasurements.replaceChildren(); measurementHistory.replaceChildren();
   const client = await supabaseReady;
   const userId = getCurrentUser()?.id;
@@ -255,7 +145,7 @@ async function render() {
     }
   }
   renderDetails(values,dates,database.history,userId,simulatedMetrics,partiallySimulatedMetrics);
-  renderBodyOverview(actualValues,dates);
+  anatomyView.update(actualValues,dates);
   const applicable = metrics.filter(m => m.group !== 'environment');
   const classified = applicable.filter(m => ['green','yellow','red'].includes(classify(m,actualValues[m.id],actualValues))).length;
   const score = emergencyScore(actualValues);
@@ -273,7 +163,6 @@ async function render() {
   }
   if (request !== version || userId !== getCurrentUser()?.id) return;
   const organs = affectedOrgans(actualValues);
-  list.replaceChildren(...organs.map(organ => organCard(organ,dates)));
   const missingAutomatic = metrics.filter(m => m.source !== 'manual' && classify(m,actualValues[m.id],actualValues) === 'missing');
   const simulatedCount = simulatedMetrics.size + partiallySimulatedMetrics.size;
   const parts = [];
