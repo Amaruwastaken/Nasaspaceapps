@@ -69,3 +69,11 @@ Proyecto Vercel: nasaspaceapps-farmacias-similunares. El directorio del proyecto
 - Los datos antiguos de localStorage no se importan automaticamente: ya no son la fuente del reporte.
 
 La migración no reemplaza las tablas existentes `records`, `daily_sensor`, `telemetry` o `Registry`; requiere que estén configuradas junto con las migraciones anteriores. La migración nueva solo elimina la tabla anterior `manual_measurements` y amplía `telemetry`. En un Supabase totalmente nuevo hay que configurar el esquema base antes de activar sensores y alertas.
+
+### Panel del doctor y capitán
+
+`Interfaz/doctor.html` permite seleccionar integrantes de la misma misión y consultar sus indicadores, pruebas de Captura e historial de registros y sensores. El panel es de consulta; las capturas y alertas personales conservan su flujo habitual.
+
+Aplicar `supabase/migrations/20261115090000_mission_medical_access.sql` en Supabase antes de usar el panel. Un administrador debe asignar `role: "doctor"` o `role: "capitan"` en `app_metadata` de Supabase Auth para cada cuenta autorizada. El rol seleccionado al registrarse en `user_metadata` es descriptivo y no otorga permisos médicos. Conservar los demás campos de `app_metadata` al actualizarlo.
+
+La pertenencia se determina por `profiles.mission`; su modificación queda reservada a la administración porque delimita el acceso a los reportes. Otros roles mantienen sus permisos actuales. La migración no autoriza cuentas automáticamente.
