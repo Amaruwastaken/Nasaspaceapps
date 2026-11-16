@@ -11,7 +11,7 @@ const areas = {
   intestines:{name:'Intestines',x:205,y:460,ids:['gastricSymptoms','bowelFrequency','stoolConsistency','fiber']},
   body:{name:'Body',x:197,y:178,ids:['temperature','glucose','bmr','bodyFat','leanMassChange','boneDensity','gravity','calories','calcium','sodium','vitaminD','medication','radiation','dose','fluids']},
 };
-const names = {green:'Normal',yellow:'Caution',red:'Alert',unknown:'Unclassified',invalid:'Invalid data',missing:'No data'};
+const names = {green:'Normal',yellow:'Caution',red:'Alert',unknown:'Needs age/sex context',invalid:'Invalid data',missing:'No data'};
 const priority = {red:0,yellow:1,unknown:2,invalid:3,green:4,missing:5};
 const node = (tag,text,className) => { const el = document.createElement(tag); if (text) el.textContent = text; if (className) el.className = className; return el; };
 

@@ -88,7 +88,7 @@ function simulationState(metricId) {
   }
   throw new Error(`Could not select a simulated state for ${metricId}.`);
 }
-function simulatedValue(metricId,state) {
+function simulatedValue(metricId,state,demographics) {
   switch (metricId) {
     case 'amsler': return state;
     case 'bloodPressure': {
@@ -96,7 +96,13 @@ function simulatedValue(metricId,state) {
       const [[systolicMin,systolicMax],[diastolicMin,diastolicMax]] = ranges[state];
       return {systolic:randomInteger(systolicMin,systolicMax),diastolic:randomInteger(diastolicMin,diastolicMax)};
     }
-    case 'bodyFat': return state === 'green' ? randomDecimal(10,18,1) : state === 'yellow' ? randomDecimal(19,23,1) : randomDecimal(24,40,1);
+    case 'bodyFat': {
+      const bands = demographics.sex === 'female'
+        ? {green:[20,29],yellow:[[15,19],[30,34]],red:[[8,14.9],[35,40]]}
+        : {green:[15,24],yellow:[[10,14],[25,29]],red:[[5,9.9],[30,40]]};
+      const band = state === 'green' ? bands.green : bands[state][randomInteger(0,1)];
+      return {...demographics,value:randomDecimal(band[0],band[1],1)};
+    }
     case 'medication':
       return state === 'green' ? {takenPercent:randomInteger(95,100),doubleDose:'no'}
         : state === 'yellow' ? {takenPercent:randomInteger(80,94),doubleDose:'no'}
@@ -108,9 +114,11 @@ function simulatedValue(metricId,state) {
           ? {hrRise:randomInteger(20,29),systolicDrop:randomInteger(10,19),diastolicDrop:randomInteger(0,9),symptoms:'dizzy'}
           : {hrRise:randomInteger(30,40),systolicDrop:randomInteger(20,25),diastolicDrop:randomInteger(10,12),symptoms:'syncope'};
     case 'hemoglobin': {
-      const ranges = {green:[13,18],yellow:[11,12.9],red:[7,10.9]};
-      const [min,max] = ranges[state];
-      return randomDecimal(min,max,1);
+      const bands = demographics.sex === 'female'
+        ? {green:[12.1,15.1],yellow:[[11,12],[15.2,17.2]],red:[7,10.9]}
+        : {green:[13.8,17.2],yellow:[[11,13.7],[17.3,20]],red:[7,10.9]};
+      const band = state === 'yellow' ? bands.yellow[randomInteger(0,1)] : bands[state];
+      return {...demographics,value:randomDecimal(band[0],band[1],1)};
     }
     case 'boneDensity':
       return state === 'green'
@@ -187,9 +195,10 @@ function databaseError(error,operation) {
   return new Error(`Could not ${operation} your tests in Supabase${code}. Please try again.`);
 }
 export function generateSimulatedValues() {
+  const demographics = {sex:randomInteger(0,1) ? 'female' : 'male',age:randomInteger(25,60)};
   return Object.fromEntries(metrics.map(metric => {
     const state = simulationState(metric.id);
-    return [metric.id,simulatedValue(metric.id,state)];
+    return [metric.id,simulatedValue(metric.id,state,demographics)];
   }));
 }
 function simulatedTelemetry(manualValues) {

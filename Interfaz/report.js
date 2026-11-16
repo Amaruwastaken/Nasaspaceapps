@@ -11,7 +11,7 @@ const historyTrends = document.querySelector('#historyTrends');
 const historyPeriod = document.querySelector('#historyPeriod');
 const historyCategoriesList = document.querySelector('#historyCategories');
 const reportDetails = document.querySelector('#reportDetails');
-const statusNames = {green:'Green · Normal',yellow:'Yellow · Caution',red:'Red · Alert',missing:'No data',unknown:'Unclassified',invalid:'Invalid data'};
+const statusNames = {green:'Green · Normal',yellow:'Yellow · Caution',red:'Red · Alert',missing:'No data',unknown:'Needs age/sex context',invalid:'Invalid data'};
 const historyCategoryDefinitions = [
   {id:'brain',name:'Brain and focus',series:[
     {id:'sleep',name:'Sleep duration',source:'records',key:'sleep',unit:'h/night',aggregate:'average'},
