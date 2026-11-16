@@ -228,7 +228,9 @@ sidebar.querySelectorAll('a').forEach(link => {
     buttons.forEach(btn => { btn.disabled = Boolean(b); });
     form.hidden = !(a && b);
 
-    if (!a) {
+    if (!preset) {
+      chip.textContent = 'Step 3 of 3';
+    } else if (!a) {
       hint.textContent = 'Select your departure point (A).';
       chip.textContent = 'Step 1 of 3';
     } else if (!b) {
