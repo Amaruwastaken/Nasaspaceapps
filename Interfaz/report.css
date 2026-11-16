@@ -126,7 +126,6 @@
 .report-details th { background:#f4f7fa; color:var(--ink); white-space:nowrap; }
 .report-details td { color:var(--ink); }
 .report-detail-note { color:var(--muted); font-size:13px; line-height:1.6; }
-.report-capture-link { display:inline-block; margin-top:24px; color:var(--blue); font-weight:700; font-size:14px; }
 .report-footnote { color:var(--muted); font-size:12px; line-height:1.7; margin-top:24px; max-width:650px; }
 .dr-simi-widget {
   position: fixed;

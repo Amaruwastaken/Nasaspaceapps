@@ -189,7 +189,7 @@ function renderHistoryTrends(history,userId) {
   const description = document.createElement('p');
   if (!userId) {
     title.textContent = 'Sign in to view your history';
-    description.textContent = 'Your saved daily records and sensor trends will appear here.';
+    description.textContent = 'Your saved check-ins, daily records, and sensor trends will appear here.';
   } else if (!history.recordsLoaded && !history.sensorsLoaded && !history.checkinsLoaded) {
     title.textContent = 'History could not be loaded';
     description.textContent = 'The report could not retrieve daily records, check-ins, or sensor readings. Check the connection and try again.';
