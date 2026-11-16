@@ -22,6 +22,14 @@ test('prototype doctor signup role grants access to all report members', async (
   assert.match(migration, /select\s+p_user_id\s*=\s*\(select\s+auth\.uid\(\)\)\s+or\s+public\.can_review_mission\(\)/i);
 });
 
+test('check-in history supports user-selected calendar dates', async () => {
+  const migration = await readFile(path.join(migrationDir, '20261115150000_allow_backdated_checkins.sql'), 'utf8');
+
+  assert.match(migration, /add\s+column\s+if\s+not\s+exists\s+recorded_date\s+date/i);
+  assert.match(migration, /recorded_date\s*=\s*\(ts\s+at\s+time\s+zone\s+'UTC'\)::date/i);
+  assert.match(migration, /grant\s+insert\s*\(recorded_date\)\s+on\s+table\s+public\.telemetry\s+to\s+authenticated/i);
+});
+
 test('mission planner saves and reloads the shared Supabase mission', async () => {
   const [page, script, formsCss, coreMigration, migration, resetMigration, scopedUpdatesMigration] = await Promise.all([
     readFile(path.join(process.cwd(), 'Interfaz', 'mision.html'), 'utf8'),

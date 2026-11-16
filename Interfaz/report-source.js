@@ -32,12 +32,14 @@ function decodeSimulatedValues(payload) {
   return values;
 }
 
-async function fetchAllRows(client,table,columns,userId,orderColumn = 'date',manualOnly = false) {
+async function fetchAllRows(client,table,columns,userId,orderColumn = 'date',manualOnly = false,secondaryOrderColumn) {
   const rows = [];
   for (let offset = 0; ; offset += pageSize) {
     let query = client.from(table).select(columns).eq('user_id',userId);
     if (manualOnly) query = query.not('manual_measurements','is',null);
-    const {data,error} = await query.order(orderColumn,{ascending:false}).range(offset,offset + pageSize - 1);
+    query = query.order(orderColumn,{ascending:false});
+    if (secondaryOrderColumn) query = query.order(secondaryOrderColumn,{ascending:false});
+    const {data,error} = await query.range(offset,offset + pageSize - 1);
     if (error) throw error;
     rows.push(...(data ?? []));
     if (!data || data.length < pageSize) return rows;
@@ -55,7 +57,7 @@ function localDateKey(date) {
 }
 
 async function fetchManualCheckins(client,userId) {
-  const rows = await fetchAllRows(client,'telemetry','user_id,recorded_date,ts,manual_measurements',userId,'recorded_date',true);
+  const rows = await fetchAllRows(client,'telemetry','user_id,recorded_date,ts,manual_measurements',userId,'recorded_date',true,'id');
   return rows.map(row => {
     if (row.user_id !== userId || !Number.isFinite(Date.parse(row.ts))) {
       throw new Error('Supabase returned an invalid check-in history row.');
@@ -182,7 +184,10 @@ export async function fetchDatabaseMeasurements(client,userId,{missionRead = fal
     history.checkins = checkinsResult.value;
     history.checkinsLoaded = true;
   } else {
-    warnings.push('Could not load check-in history.');
+    const code = checkinsResult.reason?.code;
+    warnings.push(['42703','PGRST204'].includes(code)
+      ? 'The Supabase check-in history schema is outdated. Apply the latest migrations.'
+      : 'Could not load check-in history.');
   }
   // Daily radiation is accumulated from the stored current-mission start; hr_avg is not resting heart rate.
   return {values,dates,warnings,history,simulatedValues,simulatedAt};

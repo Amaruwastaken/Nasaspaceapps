@@ -1,6 +1,6 @@
 ﻿import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateValues,generateSimulatedValues,loadMeasurements,saveMeasurements} from '../Interfaz/measurement-store.js';
+import {validateValues,generateSimulatedValues,loadMeasurements,saveMeasurements,localDateString} from '../Interfaz/measurement-store.js';
 import {metrics,manualMetrics,classify} from '../Interfaz/report-data.js';
 import {consecutiveShortSleepDays,fetchDatabaseMeasurements} from '../Interfaz/report-source.js';
 
@@ -29,7 +29,8 @@ function database(options = {}) {
           if (options.readThrows) throw new Error('Offline');
           if (options.readError) return {data:null,error:options.readError};
           if (options.badRow) return {data:options.badRow,error:null};
-          const matching=rows.filter(row=>row.user_id===owner&&row.manual_measurements!==null&&row.manual_measurements!==undefined).sort((a,b)=>b.ts.localeCompare(a.ts)||b.id-a.id);
+          const matching=rows.filter(row=>row.user_id===owner&&row.manual_measurements!==null&&row.manual_measurements!==undefined)
+            .sort((a,b)=>(b.recorded_date??'').localeCompare(a.recorded_date??'')||b.ts.localeCompare(a.ts)||b.id-a.id);
           return {data:matching[0] ?? null,error:null};
         },
         async single() {
@@ -57,6 +58,19 @@ test('all seven manual metrics round-trip as normalized values',async()=>{
   assert.deepEqual(rows[0].automatic_data,{hr:rows[0].hr,rr:rows[0].rr,temp:rows[0].temp,spo2:rows[0].spo2,resp:rows[0].resp,rad_rate:rows[0].rad_rate,co2:rows[0].co2,asleep:false,phase:'prototipo',gravity:rows[0].simulated_data.gravity,latency_s:rows[0].latency_s,mission_day:1});
   assert.deepEqual(Object.keys(rows[0].simulated_data).sort(),metrics.filter(metric=>!manualMetrics.some(manual=>manual.id===metric.id)).map(metric=>metric.id).sort());
   assert.equal(rows[0].simulated_data.heartRate,rows[0].hr);
+});
+
+test('check-ins save a validated calendar date and future dates are rejected',async()=>{
+  const {client,rows,calls}=database();
+  const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const date=localDateString(yesterday);
+  const saved=await saveMeasurements(client,'user-a',{pvt:250},{date});
+  assert.equal(rows[0].recorded_date,date);
+  assert.equal(saved.recordedDate,date);
+  assert.equal((await loadMeasurements(client,'user-a')).recordedDate,date);
+  await assert.rejects(saveMeasurements(client,'user-a',{pvt:250},{date:'2026-02-31'}),/valid check-in date/);
+  await assert.rejects(saveMeasurements(client,'user-a',{pvt:250},{date:'2099-12-31'}),/future/);
+  assert.equal(calls.filter(([method])=>method==='insert').length,1);
 });
 
 test('empty snapshots supersede previous readings; missing and skipped fields stay absent',async()=>{
@@ -165,6 +179,34 @@ test('database report derives sleep streak from the daily record history',async(
   assert(withoutMissionStart.warnings.some(warning => warning.includes('mission start date')));
 });
 
+test('report history includes dated manual check-ins',async()=>{
+  const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const date=localDateString(yesterday);
+  const checkin={user_id:'user-a',recorded_date:date,ts:new Date().toISOString(),manual_measurements:{pvt:250,tlx:30,who5:75}};
+  const client={
+    rpc(){return Promise.resolve({data:null,error:null});},
+    from(table){
+      let owner,manualOnly=false;
+      const query={
+        select(){return query;},
+        eq(key,value){if(key==='user_id')owner=value;return query;},
+        order(){return query;},
+        not(){manualOnly=true;return query;},
+        range(){return Promise.resolve({data:table==='telemetry'&&manualOnly&&owner==='user-a'?[checkin]:[],error:null});},
+        limit(){return query;},
+        maybeSingle(){return Promise.resolve({data:null,error:null});},
+      };
+      return query;
+    },
+  };
+  const result=await fetchDatabaseMeasurements(client,'user-a');
+  assert.equal(result.history.checkinsLoaded,true);
+  assert.deepEqual(result.history.checkins[0],{
+    date,values:{pvt:250,tlx:30,who5:75},pvt:250,tlx:30,who5:75,
+    hrRise:undefined,perfusion:undefined,medicationPercent:undefined,
+  });
+});
+
 test('automatic-only telemetry rows are not treated as Captura snapshots',async()=>{
   const {client}=database({rows:[{id:1,user_id:'user-a',manual_measurements:null,ts:'2026-11-15T01:00:00Z'}]});
   assert.equal(await loadMeasurements(client,'user-a'),null);
@@ -211,7 +253,8 @@ test('database and network errors are surfaced; missing tables have an actionabl
   await assert.rejects(saveMeasurements(database({writeThrows:true}).client,'user-a',{}),/Could not save/);
   await assert.rejects(saveMeasurements(database({writeError:{code:'42501'}}).client,'user-a',{}),/denied the save/);
   await assert.rejects(saveMeasurements(database({writeError:{code:'23503'}}).client,'user-a',{}),/associated profile/);
-  for(const code of ['42P01','42703','PGRST204','PGRST205'])await assert.rejects(loadMeasurements(database({readError:{code}}).client,'user-a'),/unified telemetry migration/);
+  for(const code of ['42P01','PGRST205'])await assert.rejects(loadMeasurements(database({readError:{code}}).client,'user-a'),/unified telemetry migration/);
+  for(const code of ['42703','PGRST204'])await assert.rejects(loadMeasurements(database({readError:{code}}).client,'user-a'),/latest migrations/);
   await assert.rejects(loadMeasurements(database({authThrows:true}).client,'user-a'),/session/);
   await assert.rejects(saveMeasurements(database({authError:true}).client,'user-a',{}),/session/);
 });

@@ -160,7 +160,8 @@ async function requireUser(client,userId,readOnly = false) {
   if (!readOnly && session.data.user.id !== userId) throw new Error('Your session changed. Reload the page before continuing.');
 }
 function databaseError(error,operation) {
-  if (['42P01','42703','PGRST204','PGRST205'].includes(error?.code)) return new Error('The unified telemetry migration has not been applied in Supabase.');
+  if (['42P01','PGRST205'].includes(error?.code)) return new Error('The unified telemetry migration has not been applied in Supabase.');
+  if (['42703','PGRST204'].includes(error?.code)) return new Error('The Supabase check-in schema is outdated. Apply the latest migrations.');
   if (error?.code === '23503') return new Error('Your Supabase account is missing its associated profile. Sign out, then sign in again.');
   if (error?.code === '42501') return new Error('Supabase denied the save due to permissions. Sign in again and retry.');
   const code = error?.code ? ` (code ${error.code})` : '';

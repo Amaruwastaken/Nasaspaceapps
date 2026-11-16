@@ -113,6 +113,7 @@ function skipCurrent() {
 async function saveAndViewReport() {
   if (!ready) { feedback('Wait for the session check to finish.'); return; }
   if (saving) return;
+  if (!captureDate.value || captureDate.value !== selectedDate) { feedback('Choose a valid check-in date.',true); return; }
   const userId = getCurrentUser()?.id;
   if (!userId) { feedback('Sign in to save your tests to Supabase.',true); return; }
   const request = loadRequest;
@@ -156,7 +157,8 @@ async function syncUser() {
   try {
     const saved = await loadMeasurements(client,userId);
     if (request !== loadRequest || userId !== getCurrentUser()?.id) return;
-    values = selectedDate === localDateString() ? {...(saved?.values ?? {})} : {};
+    const savedDate = saved?.recordedDate ?? (saved?.savedAt ? localDateString(new Date(saved.savedAt)) : null);
+    values = savedDate === selectedDate ? {...(saved?.values ?? {})} : {};
     ready = true; captureDate.disabled = false;
     next.disabled = false; skip.disabled = false; previous.disabled = false;
     renderCurrent(); feedback('');
@@ -170,7 +172,8 @@ async function syncUser() {
 
 captureDate.addEventListener('change',() => {
   const date = captureDate.value;
-  if (!date || date === selectedDate) return;
+  if (!date) { captureDate.value = selectedDate; return; }
+  if (date === selectedDate) return;
   if (hasUnsavedChanges && !window.confirm('Changing the date clears this unsaved check-in. Continue?')) {
     captureDate.value = selectedDate;
     return;

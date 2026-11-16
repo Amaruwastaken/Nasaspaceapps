@@ -192,13 +192,13 @@ function renderHistoryTrends(history,userId) {
     description.textContent = 'Your saved daily records and sensor trends will appear here.';
   } else if (!history.recordsLoaded && !history.sensorsLoaded && !history.checkinsLoaded) {
     title.textContent = 'History could not be loaded';
-    description.textContent = 'The report could not retrieve daily records or sensor readings. Check the connection and try again.';
+    description.textContent = 'The report could not retrieve daily records, check-ins, or sensor readings. Check the connection and try again.';
   } else if (!history.recordsLoaded || !history.sensorsLoaded || !history.checkinsLoaded) {
     title.textContent = 'Some history sources are unavailable';
     description.textContent = 'Available seven-day charts appear by category when readings can be loaded.';
   } else {
     title.textContent = 'No history to chart yet';
-    description.textContent = 'Daily records and sensor readings from the last seven days will appear here when available.';
+    description.textContent = 'Check-ins, daily records, and sensor readings from the last seven days will appear here when available.';
   }
   empty.append(title,description); historyCategoriesList.append(empty);
 }
@@ -420,7 +420,12 @@ async function render() {
     delete actualValues[metric.id]; delete dates[metric.id];
   }
   Object.assign(actualValues,manual?.values);
-  if (manual) for (const id of Object.keys(manual.values)) dates[id] = new Date(manual.savedAt).toLocaleDateString('en-US');
+  if (manual) {
+    const manualDate = manual.recordedDate
+      ? new Date(`${manual.recordedDate}T12:00:00`).toLocaleDateString('en-US')
+      : new Date(manual.savedAt).toLocaleDateString('en-US');
+    for (const id of Object.keys(manual.values)) dates[id] = manualDate;
+  }
   const values = {...actualValues};
   const simulatedMetrics = new Set(), partiallySimulatedMetrics = new Set();
   const simulatedDate = database.simulatedAt ? new Date(database.simulatedAt).toLocaleDateString('en-US') : null;
