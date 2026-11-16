@@ -53,6 +53,13 @@
               <span class="card-chip" id="missionsChip">Paso 1 de 3</span>
             </div>
 
+            <div class="mission-settings">
+              <label class="field"><span class="field-label">Misión predeterminada</span><span class="bubble"><select id="missionPreset"><option value="">Personalizada</option><option value="artemis">Artemis I (orbital)</option><option value="apollo">Apollo 11</option></select></span></label>
+              <label class="field"><span class="field-label">Nombre de la misión</span><span class="bubble"><input id="missionName" maxlength="80" placeholder="Nombre de tu misión"></span></label>
+              <button class="reset-btn" id="saveMissionName" type="button">Guardar nombre</button>
+              <p class="missions-hint" id="missionSaveHint" role="status">Guarda el nombre para bloquearlo hasta reiniciar. Los datos se conservan en este navegador.</p>
+              <p class="missions-hint" id="missionPresetInfo" hidden></p>
+            </div>
             <p class="missions-hint" id="missionsHint">Toca tu punto de partida (A).</p>
 
             <div class="trip">
