@@ -15,13 +15,15 @@ const statusNames = {green:'Green · Normal',yellow:'Yellow · Caution',red:'Red
 const historyCategoryDefinitions = [
   {id:'brain',name:'Brain and focus',series:[
     {id:'sleep',name:'Sleep duration',source:'records',key:'sleep',unit:'h/night',aggregate:'average'},
-    {id:'pvt',name:'Reaction time (PVT)',source:'records',key:'pvt',unit:'ms',aggregate:'average'},
-    {id:'tlx',name:'NASA-TLX workload',source:'records',key:'tlx',unit:'points / 100',aggregate:'average'},
+    {id:'pvt',name:'Reaction time (PVT)',source:'checkins',fallbackSource:'records',key:'pvt',unit:'ms',aggregate:'average'},
+    {id:'tlx',name:'NASA-TLX workload',source:'checkins',fallbackSource:'records',key:'tlx',unit:'points / 100',aggregate:'average'},
+    {id:'who5',name:'Psychological well-being (WHO-5)',source:'checkins',key:'who5',unit:'points / 100',aggregate:'average'},
   ]},
   {id:'heart',name:'Heart',series:[
     {id:'hr-average',name:'Average heart rate',source:'sensors',key:'hr_avg',unit:'bpm',aggregate:'average'},
     {id:'hr-maximum',name:'Maximum heart rate',source:'sensors',key:'hr_max',unit:'bpm',aggregate:'maximum'},
     {id:'hrv',name:'Heart rate variability (RMSSD)',source:'sensors',key:'rmssd',unit:'ms',aggregate:'average'},
+    {id:'orthostatic-hr',name:'Standing heart-rate increase',source:'checkins',key:'hrRise',unit:'bpm',aggregate:'average'},
   ]},
   {id:'lungs',name:'Lungs',series:[
     {id:'spo2',name:'Minimum oxygen saturation (SpO₂)',source:'sensors',key:'spo2_min',unit:'%',aggregate:'minimum'},
@@ -30,6 +32,8 @@ const historyCategoryDefinitions = [
   {id:'body',name:'Body and mission',series:[
     {id:'temperature',name:'Average temperature',source:'sensors',key:'temp_avg',unit:'°C',aggregate:'average'},
     {id:'radiation',name:'Daily radiation',source:'sensors',key:'rad_msv',unit:'mSv',aggregate:'sum'},
+    {id:'perfusion',name:'Peripheral perfusion',source:'checkins',key:'perfusion',unit:'seconds',aggregate:'average'},
+    {id:'medication',name:'Medication adherence',source:'checkins',key:'medicationPercent',unit:'%',aggregate:'average'},
   ]},
 ];
 const historyColors = {brain:'#5867c7',heart:'#c5443d',lungs:'#168078',body:'#b17b16'};
@@ -70,6 +74,12 @@ function historyPoints(rows,series,dates) {
           : values.reduce((total,item) => total+item,0)/values.length;
     return {date,value};
   });
+}
+function historySeriesRows(history,series) {
+  const rows = history[series.source] ?? [];
+  if (!series.fallbackSource) return rows;
+  const primaryDates = new Set(rows.filter(row => typeof row[series.key] === 'number' && Number.isFinite(row[series.key])).map(row => row.date));
+  return [...rows,...(history[series.fallbackSource] ?? []).filter(row => !primaryDates.has(row.date))];
 }
 function svgElement(name,attributes = {}) {
   const element = document.createElementNS(svgNamespace,name);
@@ -153,7 +163,7 @@ function renderHistoryTrends(history,userId) {
   for (const category of historyCategoryDefinitions) {
     const charts = category.series.map(series => ({
       series,
-      points:historyPoints(history[series.source] ?? [],series,dates),
+      points:historyPoints(historySeriesRows(history,series),series,dates),
     })).filter(chart => chart.points.some(point => point.value !== null));
     if (!charts.length) continue;
     const details = document.createElement('details'); details.className = 'history-category';
@@ -180,10 +190,10 @@ function renderHistoryTrends(history,userId) {
   if (!userId) {
     title.textContent = 'Sign in to view your history';
     description.textContent = 'Your saved daily records and sensor trends will appear here.';
-  } else if (!history.recordsLoaded && !history.sensorsLoaded) {
+  } else if (!history.recordsLoaded && !history.sensorsLoaded && !history.checkinsLoaded) {
     title.textContent = 'History could not be loaded';
     description.textContent = 'The report could not retrieve daily records or sensor readings. Check the connection and try again.';
-  } else if (!history.recordsLoaded || !history.sensorsLoaded) {
+  } else if (!history.recordsLoaded || !history.sensorsLoaded || !history.checkinsLoaded) {
     title.textContent = 'Some history sources are unavailable';
     description.textContent = 'Available seven-day charts appear by category when readings can be loaded.';
   } else {
@@ -344,6 +354,24 @@ function renderDetails(values,dates,history,userId,simulatedMetrics,partiallySim
       'No sensor data has been saved yet.');
   }
   measurementHistory.append(sensors);
+
+  const checkins = detailSection('Check-in history');
+  if (!history.checkinsLoaded) {
+    const note = document.createElement('p'); note.className = 'report-detail-note';
+    note.textContent = 'Could not load check-in history.';
+    checkins.append(note);
+  } else {
+    const visualResults = {green:'No visual distortion',yellow:'Wavy lines / eye strain',red:'Blurred spot / severe distortion'};
+    renderTable(checkins,'All saved check-ins',[
+      'Date','Reaction time (ms)','NASA-TLX (/100)','Amsler result','Perfusion (s)',
+      'Medication on time (%)','Double dose','Standing HR rise (bpm)','WHO-5 (/100)',
+    ],history.checkins.map(row => [
+      row.date,row.values.pvt,row.values.tlx,visualResults[row.values.amsler] ?? row.values.amsler,
+      row.values.perfusion,row.values.medication?.takenPercent,row.values.medication?.doubleDose,
+      row.values.orthostatic?.hrRise,row.values.who5,
+    ]),'No check-ins have been saved yet.');
+  }
+  measurementHistory.append(checkins);
 }
 const crewPage = document.querySelector('[data-crew-report]');
 const crewSelect = document.querySelector('#crewMember');

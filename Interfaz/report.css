@@ -367,6 +367,12 @@
   }
 }
 .capture-form { max-width:580px; padding:24px; background:white; border:1px solid var(--line); border-radius:6px; }
+.capture-date-card { display:grid; gap:8px; padding:14px; margin:0 0 20px; border:1px solid var(--line); border-radius:4px; background:#f8fafc; }
+.capture-date-card label { color:var(--ink); font-size:14px; font-weight:700; }
+.capture-date-card input { width:100%; min-height:44px; padding:10px 12px; border:1px solid #cbd5df; border-radius:4px; color:var(--ink); background:#fff; font:inherit; }
+.capture-date-card input:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+.capture-date-card input:disabled { background:#edf1f5; color:var(--muted); }
+.capture-date-card p { margin:0; }
 .capture-progress { margin-bottom:22px; }
 .capture-progress-track { height:10px; overflow:hidden; border-radius:8px; background:#e6edf4; }
 .capture-progress-track span { display:block; width:0; height:100%; border-radius:inherit; background:var(--blue); transition:width .2s ease; }
