@@ -175,7 +175,6 @@ sidebar.querySelectorAll('a').forEach(link => {
 
     route.hidden = false;
     if (!valid) {
-      chip.textContent = 'Step 3 of 3';
       route.innerHTML = '<p>Enter the travel and stay durations to see the summary.</p>';
       return;
     }
@@ -235,10 +234,12 @@ sidebar.querySelectorAll('a').forEach(link => {
       hint.textContent = `Departure: ${PLANETS[a]}. Now select your destination (B).`;
       chip.textContent = 'Step 2 of 3';
     } else {
-      hint.textContent = 'Now enter your mission duration.';
-      chip.textContent = 'Step 3 of 3';
-      stayPlace.textContent = PLANETS[b];
-    }
+  hint.textContent = missionLocked
+    ? 'Saved mission. Press Reset to plan a new one.'
+    : 'Now enter your mission duration.';
+  chip.textContent = missionLocked ? 'Saved mission' : 'Step 3 of 3';
+  stayPlace.textContent = PLANETS[b];
+}
     renderSummary();
   }
 
