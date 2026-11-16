@@ -19,7 +19,7 @@ function readJson(pathname) {
 const normalizeText = (value) => String(value ?? '').trim();
 
 function formatValue(label, value, unit) {
-  if (value === null || value === undefined || value === '') return `${label}: sin dato`;
+  if (value === null || value === undefined || value === '') return `${label}: unavailable`;
   const numeric = Number(value);
   if (!Number.isNaN(numeric)) {
     return `${label}: ${numeric.toFixed(numeric % 1 === 0 ? 0 : 1)}${unit ? ` ${unit}` : ''}`;
@@ -28,17 +28,60 @@ function formatValue(label, value, unit) {
 }
 
 function summarizeTelemetry(rows = []) {
-  const latest = rows.find((row) => row?.is_simulated !== true);
-  if (!latest) {
-    return 'Do not use simulated readings to give personal recommendations.';
-  }
+  const realRows = rows.filter((row) => row?.is_simulated !== true).slice(0, 5);
+  if (!realRows.length) return 'No verified non-simulated telemetry is available. Do not infer personal readings.';
+  const labels = { hr: ['heart rate', 'bpm'], rr: ['respiratory rate', 'breaths/min'], spo2: ['oxygen saturation', '%'], temp: ['temperature', 'C'], resp: ['respiration', 'breaths/min'], co2: ['cabin CO2', 'ppm'], gravity: ['gravity', 'm/s2'], latency_s: ['reaction latency', 's'], mission_day: ['mission day', ''] };
+  return realRows.map((row, index) => {
+    const values = Object.entries(labels).filter(([key]) => row[key] !== null && row[key] !== undefined && row[key] !== '')
+      .map(([key, [label, unit]]) => formatValue(label, row[key], unit));
+    return `${index === 0 ? 'Latest' : `Previous ${index}`}${row.ts ? ` (${row.ts})` : ''}: ${values.join(' | ') || 'no values'}`;
+  }).join('\n');
+}
 
-  const keys = ['hr', 'spo2', 'temp', 'resp', 'co2', 'gravity', 'latency_s', 'mission_day'];
-  const values = keys
-    .filter((key) => latest?.[key] !== null && latest?.[key] !== undefined && latest?.[key] !== '')
-    .map((key) => formatValue(key, latest[key], key === 'hr' ? 'lpm' : key === 'spo2' ? '%' : key === 'temp' ? 'C' : key === 'resp' ? 'rpm' : key === 'co2' ? 'ppm' : key === 'gravity' ? 'm/s2' : key === 'latency_s' ? 's' : 'dia'));
+function summarizeRecords(rows = []) {
+  if (!rows.length) return 'No astronaut daily records are available.';
+  return rows.slice(0, 7).map((row) => {
+    const values = [
+      row.sleep != null && `sleep ${row.sleep} h`,
+      row.tlx != null && `NASA-TLX workload ${row.tlx}`,
+      row.pvt != null && `PVT reaction time ${row.pvt}`,
+      row.pvt_max != null && `PVT maximum reaction time ${row.pvt_max}`,
+      row.fs != null && `PVT false starts ${row.fs}`,
+      row.env != null && `environment ${row.env}`,
+    ].filter(Boolean);
+    return `${row.date || 'Date unavailable'}: ${values.join('; ') || 'no recorded values'}`;
+  }).join('\n');
+}
 
-  return `Latest available reading: ${values.join(' | ') || 'sin valores'}.`;
+function buildNasaQuery(question) {
+  const normalized = question.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const terms = [
+    [/sleep|sueno|dormir|descanso|fatiga|cansancio/i, 'spaceflight sleep circadian fatigue astronaut'],
+    [/reaction|reaccion|vigilancia|alerta|pvt|cogniti/i, 'astronaut vigilance reaction time cognitive performance spaceflight'],
+    [/stress|estres|workload|carga|tlx/i, 'spaceflight behavioral health workload stress crew'],
+    [/heart|corazon|cardio|oxygen|oxigeno|spo2|respir|co2|air|aire/i, 'spaceflight human health physiology spacecraft cabin environment'],
+    [/radiation|radiacion/i, 'astronaut space radiation health risk'],
+    [/vision|eye|ojos/i, 'spaceflight astronaut vision ocular health'],
+  ];
+  const related = terms.filter(([pattern]) => pattern.test(normalized)).map(([, query]) => query).join(' ');
+  return `${question} ${related || 'astronaut human health spaceflight'}`.slice(0, 240);
+}
+
+async function searchNasa(question) {
+  const params = new URLSearchParams({ q: buildNasaQuery(question), distribution: 'PUBLIC', page: '1', 'page.size': '5' });
+  const response = await fetch(`https://ntrs.nasa.gov/api/citations/search?${params}`, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!response.ok) throw new Error(`NASA NTRS returned status ${response.status}`);
+  const payload = await response.json();
+  return (payload?.results || []).slice(0, 5).map((item) => ({
+    title: normalizeText(item.title) || 'NASA technical report',
+    date: normalizeText(item.publicationDate || item.created || item.published),
+    url: `https://ntrs.nasa.gov/citations/${encodeURIComponent(String(item.id))}`,
+    summary: normalizeText(item.abstract),
+    excerpts: [],
+  })).filter((item) => /^https:\/\/ntrs\.nasa\.gov\/citations\/\d+$/.test(item.url) && item.summary);
 }
 function pickRelevantEvidence(question, entries = []) {
   const normalizedQuestion = question.toLowerCase();
@@ -82,23 +125,27 @@ function pickRelevantEvidence(question, entries = []) {
     .map(({ entry }) => entry);
 }
 
-function buildPrompt(question, telemetrySummary, evidenceEntries = []) {
+function buildPrompt(question, telemetrySummary, recordsSummary, evidenceEntries = []) {
   const context = evidenceEntries.length
     ? evidenceEntries.map((entry) => `- ${entry.title} (${entry.date}): ${entry.url}\n  ${entry.excerpts?.slice(0, 2).join(' ') || entry.summary}`).join('\n\n')
     : 'There is no relevant NASA reference for this question.';
 
-  return `You are Dr. SIMI, a wellness assistant. Always reply in clear, direct English for people without medical training.
+  return `You are Dr. SIMI, the crew wellness assistant aboard a spacecraft on a mission far from Earth. Always reply in clear, direct English for a crew member.
 
 Rules:
-- Maximum 350 characters, including spaces. Check the length before responding.
+- Maximum 450 characters, including spaces.
 - Do not greet the user, repeat the question, or summarize readings.
-- Do not mention simulated data or scientific evidence. If useful, add one brief reference such as (NASA HRP: sleep, 2024).
-- Use personal readings only when verified. Do not diagnose or recommend treatment.
-- If the question suggests an emergency, recommend contacting the medical team immediately.
-- Give a practical, easy-to-understand answer. If you do not know, say so briefly.
+- Treat the astronaut as living and working in microgravity inside a spacecraft, with limited onboard resources and delayed Earth support. Tailor advice to safe actions feasible onboard and mission protocols.
+- Use the supplied telemetry and daily astronaut records when relevant. Compare recent records for trends (sleep, NASA-TLX workload, PVT reaction time/false starts); briefly explain what they suggest, without presenting raw tables. Never invent readings or trends.
+- Telemetry marked simulated is excluded. Do not claim readings are normal or abnormal without an appropriate reference range. Do not diagnose or prescribe.
+- If symptoms or readings could indicate urgent danger, tell the astronaut to alert the onboard medical officer/mission control immediately and follow the emergency protocol.
+- Answer the actual question with a short description or one specific, practical recommendation. If the data or NASA references do not support a conclusion, say so briefly. When using a reference, name the NASA report and include its URL.
 
-Available personal readings (do not list or summarize them):
+Recent verified telemetry:
 ${telemetrySummary}
+
+Astronaut daily records (newest first):
+${recordsSummary}
 
 NASA reference for context:
 ${context}
@@ -107,7 +154,7 @@ Question:
 ${question}`;
 }
 
-function limitAnswer(text, maxLength = 350) {
+function limitAnswer(text, maxLength = 450) {
   const clean = String(text ?? '').replace(/\s+/g, ' ').trim();
   if (clean.length <= maxLength) return clean;
   const shortened = clean.slice(0, maxLength - 3);
@@ -126,6 +173,13 @@ async function getUserTelemetry(client, userId) {
     throw error;
   }
 
+  return data || [];
+}
+
+async function getUserRecords(client, userId) {
+  const { data, error } = await client.from('records').select('date, env, sleep, tlx, pvt, pvt_max, fs')
+    .eq('user_id', userId).order('date', { ascending: false }).limit(7);
+  if (error) throw error;
   return data || [];
 }
 
@@ -168,15 +222,6 @@ async function callGemini(prompt) {
   return text;
 }
 
-async function translateQuestionForSearch(question) {
-  const prompt = `Translate this question into a short English search query.
-Return only the query, with no explanation. Preserve the health topic and symptoms.
-
-Question: ${question}`;
-
-  return callGemini(prompt);
-}
-
 export default async function handler(request, response) {
   const method = request.method || 'GET';
   if (method !== 'POST') {
@@ -216,15 +261,17 @@ export default async function handler(request, response) {
       return;
     }
 
-    const telemetryRows = await getUserTelemetry(client, user.id);
+    const [telemetryRows, recordRows] = await Promise.all([
+      getUserTelemetry(client, user.id),
+      getUserRecords(client, user.id),
+    ]);
     const knowledge = await readJson(knowledgePath);
-    const englishQuery = await translateQuestionForSearch(question);
-    const evidenceEntries = pickRelevantEvidence(
-      `${question} ${englishQuery}`,
-      knowledge.entries || [],
-    );
+    const nasaEvidence = await searchNasa(question).catch(() => []);
+    const localEvidence = pickRelevantEvidence(question, knowledge.entries || []);
+    const evidenceEntries = nasaEvidence.length ? nasaEvidence.slice(0, 3) : localEvidence;
     const summary = summarizeTelemetry(telemetryRows);
-    const prompt = buildPrompt(question, summary, evidenceEntries);
+    const recordsSummary = summarizeRecords(recordRows);
+    const prompt = buildPrompt(question, summary, recordsSummary, evidenceEntries);
     const answer = limitAnswer(await callGemini(prompt));
 
     response.status(200).json({
