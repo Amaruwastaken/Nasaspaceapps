@@ -148,10 +148,11 @@ function scalar(definition,value,name) {
 // Validate each supplied field, even when the overall questionnaire is incomplete.
 export function validateValues(values) {
   if (!plainObject(values)) throw new Error('Measurements must be a data object.');
-  const allowed = new Set(manualMetrics.map(metric => metric.id));
+  // Keep validating legacy check-ins that stored fields now supplied by telemetry.
+  const allowed = new Set(metrics.map(metric => metric.id));
   if (Object.keys(values).some(key => !allowed.has(key))) throw new Error('The check-in contains unsupported measurements.');
   const clean = {};
-  for (const metric of manualMetrics) {
+  for (const metric of metrics) {
     const raw = values[metric.id];
     if (isMissing(raw)) continue;
     if (metric.fields) {
