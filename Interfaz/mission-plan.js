@@ -27,6 +27,14 @@ function showStatus(message) {
   hint.classList.remove('is-error');
 }
 
+function showSignInPrompt(message) {
+  const link = document.createElement('a');
+  link.href = 'login.html';
+  link.textContent = 'Sign in';
+  hint.replaceChildren(document.createTextNode(`${message} `), link);
+  hint.classList.remove('is-error');
+}
+
 function hasMission() {
   const state = plan.read();
   return Boolean(state.name || state.origin || state.dest);
@@ -42,7 +50,7 @@ async function loadSharedMission() {
     return;
   }
   if (!userId) {
-    showStatus('Sign in to load or save the shared mission in Supabase.');
+    showSignInPrompt('Sign in to load or save the shared mission in Supabase.');
     resetButton.hidden = !hasMission();
     return;
   }
@@ -106,7 +114,10 @@ saveButton.addEventListener('click', async () => {
     const client = await supabaseReady;
     if (!client) throw new Error('Could not connect to Supabase. Check the configuration and try again.');
     const userId = getCurrentUser()?.id;
-    if (!userId) throw new Error('Sign in to save the shared mission.');
+    if (!userId) {
+      showSignInPrompt('Sign in to save the shared mission.');
+      return;
+    }
     if (userId !== getCurrentUser()?.id) throw new Error('Your session changed. Try saving the mission again.');
 
     const startAt = `${state.startDate}T00:00:00.000Z`;

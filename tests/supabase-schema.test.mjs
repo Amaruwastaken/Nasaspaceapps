@@ -53,6 +53,8 @@ test('mission planner saves and reloads the shared Supabase mission', async () =
   assert.match(migration, /grant\s+select\s+on\s+table\s+public\.missions\s+to\s+authenticated/i);
   assert.match(script, /rpc\('get_shared_mission'\)/);
   assert.match(script, /rpc\('save_shared_mission'/);
+  assert.match(script, /link\.href\s*=\s*'login\.html'/);
+  assert.match(script, /showSignInPrompt\('Sign in to save the shared mission\.'\)/);
   for (const field of [
     'p_name:',
     'p_origin:',
