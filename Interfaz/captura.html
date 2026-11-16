@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#061b3a" />
-  <meta name="description" content="Captura de mediciones para el reporte de salud" />
-  <title>Captura | Farmacias Similunares</title>
+  <meta name="description" content="Health check-in for your report" />
+  <title>Check-in | Farmacias Similunares</title>
   <!-- Shared layout, navigation behavior, and session-aware links. -->
   <link rel="stylesheet" href="Style.css" />
   <script src="Script.js" defer></script>
@@ -23,7 +23,7 @@
         <span>Farmacias Similunares<span class="brand-dot">.</span></span>
       </a>
       <div class="topbar-actions">
-        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open menu">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -32,73 +32,73 @@
     <div class="shell">
       <!-- Landing-page content. -->
       <main class="main report-main" id="captura">
- <div class="intro"><span class="section-label">CAPTURA</span><h1>Registra tus pruebas.</h1><p>Completa las pruebas de reacci&#243;n, carga de trabajo y visi&#243;n. Despu&#233;s responde las dem&#225;s preguntas.</p></div>
+ <div class="intro"><span class="section-label">CHECK-IN</span><h1>Log your check-in.</h1><p>Complete the reaction time, workload, and vision tests, then answer the remaining questions.</p></div>
  <form id="captureForm" class="capture-form">
    <div class="capture-progress">
-     <div id="captureProgress" class="capture-progress-track" role="progressbar" aria-label="Progreso de pruebas manuales" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="captureProgressBar"></span></div>
+     <div id="captureProgress" class="capture-progress-track" role="progressbar" aria-label="Check-in progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="captureProgressBar"></span></div>
      <p id="captureStep" aria-live="polite"></p>
    </div>
    <div id="captureFields"></div>
    <div class="capture-controls">
-     <button id="capturePrevious" class="capture-secondary" type="button">Anterior</button>
-     <button id="captureSkip" class="capture-secondary" type="button">Saltar</button>
-     <button id="captureNext" class="capture-save" type="submit">Siguiente</button>
+     <button id="capturePrevious" class="capture-secondary" type="button">Previous</button>
+     <button id="captureSkip" class="capture-secondary" type="button">Skip</button>
+     <button id="captureNext" class="capture-save" type="submit">Next</button>
    </div>
    <p id="captureMessage" role="status" aria-live="polite"></p>
  </form>
- <p class="report-footnote">Las respuestas se guardan en tu cuenta de Supabase. Inicia sesi&#243;n para capturar y consultar tus pruebas desde cualquier dispositivo. <a href="login.html">Iniciar sesi&#243;n</a></p>
+ <p class="report-footnote">Your answers are saved to your Supabase account. Sign in to complete and view your tests on any device. <a href="login.html">Sign in</a></p>
 </main>
 
       <!-- Navigation drawer; auth.js shows links appropriate to the session. -->
-      <aside class="sidebar" id="sidebar" aria-label="Menú lateral" aria-hidden="true" inert>
+      <aside class="sidebar" id="sidebar" aria-label="Side menu" aria-hidden="true" inert>
         <div class="sidebar-top">
-          <div class="sidebar-heading">NAVEGACIÓN</div>
-          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Cerrar menú">×</button>
+          <div class="sidebar-heading">NAVIGATION</div>
+          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Close menu">×</button>
         </div>
 
-          <nav class="sidebar-nav" aria-label="Navegación principal">
+          <nav class="sidebar-nav" aria-label="Main navigation">
 
             <a href="Index.html" class="nav-link">
               <span class="nav-icon">⌂</span>
-              <span>Inicio</span>
+              <span>Home</span>
             </a>
 
-            <!-- CON SESIÓN INICIADA -->
+            <!-- SIGNED IN -->
             <a href="mision.html" class="nav-link">
             <span class="nav-icon">01</span>
-            <span>Mision</span>
+            <span>Mission</span>
           </a>
 
            <a href="reporte.html" class="nav-link">
             <span class="nav-icon">02</span>
-            <span>Reporte</span>
+            <span>Report</span>
           </a>
-          <a href="captura.html" class="nav-link is-active" aria-current="page"><span class="nav-icon">03</span><span>Captura</span></a>
+          <a href="captura.html" class="nav-link is-active" aria-current="page"><span class="nav-icon">03</span><span>Check-in</span></a>
           <a href="chat.html" class="nav-link"><span class="nav-icon">✦</span><span>Dr. SIMI bot</span></a>
 
             <div class="nav-divider"></div>
-            <span class="sidebar-label">PERFIL</span>
+            <span class="sidebar-label">ACCOUNT</span>
 
             
 
             <a href="registro.html" class="nav-link"
               data-auth="logged-out">
               <span class="nav-icon">⌨</span>
-              <span>Registro</span>
+              <span>Sign up</span>
             </a>
 
-            <!-- SIN INICIAR SESIÓN -->
+            <!-- SIGNED OUT -->
             <a href="login.html" class="nav-link"
               data-auth="logged-out">
               <span class="nav-icon">➔</span>
-              <span>Iniciar Sesión</span>
+              <span>Sign in</span>
             </a>
 
-            <!-- CON SESIÓN INICIADA -->
+            <!-- SIGNED IN -->
             <button type="button" class="nav-link"
                     id="logoutButton" data-auth="logged-in" hidden>
               <span class="nav-icon">↪</span>
-              <span>Cerrar Sesión</span>
+              <span>Sign out</span>
             </button>
 
           </nav>
@@ -109,7 +109,7 @@
               <circle cx="12" cy="8" r="4"></circle>
               <path d="M4 21a8 8 0 0 1 16 0"></path>
             </svg>
-            <span id="sidebarUserName">Usuario</span>
+            <span id="sidebarUserName">User</span>
           </div>
           <span class="sidebar-copyright">Farmacias Similunares 2026</span>
         </div>

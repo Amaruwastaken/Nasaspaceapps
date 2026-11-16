@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#061b3a" />
-  <meta name="description" content="Crea una cuenta en Farmacias Similunares" />
-  <title>Registro | Farmacias Similunares</title>
+  <meta name="description" content="Create a Farmacias Similunares account" />
+  <title>Sign Up | Farmacias Similunares</title>
   <!-- Shared navigation styles/scripts; local styles tune the registration form. -->
   <link rel="stylesheet" href="Style.css" />
   <link rel="stylesheet" href="Forms.css" />
@@ -22,7 +22,7 @@
         <span>Farmacias Similunares<span class="brand-dot">.</span></span>
       </a>
       <div class="topbar-actions">
-        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open menu">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -32,73 +32,73 @@
       <main class="main" id="registro">
         <div class="intro">
           <span class="section-label">FARMACIAS SIMILUNARES</span>
-          <h1>Crear cuenta</h1>
-          <p>Regístrate para continuar.</p>
+          <h1>Create an account</h1>
+          <p>Sign up to continue.</p>
         </div>
 
         <!-- The required fields and password length are browser-validated. -->
-        <section class="register-container" aria-label="Formulario de registro">
+        <section class="register-container" aria-label="Sign-up form">
           <form class="register-form" id="registerForm" method="post">
             <p id="authMessage" role="status" aria-live="polite"></p>
             <div class="form-group">
-              <label for="nombre">Nombre completo</label>
-              <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" autocomplete="name" required />
+              <label for="nombre">Full name</label>
+              <input type="text" id="nombre" name="nombre" placeholder="Your name" autocomplete="name" required />
             </div>
 
             <div class="form-group">
-              <label for="rol">Rol en la misión</label>
+              <label for="rol">Mission role</label>
               <select id="rol" name="rol" required>
-                <option value="" selected disabled>Selecciona tu rol</option>
-                <option value="capitan">Capitán</option>
-                <option value="ingeniero">Ingeniero</option>
-                <option value="piloto">Piloto</option>
+                <option value="" selected disabled>Select your role</option>
+                <option value="capitan">Commander</option>
+                <option value="ingeniero">Engineer</option>
+                <option value="piloto">Pilot</option>
                 <option value="doctor">Doctor</option>
-                <option value="cientifico">Científico</option>
+                <option value="cientifico">Scientist</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label for="correo">Correo electrónico</label>
-              <input type="email" id="correo" name="correo" placeholder="ejemplo@correo.com" autocomplete="email" required />
+              <label for="correo">Email address</label>
+              <input type="email" id="correo" name="correo" placeholder="name@example.com" autocomplete="email" required />
             </div>
 
             <div class="form-group">
-              <label for="contrasena">Contraseña</label>
-              <input type="password" id="contrasena" name="contrasena" placeholder="Crea una contraseña" autocomplete="new-password" minlength="8" required />
+              <label for="contrasena">Password</label>
+              <input type="password" id="contrasena" name="contrasena" placeholder="Create a password" autocomplete="new-password" minlength="8" required />
             </div>
 
-            <button type="submit" class="register-button" disabled>Registrarme</button>
+            <button type="submit" class="register-button" disabled>Create Account</button>
 
-            <p class="login-text">¿Ya tienes una cuenta? <a href="login.html">Inicia sesión</a></p>
+            <p class="login-text">Already have an account? <a href="login.html">Sign in</a></p>
           </form>
         </section>
       </main>
 
       <!-- Shared drawer; auth.js updates links when registration succeeds. -->
-      <aside class="sidebar" id="sidebar" aria-label="Menú lateral" aria-hidden="true" inert>
+      <aside class="sidebar" id="sidebar" aria-label="Side menu" aria-hidden="true" inert>
         <div class="sidebar-top">
-          <div class="sidebar-heading">NAVEGACIÓN</div>
-          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Cerrar menú">×</button>
+          <div class="sidebar-heading">NAVIGATION</div>
+          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Close menu">×</button>
         </div>
-        <nav class="sidebar-nav" aria-label="Navegación principal">
-          <a href="Index.html" class="nav-link"><span class="nav-icon">⌂</span><span>Inicio</span></a>
+        <nav class="sidebar-nav" aria-label="Main navigation">
+          <a href="Index.html" class="nav-link"><span class="nav-icon">⌂</span><span>Home</span></a>
           <a href="mision.html" class="nav-link">
             <span class="nav-icon">01</span>
-            <span>Mision</span>
+            <span>Mission</span>
           </a>
            <a href="reporte.html" class="nav-link">
             <span class="nav-icon">02</span>
-            <span>Reporte</span>
+            <span>Report</span>
           </a>
-          <a href="captura.html" class="nav-link"><span class="nav-icon">03</span><span>Captura</span></a>
+          <a href="captura.html" class="nav-link"><span class="nav-icon">03</span><span>Check-in</span></a>
 
                    <div class="nav-divider"></div>
-            <span class="sidebar-label">PERFIL</span>
+            <span class="sidebar-label">ACCOUNT</span>
 
-          <a href="registro.html" class="nav-link is-active" data-auth="logged-out" aria-current="page"><span class="nav-icon">⌨</span><span>Registro</span></a>
-          <a href="login.html" class="nav-link" data-auth="logged-out"><span class="nav-icon">➔</span><span>Iniciar Sesión</span></a>
+          <a href="registro.html" class="nav-link is-active" data-auth="logged-out" aria-current="page"><span class="nav-icon">⌨</span><span>Sign up</span></a>
+          <a href="login.html" class="nav-link" data-auth="logged-out"><span class="nav-icon">➔</span><span>Sign in</span></a>
           <button type="button" class="nav-link" id="logoutButton" data-auth="logged-in" hidden>
-            <span class="nav-icon">↪</span><span>Cerrar Sesión</span>
+            <span class="nav-icon">↪</span><span>Sign out</span>
           </button>
         </nav>
         <div class="sidebar-footer">
@@ -107,7 +107,7 @@
               <circle cx="12" cy="8" r="4"></circle>
               <path d="M4 21a8 8 0 0 1 16 0"></path>
             </svg>
-            <span id="sidebarUserName">Usuario</span>
+            <span id="sidebarUserName">User</span>
           </div>
           <span class="sidebar-copyright">Farmacias Similunares 2026</span>
         </div>

@@ -8,7 +8,7 @@ const plainObject = value => value !== null && typeof value === 'object' && !Arr
 const randomInteger = (min,max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const randomDecimal = (min,max,places) => Number((min + Math.random() * (max - min)).toFixed(places));
 const option = values => values[randomInteger(0,values.length - 1)];
-function invalid(name) { throw new Error(`Revisa el dato: ${name}.`); }
+function invalid(name) { throw new Error(`Check this value: ${name}.`); }
 function scalar(definition,value,name) {
   if (definition.options) {
     if (typeof value !== 'string' || !definition.options.some(([key]) => key === value)) invalid(name);
@@ -26,9 +26,9 @@ function scalar(definition,value,name) {
 }
 // Validate each supplied field, even when the overall questionnaire is incomplete.
 export function validateValues(values) {
-  if (!plainObject(values)) throw new Error('Las mediciones deben ser un objeto de datos.');
+  if (!plainObject(values)) throw new Error('Measurements must be a data object.');
   const allowed = new Set(manualMetrics.map(metric => metric.id));
-  if (Object.keys(values).some(key => !allowed.has(key))) throw new Error('La captura contiene mediciones no permitidas.');
+  if (Object.keys(values).some(key => !allowed.has(key))) throw new Error('The check-in contains unsupported measurements.');
   const clean = {};
   for (const metric of manualMetrics) {
     const raw = values[metric.id];
@@ -43,25 +43,25 @@ export function validateValues(values) {
     } else clean[metric.id] = scalar(metric,raw,metric.name);
     if (classify(metric,clean[metric.id]) === 'invalid') invalid(metric.name);
   }
-  if (new TextEncoder().encode(JSON.stringify(clean)).length > MAX_BYTES) throw new Error('La captura supera el tamaño permitido.');
+  if (new TextEncoder().encode(JSON.stringify(clean)).length > MAX_BYTES) throw new Error('The check-in exceeds the allowed size.');
   return clean;
 }
 async function requireUser(client,userId,readOnly = false) {
-  if (!client || typeof client.from !== 'function' || typeof client.auth?.getUser !== 'function') throw new Error('La conexión con Supabase no está disponible.');
-  if (typeof userId !== 'string' || !userId.trim()) throw new Error('Inicia sesión para guardar y consultar tus pruebas.');
+  if (!client || typeof client.from !== 'function' || typeof client.auth?.getUser !== 'function') throw new Error('The Supabase connection is unavailable.');
+  if (typeof userId !== 'string' || !userId.trim()) throw new Error('Sign in to save and view your tests.');
   let session;
   try { session = await client.auth.getUser(); }
-  catch { throw new Error('No se pudo verificar tu sesión. Intenta de nuevo.'); }
-  if (session.error) throw new Error('No se pudo verificar tu sesión. Inicia sesión de nuevo.');
-  if (!session.data?.user?.id) throw new Error('Inicia sesión para guardar y consultar tus pruebas.');
-  if (!readOnly && session.data.user.id !== userId) throw new Error('La sesión cambió. Recarga la página antes de continuar.');
+  catch { throw new Error('Could not verify your session. Please try again.'); }
+  if (session.error) throw new Error('Could not verify your session. Sign in again.');
+  if (!session.data?.user?.id) throw new Error('Sign in to save and view your tests.');
+  if (!readOnly && session.data.user.id !== userId) throw new Error('Your session changed. Reload the page before continuing.');
 }
 function databaseError(error,operation) {
-  if (['42P01','42703','PGRST204','PGRST205'].includes(error?.code)) return new Error('Falta aplicar la migración de telemetría unificada en Supabase.');
-  if (error?.code === '23503') return new Error('Falta el perfil asociado a tu cuenta en Supabase. Cierra sesión y vuelve a iniciar sesión.');
-  if (error?.code === '42501') return new Error('Supabase rechazó el guardado por permisos. Inicia sesión de nuevo e inténtalo otra vez.');
-  const code = error?.code ? ` (código ${error.code})` : '';
-  return new Error(`No se pudieron ${operation} las pruebas en Supabase${code}. Intenta de nuevo.`);
+  if (['42P01','42703','PGRST204','PGRST205'].includes(error?.code)) return new Error('The unified telemetry migration has not been applied in Supabase.');
+  if (error?.code === '23503') return new Error('Your Supabase account is missing its associated profile. Sign out, then sign in again.');
+  if (error?.code === '42501') return new Error('Supabase denied the save due to permissions. Sign in again and retry.');
+  const code = error?.code ? ` (code ${error.code})` : '';
+  return new Error(`Could not ${operation} your tests in Supabase${code}. Intenta de nuevo.`);
 }
 export function generateSimulatedValues(automatic) {
   return {
@@ -130,7 +130,7 @@ function simulatedTelemetry(manualValues) {
 }
 function decode(row,userId) {
   const validId = Number.isSafeInteger(row?.id) || (typeof row?.id === 'string' && /^\d+$/.test(row.id));
-  if (!plainObject(row) || row.user_id !== userId || !validId || !Number.isFinite(Date.parse(row.ts))) throw new Error('Supabase devolvió una captura inválida.');
+  if (!plainObject(row) || row.user_id !== userId || !validId || !Number.isFinite(Date.parse(row.ts))) throw new Error('Supabase returned an invalid check-in.');
   return {id:String(row.id),values:validateValues(row.manual_measurements),savedAt:row.ts};
 }
 // Complete snapshots are authoritative: omitted/skipped fields remain absent.
@@ -138,8 +138,8 @@ export async function loadMeasurements(client,userId,{missionRead = false} = {})
   await requireUser(client,userId,missionRead);
   let result;
   try { result = await client.from(TABLE).select(COLUMNS).eq('user_id',userId).not('manual_measurements','is',null).order('ts',{ascending:false}).order('id',{ascending:false}).limit(1).maybeSingle(); }
-  catch (error) { throw databaseError(error,'consultar'); }
-  if (result.error) throw databaseError(result.error,'consultar');
+  catch (error) { throw databaseError(error,'load'); }
+  if (result.error) throw databaseError(result.error,'load');
   return result.data === null ? null : decode(result.data,userId);
 }
 export async function saveMeasurements(client,userId,values) {
@@ -154,7 +154,7 @@ export async function saveMeasurements(client,userId,values) {
       manual_measurements:clean,
     }).select(COLUMNS).single();
   }
-  catch (error) { throw databaseError(error,'guardar'); }
-  if (result.error) throw databaseError(result.error,'guardar');
+  catch (error) { throw databaseError(error,'save'); }
+  if (result.error) throw databaseError(result.error,'save');
   return decode(result.data,userId);
 }

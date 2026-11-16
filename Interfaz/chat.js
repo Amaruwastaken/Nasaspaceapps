@@ -47,7 +47,7 @@ function appendMessage(thread, role, text) {
 
 async function askDrSimi(question) {
   const token = await getSessionToken();
-  if (!token) return 'Inicia sesi\u00f3n para usar Dr. SIMI bot.';
+  if (!token) return 'Sign in to use Dr. SIMI bot.';
 
   const response = await fetch('/api/chat', {
     method: 'POST',
@@ -59,8 +59,8 @@ async function askDrSimi(question) {
   });
 
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) return payload?.error || payload?.answer || 'No pude consultar al asistente.';
-  return payload.answer || 'No se obtuvo respuesta del asistente.';
+  if (!response.ok) return payload?.error || payload?.answer || 'Could not reach the assistant.';
+  return payload.answer || 'The assistant did not return a response.';
 }
 
 function setupWidget() {
@@ -69,16 +69,16 @@ function setupWidget() {
 
   widget.innerHTML = `
     <div class="dr-simi-header">
-      <button class="dr-simi-toggle" type="button" aria-label="Minimizar Dr. SIMI bot" aria-expanded="true" aria-controls="drSimiContent">
+      <button class="dr-simi-toggle" type="button" aria-label="Minimize Dr. SIMI bot" aria-expanded="true" aria-controls="drSimiContent">
         <img src="Imagenes/farmacias-similunares.png" alt="" />
       </button>
       <strong class="dr-simi-title">Dr. SIMI bot</strong>
     </div>
     <div class="dr-simi-content" id="drSimiContent">
-      <div class="dr-simi-output" id="drSimiOutput">\u00bfQu\u00e9 quieres revisar hoy?</div>
+      <div class="dr-simi-output" id="drSimiOutput">What would you like to check today?</div>
       <form id="drSimiForm" class="dr-simi-form">
-        <input id="drSimiInput" type="text" maxlength="280" placeholder="Pregunta aqu\u00ed..." aria-label="Pregunta para Dr. SIMI bot" />
-        <button type="submit">Enviar</button>
+        <input id="drSimiInput" type="text" maxlength="280" placeholder="Ask here..." aria-label="Question for Dr. SIMI bot" />
+        <button type="submit">Send</button>
       </form>
     </div>
   `;
@@ -93,14 +93,14 @@ function setupWidget() {
   toggle.addEventListener('click', () => {
     const collapsed = widget.classList.toggle('is-collapsed');
     toggle.setAttribute('aria-expanded', String(!collapsed));
-    toggle.setAttribute('aria-label', `${collapsed ? 'Abrir' : 'Minimizar'} Dr. SIMI bot`);
+    toggle.setAttribute('aria-label', `${collapsed ? 'Open' : 'Minimize'} Dr. SIMI bot`);
   });
 
   const updateSessionMessage = (user) => {
-    if (!user) output.textContent = 'Inicia sesi\u00f3n para consultar Dr. SIMI bot.';
+    if (!user) output.textContent = 'Sign in to chat with Dr. SIMI.';
     else {
       const lastAnswer = loadHistory().filter((item) => item.role === 'assistant').at(-1);
-      output.textContent = lastAnswer?.text || '\u00bfQu\u00e9 quieres revisar hoy?';
+      output.textContent = lastAnswer?.text || 'What would you like to check today?';
     }
   };
   document.addEventListener('sessionchange', (event) => updateSessionMessage(event.detail));
@@ -114,10 +114,10 @@ function setupWidget() {
     const history = loadHistory();
     history.push({ role: 'user', text: question });
     saveHistory(history);
-    output.textContent = 'Dr. SIMI est\u00e1 pensando...';
+    output.textContent = 'Dr. SIMI is thinking...';
     input.value = '';
 
-    const answer = await askDrSimi(question).catch(() => 'No pude responder ahora. Intentalo de nuevo.');
+    const answer = await askDrSimi(question).catch(() => 'I could not respond just now. Please try again.');
     history.push({ role: 'assistant', text: answer });
     saveHistory(history);
     output.textContent = answer;
@@ -135,7 +135,7 @@ async function setupChatPage() {
   if (history.length) {
     history.forEach((item) => appendMessage(thread, item.role, item.text));
   } else {
-    appendMessage(thread, 'assistant', '\u00bfQu\u00e9 quieres revisar hoy?');
+    appendMessage(thread, 'assistant', 'What would you like to check today?');
   }
 
   form.addEventListener('submit', async (event) => {
@@ -148,10 +148,10 @@ async function setupChatPage() {
     saveHistory(messages);
     appendMessage(thread, 'user', question);
     input.value = '';
-    const pending = appendMessage(thread, 'assistant', 'Estoy pensando...');
+    const pending = appendMessage(thread, 'assistant', 'Thinking...');
     form.querySelector('button[type="submit"]').disabled = true;
 
-    const answer = await askDrSimi(question).catch(() => 'No pude responder ahora. Intentalo de nuevo.');
+    const answer = await askDrSimi(question).catch(() => 'I could not respond just now. Please try again.');
     pending.textContent = answer;
     messages.push({ role: 'assistant', text: answer });
     saveHistory(messages);

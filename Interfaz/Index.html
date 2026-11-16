@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#061b3a" />
-  <meta name="description" content="Explora el universo!" />
-  <title>Farmacias Similunares | Explora el universo!</title>
+  <meta name="description" content="Explore the universe!" />
+  <title>Farmacias Similunares | Explore the universe!</title>
   <!-- Shared layout, navigation behavior, and session-aware links. -->
   <link rel="stylesheet" href="Style.css" />
   <script src="Script.js" defer></script>
@@ -16,12 +16,12 @@
   <div class="app" id="app">
     <!-- Site header and menu toggle are shared by all pages. -->
     <header class="topbar">
-      <a class="brand" href="#inicio" aria-label="Farmacias Similunares, ir al inicio">
+      <a class="brand" href="#inicio" aria-label="Farmacias Similunares, go to home">
         <img class="brand-mark" src="Imagenes/farmacias-similunares.png" width="44" height="44" alt="" aria-hidden="true" />
         <span>Farmacias Similunares<span class="brand-dot">.</span></span>
       </a>
       <div class="topbar-actions">
-        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open menu">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -31,63 +31,63 @@
       <!-- Landing-page content. -->
       <main class="main" id="inicio">
         <div class="intro">
-          <span class="section-label">BIENVENIDO A FARMACIAS SIMILUNARES</span>
-          <h1>Descubre sobre nuestra misión.</h1>
-          <p>Nuestra plataforma está diseñada para dar seguimiento a la salud y el bienestar de los astronautas durante las misiones espaciales. Reúne datos sobre signos vitales, sueño, alimentación, estrés y exposición a la radiación, junto con las condiciones de la nave.</p>
-          <p>A través de indicadores visuales, alertas y reportes, busca facilitar la identificación de posibles riesgos y ayudar a comprender cómo cambia el cuerpo humano en el espacio, desde la órbita terrestre hasta misiones a la Luna y Marte.</p>
+          <span class="section-label">WELCOME TO FARMACIAS SIMILUNARES</span>
+          <h1>Discover our mission.</h1>
+          <p>Our platform tracks astronaut health and well-being during space missions. It brings together vital signs, sleep, nutrition, stress, and radiation exposure data, along with spacecraft conditions.</p>
+          <p>Visual indicators, alerts, and reports help identify potential risks and show how the human body changes in space, from Earth orbit to missions to the Moon and Mars.</p>
         </div>
       </main>
 
       <!-- Navigation drawer; auth.js shows links appropriate to the session. -->
-      <aside class="sidebar" id="sidebar" aria-label="Menú lateral" aria-hidden="true" inert>
+      <aside class="sidebar" id="sidebar" aria-label="Side menu" aria-hidden="true" inert>
         <div class="sidebar-top">
-          <div class="sidebar-heading">NAVEGACIÓN</div>
-          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Cerrar menú">×</button>
+          <div class="sidebar-heading">NAVIGATION</div>
+          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Close menu">×</button>
         </div>
      
-          <nav class="sidebar-nav" aria-label="Navegación principal">
+          <nav class="sidebar-nav" aria-label="Main navigation">
 
             <a href="Index.html" class="nav-link is-active" aria-current="page">
               <span class="nav-icon">⌂</span>
-              <span>Inicio</span>
+              <span>Home</span>
             </a>
 
-            <!-- CON SESIÓN INICIADA -->
+            <!-- SIGNED IN -->
             <a href="mision.html" class="nav-link">
             <span class="nav-icon">01</span>
-            <span>Mision</span>
+            <span>Mission</span>
           </a>
 
            <a href="reporte.html" class="nav-link">
             <span class="nav-icon">02</span>
-            <span>Reporte</span>
+            <span>Report</span>
           </a>
-          <a href="captura.html" class="nav-link"><span class="nav-icon">03</span><span>Captura</span></a>
+          <a href="captura.html" class="nav-link"><span class="nav-icon">03</span><span>Check-in</span></a>
           <a href="chat.html" class="nav-link"><span class="nav-icon">✦</span><span>Dr. SIMI bot</span></a>
 
 
             <div class="nav-divider"></div>
-            <span class="sidebar-label">PERFIL</span>
+            <span class="sidebar-label">ACCOUNT</span>
 
             
             <a href="registro.html" class="nav-link"
               data-auth="logged-out">
               <span class="nav-icon">⌨</span>
-              <span>Registro</span>
+              <span>Sign up</span>
             </a>
 
-            <!-- SIN INICIAR SESIÓN -->
+            <!-- SIGNED OUT -->
             <a href="login.html" class="nav-link"
               data-auth="logged-out">
               <span class="nav-icon">➔</span>
-              <span>Iniciar Sesión</span>
+              <span>Sign in</span>
             </a>
 
-            <!-- CON SESIÓN INICIADA -->
+            <!-- SIGNED IN -->
             <button type="button" class="nav-link"
                     id="logoutButton" data-auth="logged-in" hidden>
               <span class="nav-icon">↪</span>
-              <span>Cerrar Sesión</span>
+              <span>Sign out</span>
             </button>
 
           </nav>
@@ -98,7 +98,7 @@
               <circle cx="12" cy="8" r="4"></circle>
               <path d="M4 21a8 8 0 0 1 16 0"></path>
             </svg>
-            <span id="sidebarUserName">Usuario</span>
+            <span id="sidebarUserName">User</span>
           </div>
           <span class="sidebar-copyright">Farmacias Similunares 2026</span>
         </div>

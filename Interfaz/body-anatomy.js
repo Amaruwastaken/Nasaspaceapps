@@ -1,17 +1,17 @@
 import {metrics,classify} from './report-data.js';
 
 const areas = {
-  brain:{name:'Cerebro',x:183,y:65},
-  eyes:{name:'Ojos',x:129,y:96},
-  lungs:{name:'Pulmones',x:260,y:269,ids:['spo2','respiratoryRate','sleepApnea']},
-  heart:{name:'Corazón',x:216,y:298},
-  liver:{name:'Hígado',x:169,y:355,ids:[]},
-  stomach:{name:'Estómago',x:232,y:386},
-  kidneys:{name:'Riñones',x:263,y:409},
-  intestines:{name:'Intestinos',x:205,y:460,ids:[]},
-  body:{name:'Cuerpo',x:197,y:178},
+  brain:{name:'Brain',x:183,y:65},
+  eyes:{name:'Eyes',x:129,y:96},
+  lungs:{name:'Lungs',x:260,y:269,ids:['spo2','respiratoryRate','sleepApnea']},
+  heart:{name:'Heart',x:216,y:298},
+  liver:{name:'Liver',x:169,y:355,ids:[]},
+  stomach:{name:'Stomach',x:232,y:386},
+  kidneys:{name:'Kidneys',x:263,y:409},
+  intestines:{name:'Intestines',x:205,y:460,ids:[]},
+  body:{name:'Body',x:197,y:178},
 };
-const names = {green:'Normal',yellow:'Atención',red:'Alerta',unknown:'Sin clasificar',invalid:'Dato inválido',missing:'Sin datos'};
+const names = {green:'Normal',yellow:'Caution',red:'Alerta',unknown:'Unclassified',invalid:'Invalid data',missing:'No data'};
 const priority = {red:0,yellow:1,unknown:2,invalid:3,green:4,missing:5};
 const node = (tag,text,className) => { const el = document.createElement(tag); if (text) el.textContent = text; if (className) el.className = className; return el; };
 
@@ -69,7 +69,7 @@ export function createAnatomyView(root,formatValue) {
     const label = node('span',names[state],'body-stat-state'); heading.append(title,label); card.append(heading);
     popup.setAttribute('aria-labelledby',title.id);
     if (!available.length) {
-      card.append(node('p',readings.length ? 'No hay mediciones disponibles para este órgano.' : 'Todavía no hay mediciones vinculadas a este órgano.','body-popup-empty'));
+      card.append(node('p',readings.length ? 'No measurements are available for this body region.' : 'No measurements are linked to this body region yet.','body-popup-empty'));
     } else {
       const list = node('ul','','body-stat-readings');
       for (const {metric,state} of available) {
@@ -82,7 +82,7 @@ export function createAnatomyView(root,formatValue) {
       }
       card.append(list);
       const missing = readings.length-available.length;
-      if (missing) card.append(node('p',`${missing} ${missing === 1 ? 'indicador sin datos' : 'indicadores sin datos'}.`,'body-popup-empty'));
+      if (missing) card.append(node('p',`${missing} ${missing === 1 ? 'indicator with no data' : 'indicators with no data'}.`,'body-popup-empty'));
     }
     content.replaceChildren(card);
   }

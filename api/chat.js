@@ -10,7 +10,7 @@ const knowledgePath = path.join(__dirname, '..', 'Backend', 'nasa-knowledge.json
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 
 function readJson(pathname) {
   return readFile(pathname, 'utf8').then((data) => JSON.parse(data));
@@ -30,7 +30,7 @@ function formatValue(label, value, unit) {
 function summarizeTelemetry(rows = []) {
   const latest = rows.find((row) => row?.is_simulated !== true);
   if (!latest) {
-    return 'No uses lecturas simuladas para dar recomendaciones personales.';
+    return 'Do not use simulated readings to give personal recommendations.';
   }
 
   const keys = ['hr', 'spo2', 'temp', 'resp', 'co2', 'gravity', 'latency_s', 'mission_day'];
@@ -38,7 +38,7 @@ function summarizeTelemetry(rows = []) {
     .filter((key) => latest?.[key] !== null && latest?.[key] !== undefined && latest?.[key] !== '')
     .map((key) => formatValue(key, latest[key], key === 'hr' ? 'lpm' : key === 'spo2' ? '%' : key === 'temp' ? 'C' : key === 'resp' ? 'rpm' : key === 'co2' ? 'ppm' : key === 'gravity' ? 'm/s2' : key === 'latency_s' ? 's' : 'dia'));
 
-  return `Ultima medicion disponible: ${values.join(' | ') || 'sin valores'}.`;
+  return `Latest available reading: ${values.join(' | ') || 'sin valores'}.`;
 }
 function pickRelevantEvidence(question, entries = []) {
   const normalizedQuestion = question.toLowerCase();
@@ -85,25 +85,25 @@ function pickRelevantEvidence(question, entries = []) {
 function buildPrompt(question, telemetrySummary, evidenceEntries = []) {
   const context = evidenceEntries.length
     ? evidenceEntries.map((entry) => `- ${entry.title} (${entry.date}): ${entry.url}\n  ${entry.excerpts?.slice(0, 2).join(' ') || entry.summary}`).join('\n\n')
-    : 'No hay una referencia NASA relevante para esta pregunta.';
+    : 'There is no relevant NASA reference for this question.';
 
-  return `Eres Dr. SIMI, un asistente de bienestar. Responde siempre en espa\u00f1ol sencillo y directo, para personas sin formaci\u00f3n m\u00e9dica.
+  return `You are Dr. SIMI, a wellness assistant. Always reply in clear, direct English for people without medical training.
 
-Reglas:
-- M\u00e1ximo 350 caracteres contando espacios. Comprueba la longitud antes de responder.
-- No saludes, no repitas la pregunta ni hagas un resumen de lecturas.
-- No menciones datos simulados ni evidencia cient\u00edfica. Si es util, agrega solo una referencia breve como (NASA HRP: sue\u00f1o, 2024).
-- Usa lecturas personales solo si estan verificadas. No diagnostiques ni indiques tratamientos.
-- Si la pregunta sugiere una emergencia, recomienda contactar de inmediato al equipo medico.
-- Da una respuesta practica y facil de entender. Si no sabes, dilo brevemente.
+Rules:
+- Maximum 350 characters, including spaces. Check the length before responding.
+- Do not greet the user, repeat the question, or summarize readings.
+- Do not mention simulated data or scientific evidence. If useful, add one brief reference such as (NASA HRP: sleep, 2024).
+- Use personal readings only when verified. Do not diagnose or recommend treatment.
+- If the question suggests an emergency, recommend contacting the medical team immediately.
+- Give a practical, easy-to-understand answer. If you do not know, say so briefly.
 
-Lecturas personales disponibles (no las enumeres ni las resumas):
+Available personal readings (do not list or summarize them):
 ${telemetrySummary}
 
-Referencia NASA para consultar:
+NASA reference for context:
 ${context}
 
-Pregunta:
+Question:
 ${question}`;
 }
 
@@ -131,7 +131,7 @@ async function getUserTelemetry(client, userId) {
 
 async function callGemini(prompt) {
   if (!GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY no está configurada.');
+    throw new Error('GEMINI_API_KEY is not configured.');
   }
 
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`, {
@@ -150,7 +150,7 @@ async function callGemini(prompt) {
 
   const payload = await response.json();
   if (!response.ok) {
-    const message = payload?.error?.message || `Gemini respondió con estado ${response.status}`;
+    const message = payload?.error?.message || `Gemini returned status ${response.status}`;
     throw new Error(message);
   }
 
@@ -160,7 +160,7 @@ async function callGemini(prompt) {
     .trim();
 
   if (!text) {
-    throw new Error('Gemini no devolvió contenido útil.');
+    throw new Error('Gemini returned no usable content.');
   }
 
   return text;
@@ -185,7 +185,7 @@ export default async function handler(request, response) {
 
   try {
     if (!SUPABASE_URL || !SUPABASE_KEY) {
-      throw new Error('Faltan variables de entorno de Supabase.');
+      throw new Error('Supabase environment variables are missing.');
     }
 
     const authHeader = request.headers?.authorization || '';
@@ -232,10 +232,10 @@ export default async function handler(request, response) {
       userId: user.id,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'No se pudo procesar la solicitud.';
+    const message = error instanceof Error ? error.message : 'Could not process the request.';
     response.status(500).json({
       error: message,
-      answer: 'No pude responder en este momento. Revisa la configuración del servidor y vuelve a intentarlo.',
+      answer: 'I could not answer right now. Check the server configuration and try again.',
     });
   }
 }

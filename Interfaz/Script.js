@@ -15,30 +15,30 @@ function getMissionState({ missionStartDate, travelDays = 0, stayDays = 0, desti
   const stay = Number(stayDays) || 0;
 
   if (!start || Number.isNaN(start.getTime())) {
-    return { phase: 'Sin fecha de misión', gravity: 1, isOrbit: false, body: 'tierra' };
+    return { phase: 'No mission date', gravity: 1, isOrbit: false, body: 'tierra' };
   }
 
   const elapsedDays = (current.getTime() - start.getTime()) / 86400000;
   if (elapsedDays < 0) {
-    return { phase: 'Preparación previa al lanzamiento', gravity: 1, isOrbit: false, body: 'tierra' };
+    return { phase: 'Pre-launch preparation', gravity: 1, isOrbit: false, body: 'tierra' };
   }
 
   const totalDays = travel + stay;
   if (totalDays <= 0) {
-    return { phase: 'En el espacio', gravity: 0, isOrbit: false, body: 'espacio' };
+    return { phase: 'In space', gravity: 0, isOrbit: false, body: 'espacio' };
   }
 
   if (elapsedDays <= travel) {
-    return { phase: destination ? `En tránsito hacia ${planetNames[destination] ?? destination}` : 'En el espacio', gravity: 0, isOrbit: false, body: 'espacio' };
+    return { phase: destination ? `In transit to ${planetNames[destination] ?? destination}` : 'In space', gravity: 0, isOrbit: false, body: 'espacio' };
   }
 
   if (elapsedDays <= travel + stay) {
     const body = destination && Object.prototype.hasOwnProperty.call(PLANET_GRAVITY, destination) ? destination : 'tierra';
     const gravity = PLANET_GRAVITY[body] * 0.01;
-    return { phase: destination ? `En órbita de ${planetNames[destination] ?? destination}` : 'En órbita de un cuerpo celeste', gravity, isOrbit: true, body };
+    return { phase: destination ? `Orbiting ${planetNames[destination] ?? destination}` : 'Orbiting a celestial body', gravity, isOrbit: true, body };
   }
 
-  return { phase: 'Misión completada / fuera de órbita', gravity: 0, isOrbit: false, body: 'espacio' };
+  return { phase: 'Mission complete / out of orbit', gravity: 0, isOrbit: false, body: 'espacio' };
 }
 
 function setMenu(open) {
@@ -47,7 +47,7 @@ function setMenu(open) {
   menuToggle.setAttribute('aria-expanded', String(open));
   menuToggle.setAttribute(
     'aria-label',
-    open ? 'Cerrar menú' : 'Abrir menú'
+    open ? 'Close menu' : 'Open menu'
   );
 
   sidebar.setAttribute('aria-hidden', String(!open));
@@ -91,27 +91,27 @@ overlay.addEventListener('click', () => {
   setMenu(false);
 });
 
-// Cerrar con Escape
+// Close the menu with Escape.
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     setMenu(false);
   }
 });
 
-// Cerrar menú al seleccionar un enlace
+// Close menu al seleccionar un enlace
 sidebar.querySelectorAll('a').forEach(link => {
   link.addEventListener('click', () => {
     setMenu(false);
   });
 });
-// ===== Misiones (solo existe en mision.html) =====
+// ===== Mission planner (only on mision.html) =====
 (() => {
   // Skip mission setup on pages without the planet selector.
   const space = document.querySelector('#planets');
   if (!space) return;
 
-  const PLANETS = window.missionSolarSystem?.names ?? { tierra: 'Tierra', luna: 'Luna', marte: 'Marte' };
-  const DIST = { // km promedio aproximados
+  const PLANETS = window.missionSolarSystem?.names ?? { tierra: 'Earth', luna: 'Moon', marte: 'Mars' };
+  const DIST = { // approximate average distance in km
     'tierra-luna': 384400,
     'tierra-marte': 225e6,
     'luna-marte': 225e6,
@@ -133,7 +133,7 @@ sidebar.querySelectorAll('a').forEach(link => {
   let a = null, b = null;
 
   const distance = (x, y) => window.missionSolarSystem?.distance(x, y) ?? DIST[`${x}-${y}`] ?? DIST[`${y}-${x}`];
-  const fmt = n => n.toLocaleString('es-MX', { maximumFractionDigits: 2 });
+  const fmt = n => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
 
   // Show the summary after both locations and day counts are available.
   function renderSummary() {
@@ -145,8 +145,8 @@ sidebar.querySelectorAll('a').forEach(link => {
 
     route.hidden = false;
     if (!valid) {
-      chip.textContent = 'Paso 3 de 3';
-      route.innerHTML = '<p>Escribe los días de viaje y los días de estancia para ver el resumen.</p>';
+      chip.textContent = 'Step 3 of 3';
+      route.innerHTML = '<p>Enter travel and stay durations to see the summary.</p>';
       return;
     }
 
@@ -163,12 +163,12 @@ sidebar.querySelectorAll('a').forEach(link => {
 
     route.innerHTML = `
       <h3>${PLANETS[a]} (A) ➔ ${PLANETS[b]} (B)</h3>
-      <p><strong>Distancia:</strong> ${fmt(distance(a, b))} km (aprox.)</p>
-      <p><strong>Llegada a ${PLANETS[b]}:</strong> día ${fmt(travel)}</p>
-      <p><strong>Estancia en ${PLANETS[b]}:</strong> ${fmt(stay)} días</p>
-      <p><strong>Salida de ${PLANETS[b]}:</strong> día ${fmt(total)}</p>
-      <p><strong>Duración total:</strong> ${fmt(total)} días (${fmt(total * 24)} horas)</p>
-      <p><strong>Estado actual:</strong> ${missionState.phase} · ${missionState.isOrbit ? `${missionState.gravity.toFixed(2)} G (microgravedad)` : `${missionState.gravity.toFixed(2)} G`}</p>`;
+      <p><strong>Distance:</strong> ${fmt(distance(a, b))} km (approx.)</p>
+      <p><strong>Arrival at ${PLANETS[b]}:</strong> day ${fmt(travel)}</p>
+      <p><strong>Stay on ${PLANETS[b]}:</strong> ${fmt(stay)} days</p>
+      <p><strong>Departure from ${PLANETS[b]}:</strong> day ${fmt(total)}</p>
+      <p><strong>Total duration:</strong> ${fmt(total)} days (${fmt(total * 24)} hours)</p>
+      <p><strong>Current status:</strong> ${missionState.phase} · ${missionState.isOrbit ? `${missionState.gravity.toFixed(2)} G (microgravity)` : `${missionState.gravity.toFixed(2)} G`}</p>`;
   }
 
   // Update planet highlights, progress text, fields, and summary together.
@@ -185,13 +185,13 @@ sidebar.querySelectorAll('a').forEach(link => {
     form.hidden = !(a && b);
 
     if (!a) {
-      hint.textContent = 'Toca tu punto de partida (A).';
-      chip.textContent = 'Paso 1 de 3';
+      hint.textContent = 'Select your starting point (A).';
+      chip.textContent = 'Step 1 of 3';
     } else if (!b) {
-      hint.textContent = `Partida: ${PLANETS[a]}. Ahora toca tu destino (B).`;
-      chip.textContent = 'Paso 2 de 3';
+      hint.textContent = `Origin: ${PLANETS[a]}. Now select your destination (B).`;
+      chip.textContent = 'Step 2 of 3';
     } else {
-      hint.textContent = 'Ahora escribe los días de tu misión.';
+      hint.textContent = 'Now enter the number of mission days.';
       stayPlace.textContent = PLANETS[b];
     }
     renderSummary();
@@ -200,8 +200,8 @@ sidebar.querySelectorAll('a').forEach(link => {
   // First click selects A, second selects B; a later click starts a new route.
   buttons.forEach(btn => btn.addEventListener('click', () => {
     const p = btn.dataset.planet;
-    if (!a || b) { a = p; b = null; }   // empezar o reiniciar con nuevo A
-    else if (p === a) { a = null; }     // tocar A otra vez lo quita
+    if (!a || b) { a = p; b = null; }   // Start or restart with a new origin.
+    else if (p === a) { a = null; }     // Select the origin again to clear it.
     else { b = p; }
     render();
   }));

@@ -30,7 +30,7 @@ function renderCurrent() {
     field.append(Object.assign(document.createElement('h2'),{textContent:metric.name}));
     fields.replaceChildren(field);
     testDrafts[metric.id] ??= {result:values[metric.id] ?? null};
-    digital = mountDigitalTest(metric.id,field,testDrafts[metric.id],() => feedback('Resultado sin guardar.'));
+    digital = mountDigitalTest(metric.id,field,testDrafts[metric.id],() => feedback('Result not saved.'));
     updateProgress(); return;
   }
   if (metric.fields) {
@@ -41,20 +41,20 @@ function renderCurrent() {
   const inputOptions = definition.options ?? (!metric.fields ? metric.options : undefined);
   const input = document.createElement(inputOptions ? 'select' : 'input');
   input.id = label.htmlFor; input.name = definition.id;
-  if (inputOptions) { input.add(new Option('Selecciona una opción','')); inputOptions.forEach(([value,text]) => input.add(new Option(text,value))); }
+  if (inputOptions) { input.add(new Option('Select an option','')); inputOptions.forEach(([value,text]) => input.add(new Option(text,value))); }
   else {
     input.type = 'number';
     input.min = String(definition.min ?? 0);
     if (definition.step) input.step = definition.step;
     const example = definition.example ?? metric.example;
-    input.placeholder = example ? `Ej. ${example}` : 'Ingresa un valor';
+    input.placeholder = example ? `E.g. ${example}` : 'Enter a value';
     if (definition.max !== undefined) input.max = definition.max;
   }
   input.value = metric.fields ? values[metric.id]?.[definition.id] ?? '' : values[metric.id] ?? '';
   field.append(label,input);
   const help = document.createElement('p'); help.className = 'metric-ranges'; help.id = `capture-range-${metric.id}`;
   const example = definition.example ?? metric.example;
-  help.textContent = `${example ? `Ejemplo de respuesta: ${example}. ` : ''}${metric.ranges}`;
+  help.textContent = `${example ? `Example answer: ${example}. ` : ''}${metric.ranges}`;
   input.setAttribute('aria-describedby',help.id);
   field.append(help);
   fields.replaceChildren(field);
@@ -65,10 +65,10 @@ function updateProgress() {
   const percent = Math.round(((currentIndex + 1) / questions.length) * 100);
   progress.setAttribute('aria-valuenow',String(percent));
   progressBar.style.width = `${percent}%`;
-  stepLabel.textContent = `Pregunta ${currentIndex + 1} de ${questions.length} · ${percent}%`;
+  stepLabel.textContent = `Question ${currentIndex + 1} de ${questions.length} · ${percent}%`;
   previous.hidden = currentIndex === 0;
-  skip.textContent = currentIndex === questions.length - 1 ? 'Saltar y guardar' : 'Saltar';
-  next.textContent = currentIndex === questions.length - 1 ? 'Guardar y ver reporte' : 'Siguiente';
+  skip.textContent = currentIndex === questions.length - 1 ? 'Skip and save' : 'Skip';
+  next.textContent = currentIndex === questions.length - 1 ? 'Save and view report' : 'Next';
 }
 
 function rememberCurrent() {
@@ -104,15 +104,15 @@ function skipCurrent() {
 }
 
 async function saveAndViewReport() {
-  if (!ready) { feedback('Espera a que termine de comprobarse la sesión.'); return; }
+  if (!ready) { feedback('Wait for the session check to finish.'); return; }
   if (saving) return;
   const userId = getCurrentUser()?.id;
-  if (!userId) { feedback('Inicia sesión para guardar tus pruebas en Supabase.',true); return; }
+  if (!userId) { feedback('Sign in to save your tests to Supabase.',true); return; }
   const request = loadRequest;
   const snapshot = structuredClone(values);
   saving = true; next.disabled = true; skip.disabled = true; previous.disabled = true;
   fields.inert = true;
-  feedback('Guardando tus pruebas en Supabase…');
+  feedback('Saving your tests to Supabase…');
   try {
     const client = await supabaseReady;
     if (getCurrentUser()?.id !== userId || request !== loadRequest) return;
@@ -120,7 +120,7 @@ async function saveAndViewReport() {
     if (getCurrentUser()?.id !== userId || request !== loadRequest) return;
     window.location.assign('reporte.html');
   } catch (error) {
-    if (request === loadRequest) feedback(error.message || 'No se pudieron guardar las pruebas. Tus respuestas siguen en esta página.',true);
+    if (request === loadRequest) feedback(error.message || 'Could not save your tests. Your answers are still on this page.',true);
   } finally {
     saving = false;
     if (request === loadRequest) { fields.inert = false; next.disabled = !ready; skip.disabled = !ready; previous.disabled = !ready; }
@@ -135,11 +135,11 @@ async function syncUser() {
   values = {}; testDrafts = {}; currentIndex = 0;
   digital?.destroy(); digital = null; fields.replaceChildren(); fields.inert = false;
   next.disabled = true; skip.disabled = true; previous.disabled = true;
-  feedback('Cargando tus pruebas de Supabase…');
+  feedback('Loading your tests from Supabase…');
   const client = await supabaseReady;
   if (request !== loadRequest || userId !== (getCurrentUser()?.id ?? null)) return;
   if (!userId || !client) {
-    feedback(!userId ? 'Inicia sesión para capturar y guardar tus pruebas.' : 'No hay conexión con Supabase. Intenta recargar la página.',true);
+    feedback(!userId ? 'Sign in to complete and save your tests.' : 'No connection to Supabase. Try reloading the page.',true);
     return;
   }
   try {
@@ -150,21 +150,21 @@ async function syncUser() {
     renderCurrent(); feedback('');
   } catch (error) {
     if (request !== loadRequest) return;
-    feedback(error.message || 'No se pudieron cargar tus pruebas de Supabase.',true);
-    const retry = document.createElement('button'); retry.type = 'button'; retry.className = 'capture-secondary'; retry.textContent = 'Reintentar conexión';
+    feedback(error.message || 'Could not load your tests from Supabase.',true);
+    const retry = document.createElement('button'); retry.type = 'button'; retry.className = 'capture-secondary'; retry.textContent = 'Retry connection';
     retry.addEventListener('click',() => { initialized = false; void syncUser(); }); fields.append(retry);
   }
 }
 
 document.addEventListener('sessionchange',syncUser);
-form.addEventListener('input',() => { rememberCurrent(); feedback('Cambios sin guardar.'); });
+form.addEventListener('input',() => { rememberCurrent(); feedback('Unsaved changes.'); });
 previous.addEventListener('click',() => {
-  if (!ready) { feedback('Espera a que termine de comprobarse la sesión.'); return; }
+  if (!ready) { feedback('Wait for the session check to finish.'); return; }
   if (saving) return;
   rememberCurrent(); currentIndex--; renderCurrent(); feedback('');
 });
 skip.addEventListener('click',() => {
-  if (!ready) { feedback('Espera a que termine de comprobarse la sesión.'); return; }
+  if (!ready) { feedback('Wait for the session check to finish.'); return; }
   if (saving) return;
   skipCurrent();
   if (currentIndex === questions.length - 1) { saveAndViewReport(); return; }
@@ -173,15 +173,15 @@ skip.addEventListener('click',() => {
 form.addEventListener('submit',event => {
   event.preventDefault();
   if (saving) return;
-  if (!ready) { feedback('Espera a que termine de comprobarse la sesión.'); return; }
+  if (!ready) { feedback('Wait for the session check to finish.'); return; }
   if (digital) {
-    if (!digital.validate()) { feedback('Completa la prueba o usa “Saltar”.',true); return; }
+    if (!digital.validate()) { feedback('Complete the test or choose “Skip”.',true); return; }
     rememberCurrent();
     if (currentIndex < questions.length - 1) { currentIndex++; renderCurrent(); feedback(''); return; }
     saveAndViewReport(); return;
   }
   const input = fields.querySelector('input,select');
-  if (!input.value.trim()) { feedback('Completa esta respuesta o usa “Saltar”.',true); input.focus(); return; }
+  if (!input.value.trim()) { feedback('Complete this answer or choose “Skip”.',true); input.focus(); return; }
   if (!input.reportValidity()) return;
   rememberCurrent();
   if (currentIndex < questions.length - 1) { currentIndex++; renderCurrent(); feedback(''); return; }

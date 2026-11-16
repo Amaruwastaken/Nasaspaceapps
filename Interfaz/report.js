@@ -8,13 +8,13 @@ const message = document.querySelector('#reportMessage');
 const allMeasurements = document.querySelector('#allMeasurements');
 const measurementHistory = document.querySelector('#measurementHistory');
 const reportDetails = document.querySelector('#reportDetails');
-const statusNames = {green:'Verde · Normal',yellow:'Amarillo · Atención',red:'Rojo · Alerta',missing:'Sin datos',unknown:'Sin clasificar',invalid:'Dato inválido'};
+const statusNames = {green:'Green · Normal',yellow:'Yellow · Caution',red:'Red · Alert',missing:'No data',unknown:'Unclassified',invalid:'Invalid data'};
 function metricValue(metric,value) {
-  if (value === undefined || value === null || value === '') return 'Sin datos';
+  if (value === undefined || value === null || value === '') return 'No data';
   if (metric.fields && typeof value === 'object' && !Array.isArray(value)) {
     return metric.fields.map(field => {
       const raw = value[field.id];
-      const formatted = raw === undefined || raw === '' ? 'Sin datos' :
+      const formatted = raw === undefined || raw === '' ? 'No data' :
         field.options ? field.options.find(([key]) => key === raw)?.[1] ?? String(raw) : `${raw}${field.unit ? ` ${field.unit}` : ''}`;
       return `${field.label}: ${formatted}`;
     }).join(' · ');
@@ -23,7 +23,7 @@ function metricValue(metric,value) {
     if (typeof value === 'object' && !Array.isArray(value)) return `${value.value}${metric.unit ? ` ${metric.unit}` : ''}`;
   }
   if (metric.id === 'boneDensity' && typeof value === 'object' && !Array.isArray(value)) {
-    return `T-score ${value.tScore} · pérdida ${value.monthlyLoss}%/mes`;
+    return `T-score ${value.tScore} · loss ${value.monthlyLoss}%/month`;
   }
   if (metric.options) return metric.options.find(([key]) => key === value)?.[1] ?? String(value);
   return `${value}${metric.unit ? ` ${metric.unit}` : ''}`;
@@ -54,47 +54,47 @@ function renderDetails(values,dates,history,userId,simulatedMetrics,partiallySim
   allMeasurements.replaceChildren(); measurementHistory.replaceChildren();
   reportDetails.open = false;
 
-  const current = detailSection('Mediciones disponibles');
-  renderTable(current,'Último valor conocido de cada indicador',['Medición','Valor','Estado','Fecha','Origen'],
+  const current = detailSection('Available measurements');
+  renderTable(current,'Latest known value for each indicator',['Measurement','Value','Status','Date','Source'],
     metrics.map(metric => {
       const state = classify(metric,values[metric.id],values);
-      const origin = partiallySimulatedMetrics.has(metric.id) ? 'Incluye datos simulados'
-        : simulatedMetrics.has(metric.id) ? 'Simulado (prototipo)'
-          : metric.source === 'manual' ? 'Captura / registro diario' : 'Sensores';
+      const origin = partiallySimulatedMetrics.has(metric.id) ? 'Includes simulated data'
+        : simulatedMetrics.has(metric.id) ? 'Simulated (prototype)'
+          : metric.source === 'manual' ? 'Check-in / daily log' : 'Sensors';
       return [metric.name,metricValue(metric,values[metric.id]),statusNames[state] ?? state,dates[metric.id] ?? '—',
         origin];
     }),
-    'Todavía no hay mediciones disponibles.');
+    'No measurements are available yet.');
   allMeasurements.append(current);
 
   if (!userId) {
     const note = document.createElement('p'); note.className = 'report-detail-note';
-    note.textContent = 'Inicia sesión para consultar el historial completo guardado en la base de datos.';
+    note.textContent = 'Sign in to view the full history saved in the database.';
     measurementHistory.append(note);
     return;
   }
 
-  const records = detailSection('Historial de registros diarios');
+  const records = detailSection('Daily log history');
   if (!history.recordsLoaded) {
     const note = document.createElement('p'); note.className = 'report-detail-note';
-    note.textContent = 'No se pudo cargar el historial completo de registros.';
+    note.textContent = 'Could not load the full log history.';
     records.append(note);
   } else {
-    renderTable(records,'Todos los registros diarios',['Fecha','Entorno','Sueño (h)','NASA-TLX (/100)','Reacción promedio (ms)','Reacción máxima (ms)','Salidas en falso'],
+    renderTable(records,'All daily logs',['Date','Environment','Sleep (h)','NASA-TLX (/100)','Average reaction time (ms)','Slowest reaction time (ms)','False starts'],
       history.records.map(row => [row.date,row.env,row.sleep,row.tlx,row.pvt,row.pvt_max,row.fs]),
-      'Aún no hay registros diarios guardados.');
+      'No daily logs have been saved yet.');
   }
   measurementHistory.append(records);
 
-  const sensors = detailSection('Historial de sensores');
+  const sensors = detailSection('Sensor history');
   if (!history.sensorsLoaded) {
     const note = document.createElement('p'); note.className = 'report-detail-note';
-    note.textContent = 'No se pudo cargar el historial completo de sensores.';
+    note.textContent = 'Could not load the full sensor history.';
     sensors.append(note);
   } else {
-    renderTable(sensors,'Todos los resúmenes diarios de sensores',['Fecha','Pulso medio (lpm)','Pulso máximo (lpm)','Temperatura media (°C)','SpO₂ mínima (%)','Radiación diaria (mSv)','CO₂ máximo (ppm)','HRV RMSSD (ms)'],
+    renderTable(sensors,'All daily sensor summaries',['Date','Average heart rate (bpm)','Maximum heart rate (bpm)','Average temperature (C)','Minimum SpO2 (%)','Daily radiation (mSv)','Maximum CO2 (ppm)','HRV RMSSD (ms)'],
       history.sensors.map(row => [row.date,row.hr_avg,row.hr_max,row.temp_avg,row.spo2_min,row.rad_msv,row.co2_max,row.rmssd]),
-      'Aún no hay datos de sensores guardados.');
+      'No sensor data has been saved yet.');
   }
   measurementHistory.append(sensors);
 }
@@ -104,21 +104,21 @@ let version = 0;
 crewSelect?.addEventListener('change',render);
 async function render() {
   const request = ++version;
-  anatomyView.update({},{}); message.textContent = 'Consultando datos\u2026';
+  anatomyView.update({},{}); message.textContent = 'Loading data\u2026';
   allMeasurements.replaceChildren(); measurementHistory.replaceChildren();
   const client = await supabaseReady;
   const viewerId = getCurrentUser()?.id;
   let userId = viewerId;
   if (crewPage) {
     const controls = document.querySelector('.crew-controls'); controls.hidden = true;
-    if (!client || !viewerId) { message.textContent = 'Inicia sesión como doctor o capitán para consultar los reportes de la misión.'; return; }
+    if (!client || !viewerId) { message.textContent = 'Sign in as a doctor or commander to view mission reports.'; return; }
     const {data:members,error} = await client.rpc('get_mission_report_members');
     if (request !== version || viewerId !== getCurrentUser()?.id) return;
     if (error || !members?.length) {
       crewSelect.replaceChildren();
       message.textContent = error?.code === '42501'
-        ? 'El rol elegido al registrarse no concede permisos médicos. Un administrador debe asignar doctor o capitán en app_metadata de Supabase.'
-        : error ? 'No se pudieron consultar los integrantes. Revisa la conexión y las migraciones de Supabase.' : 'No hay integrantes en esta misión.';
+        ? 'The role selected at sign-up does not grant medical access. An administrator must assign the doctor or commander role in Supabase app_metadata.'
+        : error ? 'Could not load crew members. Check the connection and Supabase migrations.' : 'There are no crew members on this mission.';
       return;
     }
     const selected = crewSelect.value;
@@ -141,10 +141,10 @@ async function render() {
     delete actualValues[metric.id]; delete dates[metric.id];
   }
   Object.assign(actualValues,manual?.values);
-  if (manual) for (const id of Object.keys(manual.values)) dates[id] = new Date(manual.savedAt).toLocaleDateString('es-MX');
+  if (manual) for (const id of Object.keys(manual.values)) dates[id] = new Date(manual.savedAt).toLocaleDateString('en-US');
   const values = {...actualValues};
   const simulatedMetrics = new Set(), partiallySimulatedMetrics = new Set();
-  const simulatedDate = database.simulatedAt ? new Date(database.simulatedAt).toLocaleDateString('es-MX') : null;
+  const simulatedDate = database.simulatedAt ? new Date(database.simulatedAt).toLocaleDateString('en-US') : null;
   for (const [id,simulated] of Object.entries(database.simulatedValues ?? {})) {
     const actual = values[id];
     if (actual === undefined || actual === null || actual === '') {
@@ -178,10 +178,10 @@ async function render() {
   if (!crewPage && client && userId && shouldSyncEmergency) {
     try {
       const {error} = await client.rpc('sync_health_emergency_for_user',{p_user_id:userId,p_score:score});
-      if (error) emergencyError = ' No se pudo enviar la alerta a las cuentas registradas.';
+      if (error) emergencyError = ' Could not send the alert to registered accounts.';
       else document.dispatchEvent(new Event('healthstatuschange'));
     } catch {
-      emergencyError = ' No se pudo enviar la alerta a las cuentas registradas.';
+      emergencyError = ' Could not send the alert to registered accounts.';
     }
   }
   if (request !== version || viewerId !== getCurrentUser()?.id) return;
@@ -189,15 +189,15 @@ async function render() {
   const missingAutomatic = metrics.filter(m => m.source !== 'manual' && classify(m,actualValues[m.id],actualValues) === 'missing');
   const simulatedCount = simulatedMetrics.size + partiallySimulatedMetrics.size;
   const parts = [];
-  if (!classified) parts.push('No hay datos suficientes para evaluar los órganos.');
-  else if (!organs.length) parts.push('Sin órganos en atención o alerta en los datos disponibles.');
-  else parts.push(`${organs.length} ${organs.length === 1 ? 'región requiere' : 'regiones requieren'} atención.`);
-  if (missingAutomatic.length) parts.push(`No hay suficiente información automática real para ${missingAutomatic.length} ${missingAutomatic.length === 1 ? 'medición' : 'mediciones'}; los datos simulados solo sirven como referencia.`);
-  if (database.history.telemetrySimulated) parts.push('La última lectura automática es genérica y simulada para el prototipo.');
-  if (simulatedCount) parts.push(`${simulatedCount} ${simulatedCount === 1 ? 'medición se completa' : 'mediciones se completan'} con datos simulados; no se usan para alertas.`);
-  if (classified < applicable.length) parts.push('Evaluación parcial: hay mediciones sin datos o pendientes de conexión.');
-  if (!userId) parts.push('Inicia sesión para consultar las mediciones de la base de datos.');
-  if (manualResult.error) parts.push(manualResult.error.message || 'No se pudieron consultar las pruebas de Captura en Supabase.');
+  if (!classified) parts.push('There is not enough data to assess the body regions.');
+  else if (!organs.length) parts.push('No body regions are in caution or alert status in the available data.');
+  else parts.push(`${organs.length} ${organs.length === 1 ? 'region needs' : 'regions need'} attention.`);
+  if (missingAutomatic.length) parts.push(`There is not enough real sensor data for ${missingAutomatic.length} ${missingAutomatic.length === 1 ? 'measurement' : 'measurements'}; simulated data is for reference only.`);
+  if (database.history.telemetrySimulated) parts.push('The latest automatic reading is generic and simulated for this prototype.');
+  if (simulatedCount) parts.push(`${simulatedCount} ${simulatedCount === 1 ? 'measurement is completed' : 'measurements are completed'} with simulated data; these are not used for alerts.`);
+  if (classified < applicable.length) parts.push('Partial assessment: some measurements are missing or not connected.');
+  if (!userId) parts.push('Sign in to view database measurements.');
+  if (manualResult.error) parts.push(manualResult.error.message || 'Could not load check-in tests from Supabase.');
   if (emergencyError) parts.push(emergencyError);
   parts.push(...database.warnings); message.textContent = parts.join(' ');
 }

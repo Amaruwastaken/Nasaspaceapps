@@ -51,10 +51,10 @@ async function loadMissionStart() {
     dateInput.value = saved;
     dateInput.disabled = false;
     saveButton.disabled = false;
-    feedback('Inicia sesión para sincronizar con Supabase; se usó la fecha local del navegador.');
+    feedback('Sign in to sync with Supabase; the browser’s local date is being used.');
     return;
   }
-  feedback('Cargando la fecha de inicio…');
+  feedback('Loading start date…');
   try {
     const client = await supabaseReady;
     let data = null;
@@ -65,7 +65,7 @@ async function loadMissionStart() {
     if (currentRequest !== request || userId !== getCurrentUser()?.id) return;
     if (data !== null) {
       const timestamp = Date.parse(data);
-      if (!Number.isFinite(timestamp)) throw new Error('Supabase devolvió una fecha de misión inválida.');
+      if (!Number.isFinite(timestamp)) throw new Error('Supabase returned an invalid mission date.');
       dateInput.value = new Date(timestamp).toISOString().slice(0,10);
       writeSavedMissionStart(dateInput.value);
     } else {
@@ -75,19 +75,19 @@ async function loadMissionStart() {
     }
     dateInput.disabled = false;
     saveButton.disabled = false;
-    feedback(data ? 'Fecha cargada. Puedes cambiarla y guardar.' : 'No hay fecha guardada; se usó hoy como inicio por defecto.');
+    feedback(data ? 'Date loaded. You can change and save it.' : 'No saved date; today is being used as the default start date.');
   } catch (error) {
     const fallbackDate = readSavedMissionStart() ?? todayISO();
     dateInput.value = fallbackDate;
     writeSavedMissionStart(fallbackDate);
     dateInput.disabled = false;
     saveButton.disabled = false;
-    if (currentRequest === request) feedback('No se pudo sincronizar con Supabase; se usó la fecha local del navegador.', false);
+    if (currentRequest === request) feedback('Could not sync with Supabase; the browser’s local date is being used.', false);
   }
 }
 
 dateInput.addEventListener('input',() => {
-  if (!dateInput.disabled) feedback('Cambios sin guardar.');
+  if (!dateInput.disabled) feedback('Unsaved changes.');
 });
 
 saveButton.addEventListener('click',async () => {
@@ -97,7 +97,7 @@ saveButton.addEventListener('click',async () => {
   saving = true;
   dateInput.disabled = true;
   saveButton.disabled = true;
-  feedback('Guardando la fecha de inicio…');
+  feedback('Saving start date…');
   try {
     const client = await supabaseReady;
     const missionStartAt = dateInput.value ? `${dateInput.value}T00:00:00.000Z` : null;
@@ -109,7 +109,7 @@ saveButton.addEventListener('click',async () => {
         const {error} = await client.rpc('set_mission_start_at_for_user',{p_mission_start_at:missionStartAt});
         if (!error) {
           if (currentRequest !== request || userId !== getCurrentUser()?.id) return;
-          feedback(missionStartAt ? 'Fecha de inicio guardada.' : 'Se quitó la fecha de inicio.');
+          feedback(missionStartAt ? 'Start date saved.' : 'Start date removed.');
           return;
         }
         const message = String(error?.message ?? '');
@@ -129,17 +129,17 @@ saveButton.addEventListener('click',async () => {
         }, { onConflict: 'id' }).select('id').maybeSingle();
         if (error) throw error;
         if (data === null && currentRequest === request) {
-          throw new Error('No se pudo guardar la fecha de inicio de misión en el perfil.');
+          throw new Error('Could not save the mission start date to the profile.');
         }
       } catch (error) {
-        if (currentRequest === request) feedback('Guardado localmente: la base de datos aún no está sincronizada.', false);
+        if (currentRequest === request) feedback('Saved locally; the database has not synced yet.', false);
         return;
       }
     }
     if (currentRequest !== request || userId !== getCurrentUser()?.id) return;
-    feedback(missionStartAt ? 'Fecha de inicio guardada.' : 'Se quitó la fecha de inicio.');
+    feedback(missionStartAt ? 'Start date saved.' : 'Start date removed.');
   } catch (error) {
-    if (currentRequest === request) feedback('Se guardó localmente en el navegador; la base de datos aún no responde.', false);
+    if (currentRequest === request) feedback('Saved locally in the browser; the database has not responded yet.', false);
   } finally {
     if (currentRequest === request) {
       saving = false;

@@ -8,8 +8,8 @@
   // Each row contains a planet's label, display color, semi-major axis,
   // mean longitude, longitude rate, and orbital period in Earth days.
   const rows = [
-    ['tierra','Tierra','#66b9ed',1.00000261,100.46457166,35999.37244981,365.256],
-    ['marte','Marte','#e57f57',1.52371034,-4.55343205,19140.30268499,686.98],
+    ['tierra','Earth','#66b9ed',1.00000261,100.46457166,35999.37244981,365.256],
+    ['marte','Mars','#e57f57',1.52371034,-4.55343205,19140.30268499,686.98],
   ];
   const TAU = Math.PI * 2, rad = d => d * Math.PI / 180;
   const AU_KM = 149597870.7, ORBIT_SCALE = 290, MOON_ORBIT_RADIUS = 80;
@@ -34,7 +34,7 @@
   // Add the Sun and accessible planet buttons over the orbit artwork.
   const sun = document.createElement('div'); sun.className = 'solar-sun';
   sun.setAttribute('role','img');
-  sun.setAttribute('aria-label','Sol'); space.append(sun);
+  sun.setAttribute('aria-label','Sun'); space.append(sun);
   function button(id, name, color) {
     const el = document.createElement('button');
     el.type = 'button'; el.className = `planet solar-planet ${id}`;
@@ -54,11 +54,11 @@
     svg.append(orbit);
     return {...p,button:button(id,name,color),initialPosition:position(p,p.angle)};
   });
-  const moon = button('luna','Luna','#cfced3');
+  const moon = button('luna','Moon','#cfced3');
 
   // Expose names and approximate route distances to the mission planner.
   window.missionSolarSystem = {
-    names:Object.fromEntries([...planets.map(p => [p.id,p.name]),['luna','Luna']]),
+    names:Object.fromEntries([...planets.map(p => [p.id,p.name]),['luna','Moon']]),
     distance(a,b) {
       if ([a,b].includes('luna') && [a,b].includes('tierra')) return 384400;
       const get = id => planets.find(p => p.id === (id === 'luna' ? 'tierra' : id)).initialPosition;
@@ -70,11 +70,11 @@
   // Show the initial date, animation controls, and source/scale disclaimer.
   const controls = document.createElement('div'); controls.className = 'orbit-controls';
   const stamp = document.createElement('p');
-  stamp.textContent = `Posiciones iniciales aproximadas: ${date.toLocaleDateString('es-MX')}`;
+  stamp.textContent = `Approximate starting positions: ${date.toLocaleDateString('en-US')}`;
   const pause = document.createElement('button'); pause.type = 'button';
   controls.append(stamp,pause);
   const note = document.createElement('p'); note.className = 'orbit-note';
-  note.innerHTML = 'Órbitas circulares en vista superior, no a escala; la Tierra completa una vuelta en 4 minutos. Movimiento ilustrativo; Luna esquemática alrededor de la Tierra. Fuente: <a href="https://ssd.jpl.nasa.gov/planets/approx_pos.html" target="_blank" rel="noopener noreferrer">NASA/JPL</a>.';
+  note.innerHTML = 'Circular orbits shown from above and not to scale; Earth completes one orbit in 4 minutes. Illustrative motion; the Moon’s orbit around Earth is schematic. Source: <a href="https://ssd.jpl.nasa.gov/planets/approx_pos.html" target="_blank" rel="noopener noreferrer">NASA/JPL</a>.';
   space.after(controls,note);
 
   // Respect reduced-motion preferences and pause animation when the page is hidden.
@@ -106,7 +106,7 @@
   }
   function sync() {
     cancelAnimationFrame(frame); last = null;
-    pause.textContent = paused ? 'Reanudar órbitas' : 'Pausar órbitas';
+    pause.textContent = paused ? 'Resume orbits' : 'Pause orbits';
     pause.setAttribute('aria-pressed',String(paused));
     if (!paused && !document.hidden) frame = requestAnimationFrame(tick);
   }

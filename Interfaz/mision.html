@@ -1,12 +1,12 @@
 
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#061b3a" />
-  <meta name="description" content="Planea tu misión por el sistema solar con Farmacias Similunares" />
-  <title>Misión | Farmacias Similunares</title>
+  <meta name="description" content="Plan your solar system mission with Farmacias Similunares" />
+  <title>Mission | Farmacias Similunares</title>
   <!-- Shared shell plus the solar system and mission selector on this page. -->
   <link rel="stylesheet" href="Style.css" />
   <link rel="stylesheet" href="Forms.css" />
@@ -29,7 +29,7 @@
       <div class="topbar-actions">
         <button class="menu-toggle" id="menuToggle" type="button"
           aria-controls="sidebar" aria-expanded="false"
-          aria-label="Abrir menú">
+          aria-label="Open menu">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -39,64 +39,64 @@
       <main class="main" id="mision">
         <div class="intro">
           <span class="section-label">FARMACIAS SIMILUNARES</span>
-          <h1>Misión</h1>
-          <p>Explora el sistema solar y planea tu misión.</p>
+          <h1>Mission</h1>
+          <p>Explore the solar system and plan your mission.</p>
         </div>
 
         <section class="mission-content">
           <div class="organ-card missions" id="misiones">
             <div class="organ-card-header">
               <div>
-                <span class="section-label">MISIONES</span>
-                <h2>Planea tu viaje</h2>
+                <span class="section-label">MISSIONS</span>
+                <h2>Plan your journey</h2>
               </div>
-              <span class="card-chip" id="missionsChip">Paso 1 de 3</span>
+              <span class="card-chip" id="missionsChip">Step 1 of 3</span>
             </div>
 
-            <p class="missions-hint" id="missionsHint">Toca tu punto de partida (A).</p>
+            <p class="missions-hint" id="missionsHint">Select your starting point (A).</p>
 
             <div class="trip">
-              <div class="trip-slot"><span>A · PARTIDA</span><strong id="slotAName">—</strong></div>
+              <div class="trip-slot"><span>A · ORIGIN</span><strong id="slotAName">—</strong></div>
               <span class="trip-arrow">➔</span>
-              <div class="trip-slot"><span>B · DESTINO</span><strong id="slotBName">—</strong></div>
+              <div class="trip-slot"><span>B · DESTINATION</span><strong id="slotBName">—</strong></div>
             </div>
 
             <div class="space" id="planets">
               <div class="space-line" aria-hidden="true"></div>
-              <button class="planet earth" type="button" data-planet="tierra" aria-label="Tierra">
-                <small>Tierra</small>
+              <button class="planet earth" type="button" data-planet="tierra" aria-label="Earth">
+                <small>Earth</small>
               </button>
-              <button class="planet moon" type="button" data-planet="luna" aria-label="Luna">
-                <small>Luna</small>
+              <button class="planet moon" type="button" data-planet="luna" aria-label="Moon">
+                <small>Moon</small>
               </button>
-              <button class="planet mars" type="button" data-planet="marte" aria-label="Marte">
-                <small>Marte</small>
+              <button class="planet mars" type="button" data-planet="marte" aria-label="Mars">
+                <small>Mars</small>
               </button>
             </div>
 
             <div class="mission-form" id="missionForm" hidden>
               <label class="field">
-                <span class="field-label">Días de viaje (días terrestres)</span>
+                <span class="field-label">Travel time (Earth days)</span>
                 <span class="bubble">
-                  <input type="number" id="travelDays" min="0" step="any" inputmode="decimal" placeholder="Ej. 3.5">
+                  <input type="number" id="travelDays" min="0" step="any" inputmode="decimal" placeholder="E.g. 3.5">
                 </span>
               </label>
               <label class="field">
-                <span class="field-label">Días de estancia en <b id="stayPlace">B</b> (días terrestres)</span>
+                <span class="field-label">Stay on <b id="stayPlace">B</b> (Earth days)</span>
                 <span class="bubble">
-                  <input type="number" id="stayDays" min="0" step="any" inputmode="decimal" placeholder="Ej. 10.25">
+                  <input type="number" id="stayDays" min="0" step="any" inputmode="decimal" placeholder="E.g. 10.25">
                 </span>
               </label>
             </div>
 
             <div class="mission-start">
               <label class="field" for="missionStartDate">
-                <span class="field-label">Fecha de inicio de la misión actual</span>
+                <span class="field-label">Current mission start date</span>
                 <span class="bubble">
                   <input type="date" id="missionStartDate">
                 </span>
               </label>
-              <button type="button" class="reset-btn" id="saveMissionStart">Guardar fecha</button>
+              <button type="button" class="reset-btn" id="saveMissionStart">Save date</button>
               <p class="form-message" id="missionStartMessage" role="status" aria-live="polite"></p>
             </div>
 
@@ -107,40 +107,40 @@
       </main>
 
       <aside class="sidebar" id="sidebar"
-        aria-label="Menú lateral" aria-hidden="true" inert>
+        aria-label="Side menu" aria-hidden="true" inert>
 
         <div class="sidebar-top">
-          <div class="sidebar-heading">NAVEGACIÓN</div>
+          <div class="sidebar-heading">NAVIGATION</div>
           <button class="sidebar-close" type="button"
-            id="sidebarClose" aria-label="Cerrar menú">×</button>
+            id="sidebarClose" aria-label="Close menu">×</button>
         </div>
 
-        <nav class="sidebar-nav" aria-label="Navegación principal">
+        <nav class="sidebar-nav" aria-label="Main navigation">
           <a href="Index.html" class="nav-link">
             <span class="nav-icon">⌂</span>
-            <span>Inicio</span>
+            <span>Home</span>
           </a>
 
           <a href="mision.html" class="nav-link is-active" aria-current="page">
             <span class="nav-icon">01</span>
-            <span>Mision</span>
+            <span>Mission</span>
           </a>
 
            <a href="reporte.html" class="nav-link">
             <span class="nav-icon">02</span>
-            <span>Reporte</span>
+            <span>Report</span>
           </a>
-          <a href="captura.html" class="nav-link"><span class="nav-icon">03</span><span>Captura</span></a>
+          <a href="captura.html" class="nav-link"><span class="nav-icon">03</span><span>Check-in</span></a>
           <a href="chat.html" class="nav-link"><span class="nav-icon">✦</span><span>Dr. SIMI bot</span></a>
 
 
           <div class="nav-divider"></div>
-          <span class="sidebar-label">PERFIL</span>
+          <span class="sidebar-label">ACCOUNT</span>
 
-          <a href="registro.html" class="nav-link" data-auth="logged-out"><span class="nav-icon">⌨</span><span>Registro</span></a>
-          <a href="login.html" class="nav-link" data-auth="logged-out"><span class="nav-icon">➔</span><span>Iniciar Sesión</span></a>
+          <a href="registro.html" class="nav-link" data-auth="logged-out"><span class="nav-icon">⌨</span><span>Sign up</span></a>
+          <a href="login.html" class="nav-link" data-auth="logged-out"><span class="nav-icon">➔</span><span>Sign in</span></a>
           <button type="button" class="nav-link" id="logoutButton" data-auth="logged-in" hidden>
-            <span class="nav-icon">↪</span><span>Cerrar Sesión</span>
+            <span class="nav-icon">↪</span><span>Sign out</span>
           </button>
 
         </nav>
@@ -151,7 +151,7 @@
               <circle cx="12" cy="8" r="4"></circle>
               <path d="M4 21a8 8 0 0 1 16 0"></path>
             </svg>
-            <span id="sidebarUserName">Usuario</span>
+            <span id="sidebarUserName">User</span>
           </div>
           <span class="sidebar-copyright">Farmacias Similunares 2026</span>
         </div>

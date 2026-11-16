@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
-  <title>Reporte | Farmacias Similunares</title>
+  <title>Report | Farmacias Similunares</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#061b3a" />
-  <meta name="description" content="Reporte anat?mico e indicadores de salud de la misi?n" />
+  <meta name="description" content="Anatomical report and mission health indicators" />
   <!-- Shared layout, navigation behavior, and session-aware links. -->
   <link rel="stylesheet" href="Style.css" />
   <script src="Script.js" defer></script>
@@ -24,7 +24,7 @@
         <span>Farmacias Similunares<span class="brand-dot">.</span></span>
       </a>
       <div class="topbar-actions">
-        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú">
+        <button class="menu-toggle" id="menuToggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open menu">
           <span></span><span></span><span></span>
         </button>
       </div>
@@ -33,129 +33,129 @@
     <div class="shell">
       <!-- Landing-page content. -->
       <main class="main report-main" id="reporte">
- <div class="intro"><span class="section-label">REPORTE</span><h1>Tu estado actual.</h1><p>Explora el cuerpo para consultar cada regi&#243;n. El historial completo est&#225; en m&#225;s detalles.</p></div>
+ <div class="intro"><span class="section-label">HEALTH REPORT</span><h1>Your current status.</h1><p>Explore the body map to check each region. View the full history under more details.</p></div>
  <section id="bodyOverview" class="body-overview" aria-labelledby="bodyOverviewTitle" hidden>
    <div class="body-overview-heading">
-     <div><h2 id="bodyOverviewTitle">Vista general del cuerpo</h2><p>Pasa el cursor sobre un órgano para ver su información. También puedes usar Tab o tocarlo.</p></div>
-     <div class="body-legend" aria-label="Leyenda de estados">
-       <span data-state="green" hidden>Verde</span><span data-state="yellow" hidden>Atenci&#243;n</span><span data-state="red" hidden>Rojo</span><span data-state="unknown" hidden>Sin clasificar</span>
+     <div><h2 id="bodyOverviewTitle">Body overview</h2><p>Hover over a body region to view its information. You can also use Tab or tap it.</p></div>
+     <div class="body-legend" aria-label="Status legend">
+       <span data-state="green" hidden>Green</span><span data-state="yellow" hidden>Caution</span><span data-state="red" hidden>Red</span><span data-state="unknown" hidden>Unclassified</span>
      </div>
    </div>
    <div class="body-map">
      <div class="body-stage" id="bodyStage">
      <svg class="body-figure" viewBox="0 0 408 1024" role="group" aria-labelledby="bodyFigureTitle bodyFigureDescription">
-       <title id="bodyFigureTitle">Mapa corporal de indicadores</title>
-       <desc id="bodyFigureDescription">Silueta en blanco y negro con cerebro, pulmones, corazón, hígado, estómago, riñones e intestinos. Los marcadores de color indican regiones con mediciones disponibles.</desc>
+       <title id="bodyFigureTitle">Body map of health indicators</title>
+       <desc id="bodyFigureDescription">Black-and-white silhouette showing the brain, lungs, heart, liver, stomach, kidneys, and intestines. Colored markers indicate regions with available measurements.</desc>
        <image class="body-background" href="Imagenes/silueta-cuerpo.jpeg" x="0" y="0" width="408" height="1024" />
        <g class="body-anatomy">
-         <g class="body-organ" data-anatomy="brain" role="button" tabindex="0" aria-label="Cerebro" aria-expanded="false" aria-controls="bodyPopup">
+         <g class="body-organ" data-anatomy="brain" role="button" tabindex="0" aria-label="Brain" aria-expanded="false" aria-controls="bodyPopup">
            <path d="M131 65C129 47 146 32 169 31C191 27 218 36 229 54C242 74 235 96 218 109C207 116 198 111 193 100C189 91 180 90 170 90C151 90 134 87 131 76Z" />
          </g>
-         <g class="body-organ" data-anatomy="eyes" role="button" tabindex="0" aria-label="Ojos" aria-expanded="false" aria-controls="bodyPopup">
+         <g class="body-organ" data-anatomy="eyes" role="button" tabindex="0" aria-label="Eyes" aria-expanded="false" aria-controls="bodyPopup">
            <rect class="body-organ-hit" x="114" y="91" width="28" height="18" rx="6" />
            <path d="M119 96Q129 87 139 96Q129 105 119 96Z" /><circle cx="129" cy="96" r="3" class="body-organ-pupil" />
          </g>
-         <g class="body-organ" data-anatomy="body" role="button" tabindex="0" aria-label="Cuerpo" aria-expanded="false" aria-controls="bodyPopup">
+         <g class="body-organ" data-anatomy="body" role="button" tabindex="0" aria-label="Body" aria-expanded="false" aria-controls="bodyPopup">
            <circle class="body-organ-hit" cx="197" cy="178" r="23" />
            <circle cx="197" cy="178" r="14" /><path class="body-organ-line" d="M197 169V187M188 178H206" />
          </g>
-         <g class="body-organ" data-anatomy="lungs" role="button" tabindex="0" aria-label="Pulmones" aria-expanded="false" aria-controls="bodyPopup">
+         <g class="body-organ" data-anatomy="lungs" role="button" tabindex="0" aria-label="Lungs" aria-expanded="false" aria-controls="bodyPopup">
            <path d="M193 222C180 211 157 222 146 245C135 267 132 303 140 322C144 332 165 323 181 313C189 308 193 296 193 281Z" />
            <path d="M214 222C228 212 250 223 261 247C271 269 274 302 267 321C262 333 241 323 226 314C218 309 214 298 214 282Z" />
            <path class="body-organ-line" d="M203 211V253M203 248L176 271M203 248L232 271M176 271L160 289M232 271L250 289" />
          </g>
-         <g class="body-organ" data-anatomy="heart" role="button" tabindex="0" aria-label="Corazón" aria-expanded="false" aria-controls="bodyPopup">
+         <g class="body-organ" data-anatomy="heart" role="button" tabindex="0" aria-label="Heart" aria-expanded="false" aria-controls="bodyPopup">
            <path d="M202 279C191 264 181 271 183 287C185 304 203 323 213 328C225 318 237 300 234 285C231 271 219 273 214 282L212 265L202 266Z" />
            <path class="body-organ-line" d="M205 290Q212 301 215 316" />
          </g>
-         <g class="body-organ" data-anatomy="liver" role="button" tabindex="0" aria-label="Hígado" aria-expanded="false" aria-controls="bodyPopup">
+         <g class="body-organ" data-anatomy="liver" role="button" tabindex="0" aria-label="Liver" aria-expanded="false" aria-controls="bodyPopup">
            <path d="M144 346C162 332 195 335 224 344L230 356C216 367 196 370 174 374C158 377 145 371 141 363Z" />
            <path class="body-organ-line" d="M194 342L187 366" />
          </g>
-         <g class="body-organ" data-anatomy="stomach" role="button" tabindex="0" aria-label="Estómago" aria-expanded="false" aria-controls="bodyPopup">
+         <g class="body-organ" data-anatomy="stomach" role="button" tabindex="0" aria-label="Stomach" aria-expanded="false" aria-controls="bodyPopup">
            <path d="M219 339L218 363C230 356 249 360 253 374C258 391 247 408 232 411C218 414 205 408 198 398C193 391 197 382 204 382C211 382 210 391 219 390C230 389 234 378 230 374L209 365L210 339Z" />
          </g>
-         <g class="body-organ" data-anatomy="kidneys" role="button" tabindex="0" aria-label="Riñones" aria-expanded="false" aria-controls="bodyPopup">
+         <g class="body-organ" data-anatomy="kidneys" role="button" tabindex="0" aria-label="Kidneys" aria-expanded="false" aria-controls="bodyPopup">
            <path d="M159 392C141 386 137 402 140 416C143 433 158 436 165 426C170 420 163 416 160 412C157 407 170 401 159 392Z" />
            <path d="M251 392C269 386 273 402 270 416C267 433 252 436 245 426C240 420 247 416 250 412C253 407 240 401 251 392Z" />
            <path class="body-organ-line body-organ-duct" d="M160 417Q169 435 190 456M250 417Q241 435 220 456" />
          </g>
-         <g class="body-organ" data-anatomy="intestines" role="button" tabindex="0" aria-label="Intestinos" aria-expanded="false" aria-controls="bodyPopup">
+         <g class="body-organ" data-anatomy="intestines" role="button" tabindex="0" aria-label="Intestines" aria-expanded="false" aria-controls="bodyPopup">
            <path d="M171 428C154 424 150 435 152 449L153 478C154 489 166 492 176 487L235 487C247 491 257 483 256 472L256 444C257 431 246 425 236 430Z" />
            <path class="body-organ-line" d="M167 443H237Q246 447 237 454H175Q166 459 176 466H237Q245 472 236 477H174M205 481V498" />
          </g>
        </g>
        <g id="bodyMarkers" class="body-markers" aria-hidden="true"></g>
      </svg>
-       <aside id="bodyPopup" class="body-popup" role="region" aria-label="Informaci&#243;n del &#243;rgano" hidden>
-         <button id="bodyPopupClose" class="body-popup-close" type="button" aria-label="Cerrar informaci&#243;n del &#243;rgano">&#215;</button>
+       <aside id="bodyPopup" class="body-popup" role="region" aria-label="Body region information" hidden>
+         <button id="bodyPopupClose" class="body-popup-close" type="button" aria-label="Close body region information">&#215;</button>
          <div id="bodyPopupContent"></div>
        </aside>
      </div>
    </div>
  </section>
- <p id="reportMessage" class="report-message" role="status" aria-live="polite">Consultando datos&#8230;</p>
+ <p id="reportMessage" class="report-message" role="status" aria-live="polite">Loading data&#8230;</p>
  <details id="reportDetails" class="report-details">
-   <summary>M&#225;s detalles: todas las mediciones</summary>
-   <p class="report-details-intro">Consulta los valores disponibles y el historial de registros y sensores de tu cuenta.</p>
+   <summary>More details: all measurements</summary>
+   <p class="report-details-intro">View available values and your account’s log and sensor history.</p>
    <div id="allMeasurements"></div>
    <div id="measurementHistory"></div>
  </details>
- <a class="report-capture-link" href="captura.html">Ir a Captura</a>
- <p class="report-footnote">Indicadores orientativos definidos para la misi&#243;n. No equivalen a un diagn&#243;stico.</p>
+ <a class="report-capture-link" href="captura.html">Go to check-in</a>
+ <p class="report-footnote">Mission guidance indicators. These are not a diagnosis.</p>
 </main>
 
       <!-- Navigation drawer; auth.js shows links appropriate to the session. -->
-      <aside class="sidebar" id="sidebar" aria-label="Menú lateral" aria-hidden="true" inert>
+      <aside class="sidebar" id="sidebar" aria-label="Side menu" aria-hidden="true" inert>
         <div class="sidebar-top">
-          <div class="sidebar-heading">NAVEGACIÓN</div>
-          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Cerrar menú">×</button>
+          <div class="sidebar-heading">NAVIGATION</div>
+          <button class="sidebar-close" type="button" id="sidebarClose" aria-label="Close menu">×</button>
         </div>
 
-          <nav class="sidebar-nav" aria-label="Navegación principal">
+          <nav class="sidebar-nav" aria-label="Main navigation">
 
             <a href="Index.html" class="nav-link">
               <span class="nav-icon">⌂</span>
-              <span>Inicio</span>
+              <span>Home</span>
             </a>
 
-            <!-- CON SESIÓN INICIADA -->
+            <!-- SIGNED IN -->
             <a href="mision.html" class="nav-link">
             <span class="nav-icon">01</span>
-            <span>Mision</span>
+            <span>Mission</span>
           </a>
 
            <a href="reporte.html" class="nav-link is-active" aria-current="page">
             <span class="nav-icon">02</span>
-            <span>Reporte</span>
+            <span>Report</span>
           </a>
-          <a href="captura.html" class="nav-link"><span class="nav-icon">03</span><span>Captura</span></a>
+          <a href="captura.html" class="nav-link"><span class="nav-icon">03</span><span>Check-in</span></a>
           <a href="chat.html" class="nav-link"><span class="nav-icon">✦</span><span>Dr. SIMI bot</span></a>
 
 
             <div class="nav-divider"></div>
-            <span class="sidebar-label">PERFIL</span>
+            <span class="sidebar-label">ACCOUNT</span>
 
 
                         <a href="registro.html" class="nav-link"
               data-auth="logged-out">
               <span class="nav-icon">⌨</span>
-              <span>Registro</span>
+              <span>Sign up</span>
             </a>
 
 
-            <!-- SIN INICIAR SESIÓN -->
+            <!-- SIGNED OUT -->
             <a href="login.html" class="nav-link"
               data-auth="logged-out">
               <span class="nav-icon">➔</span>
-              <span>Iniciar Sesión</span>
+              <span>Sign in</span>
             </a>
 
-            <!-- CON SESIÓN INICIADA -->
+            <!-- SIGNED IN -->
             <button type="button" class="nav-link"
                     id="logoutButton" data-auth="logged-in" hidden>
               <span class="nav-icon">↪</span>
-              <span>Cerrar Sesión</span>
+              <span>Sign out</span>
             </button>
 
           </nav>
@@ -166,7 +166,7 @@
               <circle cx="12" cy="8" r="4"></circle>
               <path d="M4 21a8 8 0 0 1 16 0"></path>
             </svg>
-            <span id="sidebarUserName">Usuario</span>
+            <span id="sidebarUserName">User</span>
           </div>
           <span class="sidebar-copyright">Farmacias Similunares 2026</span>
         </div>

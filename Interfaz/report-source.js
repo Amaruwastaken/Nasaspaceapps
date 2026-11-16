@@ -18,7 +18,7 @@ export function consecutiveShortSleepDays(records) {
 
 function decodeSimulatedValues(payload) {
   if (!isPlainObject(payload) || Object.keys(payload).some(id => !metrics.some(metric => metric.id === id))) {
-    throw new Error('Supabase devolvió datos simulados inválidos.');
+    throw new Error('Supabase returned invalid simulated data.');
   }
   const manualIds = new Set(manualMetrics.map(metric => metric.id));
   const manualPayload = Object.fromEntries(Object.entries(payload).filter(([id]) => manualIds.has(id)));
@@ -26,7 +26,7 @@ function decodeSimulatedValues(payload) {
   for (const metric of metrics) {
     if (manualIds.has(metric.id) || !Object.hasOwn(payload,metric.id)) continue;
     const value = payload[metric.id];
-    if (['invalid','missing'].includes(classify(metric,value))) throw new Error('Supabase devolvió datos simulados inválidos.');
+    if (['invalid','missing'].includes(classify(metric,value))) throw new Error('Supabase returned invalid simulated data.');
     values[metric.id] = value;
   }
   return values;
@@ -65,7 +65,7 @@ async function fetchMissionStart(client,userId,missionRead) {
     if (!error) {
       if (data === null) return null;
       if (typeof data !== 'string' || !Number.isFinite(Date.parse(data))) {
-        throw new Error('Supabase devolvió una fecha de inicio de misión inválida.');
+        throw new Error('Supabase returned an invalid mission start date.');
       }
       return new Date(data).toISOString().slice(0,10);
     }
@@ -82,7 +82,7 @@ async function fetchMissionStart(client,userId,missionRead) {
   if (error) throw error;
   if (!data?.mission_start_at) return null;
   if (typeof data.mission_start_at !== 'string' || !Number.isFinite(Date.parse(data.mission_start_at))) {
-    throw new Error('Supabase devolvió una fecha de inicio de misión inválida.');
+    throw new Error('Supabase returned an invalid mission start date.');
   }
   return new Date(data.mission_start_at).toISOString().slice(0,10);
 }
@@ -99,9 +99,9 @@ export async function fetchDatabaseMeasurements(client,userId,{missionRead = fal
     fetchMissionStart(client,userId,missionRead),
   ]);
   const sources = [
-    {key:'sensors',warning:'No se pudieron cargar todos los sensores.',mapping:{hrv:'rmssd',co2:'co2_max',radiation:'rad_msv'}},
-    {key:'records',warning:'No se pudieron cargar todos los registros.',mapping:{sleep:'sleep',pvt:'pvt',tlx:'tlx'}},
-    {key:'telemetry',warning:'No se pudieron consultar las lecturas automáticas de telemetry.',mapping:{heartRate:'hr',temperature:'temp',spo2:'spo2',respiratoryRate:'resp',co2:'co2',gravity:'gravity'}},
+    {key:'sensors',warning:'Could not load all sensor data.',mapping:{hrv:'rmssd',co2:'co2_max',radiation:'rad_msv'}},
+    {key:'records',warning:'Could not load all logs.',mapping:{sleep:'sleep',pvt:'pvt',tlx:'tlx'}},
+    {key:'telemetry',warning:'Could not load automatic telemetry readings.',mapping:{heartRate:'hr',temperature:'temp',spo2:'spo2',respiratoryRate:'resp',co2:'co2',gravity:'gravity'}},
   ];
   results.slice(0,3).forEach((result,index) => {
     const source = sources[index];
@@ -122,7 +122,7 @@ export async function fetchDatabaseMeasurements(client,userId,{missionRead = fal
         const value = row[column];
         if (typeof value === 'number' && Number.isFinite(value) && value >= 0) {
           values[id] = value;
-          dates[id] = row.date ?? new Date(row.ts).toLocaleDateString('es-MX');
+          dates[id] = row.date ?? new Date(row.ts).toLocaleDateString('en-US');
         }
       }
     }
@@ -130,9 +130,9 @@ export async function fetchDatabaseMeasurements(client,userId,{missionRead = fal
   const sensorResult = results[0];
   const missionStartResult = results[3];
   if (missionStartResult.status === 'rejected') {
-    warnings.push('No se pudo consultar la fecha de inicio de misión; no se calculó la dosis acumulada.');
+    warnings.push('Could not load the mission start date; cumulative dose was not calculated.');
   } else if (!missionStartResult.value) {
-    warnings.push('Configura la fecha de inicio de misión para calcular la dosis acumulada.');
+    warnings.push('Set a mission start date to calculate cumulative dose.');
   } else if (sensorResult.status === 'fulfilled') {
     const missionStart = missionStartResult.value;
     const doseRows = sensorResult.value.filter(row =>

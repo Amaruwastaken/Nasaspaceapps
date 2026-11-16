@@ -7,11 +7,11 @@ const message = document.querySelector('#authMessage');
 const protectedPage = document.querySelector('[data-requires-auth]');
 const sidebarUserName = document.querySelector('#sidebarUserName');
 const userRoles = Object.freeze({
-  capitan:'Capitán',
-  ingeniero:'Ingeniero',
-  piloto:'Piloto',
+  capitan:'Commander',
+  ingeniero:'Engineer',
+  piloto:'Pilot',
   doctor:'Doctor',
-  cientifico:'Científico',
+  cientifico:'Scientist',
 });
 let currentUser = null;
 let notice;
@@ -32,7 +32,7 @@ function renderSession(session) {
         ? fullName.trim()
         : currentUser?.email ?? 'Usuario';
     const role = currentUser?.user_metadata?.role;
-    const roleName = typeof role === 'string' && Object.hasOwn(userRoles,role) ? userRoles[role] : 'Sin rol';
+    const roleName = typeof role === 'string' && Object.hasOwn(userRoles,role) ? userRoles[role] : 'No role';
     sidebarUserName.textContent = `${displayName} · ${roleName}`;
   }
   document.querySelectorAll('[data-auth]').forEach(el => {
@@ -46,7 +46,7 @@ function renderSession(session) {
       notice.setAttribute('role', 'status');
       const link = document.createElement('a');
       link.href = 'login.html';
-      link.textContent = 'Inicia sesión para continuar.';
+      link.textContent = 'Sign in to continue.';
       notice.append(link);
       protectedPage.before(notice);
     }
@@ -56,7 +56,7 @@ function renderSession(session) {
   const nav = document.querySelector('.nav-link[href="reporte.html"]');
   if (!crewLink && nav) {
     crewLink = document.createElement('a'); crewLink.href = 'doctor.html'; crewLink.className = 'nav-link';
-    crewLink.dataset.crewLink = ''; crewLink.textContent = 'Doctor y capitán'; crewLink.hidden = true; nav.after(crewLink);
+    crewLink.dataset.crewLink = ''; crewLink.textContent = 'Doctor and commander'; crewLink.hidden = true; nav.after(crewLink);
     if (document.querySelector('[data-crew-report]')) { crewLink.classList.add('is-active'); crewLink.setAttribute('aria-current','page'); }
   }
   if (crewLink) {
@@ -68,14 +68,14 @@ function renderSession(session) {
 function busy(form, value) {
   const button = form.querySelector('[type="submit"]');
   button.disabled = value;
-  button.textContent = value ? 'Procesando…' : form === loginForm ? 'Iniciar sesión' : 'Crear cuenta';
+  button.textContent = value ? 'Processing…' : form === loginForm ? 'Sign in' : 'Create account';
 }
 
 // Load Supabase, restore the current session, and publish client readiness.
 export const supabaseReady = (async () => {
   try {
     if (!SUPABASE_URL.startsWith('https://') || !SUPABASE_PUBLISHABLE_KEY || SUPABASE_PUBLISHABLE_KEY.includes('YOUR_')) {
-      throw new Error('La conexión no está configurada.');
+      throw new Error('The connection is not configured.');
     }
     const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/+esm');
     const client = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -87,7 +87,7 @@ export const supabaseReady = (async () => {
     return client;
   } catch (error) {
     renderSession(null);
-    const text = `No se pudo conectar. ${error.message || 'Intenta recargar la página.'}`;
+    const text = `Could not connect. ${error.message || 'Try reloading the page.'}`;
     showMessage(text, true);
     if (notice) notice.textContent = text;
     return null;
@@ -97,19 +97,19 @@ export const getCurrentUser = () => currentUser;
 
 const healthPanel = document.createElement('aside');
 healthPanel.className = 'health-emergency-panel';
-healthPanel.setAttribute('aria-label','Estado crítico de la tripulación');
+healthPanel.setAttribute('aria-label','Critical crew health status');
 healthPanel.setAttribute('role','alert');
 healthPanel.setAttribute('aria-live','assertive');
 healthPanel.hidden = true;
 const healthPanelHeader = document.createElement('div');
 healthPanelHeader.className = 'health-emergency-panel-header';
 const healthPanelHeading = document.createElement('h2');
-healthPanelHeading.textContent = 'Alerta: tripulante(s) en estado crítico';
+healthPanelHeading.textContent = 'Alert: crew member(s) in critical condition';
 const healthPanelMinimize = document.createElement('button');
 healthPanelMinimize.className = 'health-emergency-minimize';
 healthPanelMinimize.type = 'button';
 healthPanelMinimize.textContent = '×';
-healthPanelMinimize.setAttribute('aria-label','Minimizar alertas críticas');
+healthPanelMinimize.setAttribute('aria-label','Minimize critical alerts');
 healthPanelMinimize.setAttribute('aria-controls','healthEmergencyDetails');
 healthPanelMinimize.setAttribute('aria-expanded','true');
 healthPanelHeader.append(healthPanelHeading,healthPanelMinimize);
@@ -148,18 +148,18 @@ async function refreshHealthStatus() {
     healthPanelList.replaceChildren(...emergencies.map(emergency => {
       const item = document.createElement('li');
       const name = document.createElement('strong');
-      name.textContent = `Alerta, ${emergency.crew_name} en estado crítico`;
+      name.textContent = `Alert: ${emergency.crew_name} is in critical condition`;
       const score = document.createElement('small');
-      score.textContent = `Puntaje de riesgo: ${emergency.score}`;
+      score.textContent = `Risk score: ${emergency.score}`;
       item.append(name,score);
       return item;
     }));
     if (emergencies.length) {
-      healthPanelRestore.textContent = `${emergencies.length} alerta(s) crítica(s)`;
+      healthPanelRestore.textContent = `${emergencies.length} critical alert(s)`;
       healthPanel.hidden = false;
     } else clearHealthPanel();
   } catch (error) {
-    if (request === healthStatusRequest) console.error('No se pudo leer el estado de emergencia desde Supabase:',error);
+    if (request === healthStatusRequest) console.error('Could not load emergency status from Supabase:',error);
   } finally { healthStatusLoading = false; }
 }
 healthPanelMinimize.addEventListener('click',() => {
@@ -192,10 +192,10 @@ for (const form of [loginForm, registerForm].filter(Boolean)) {
     event.preventDefault();
     if (!form.reportValidity()) return;
     busy(form, true);
-    showMessage('Conectando…');
+    showMessage('Connecting…');
     try {
       const client = await supabaseReady;
-      if (!client) throw new Error('La conexión no está disponible.');
+      if (!client) throw new Error('The connection is unavailable.');
       const fields = new FormData(form);
       const credentials = { email: fields.get('correo').trim(), password: fields.get('contrasena') };
       let result;
@@ -203,18 +203,18 @@ for (const form of [loginForm, registerForm].filter(Boolean)) {
       else {
         const name = fields.get('nombre');
         const role = fields.get('rol');
-        if (typeof role !== 'string' || !Object.hasOwn(userRoles,role)) throw new Error('Selecciona un rol válido.');
-        if (typeof name !== 'string' || !name.trim()) throw new Error('Escribe tu nombre completo.');
+        if (typeof role !== 'string' || !Object.hasOwn(userRoles,role)) throw new Error('Select a valid role.');
+        if (typeof name !== 'string' || !name.trim()) throw new Error('Enter your full name.');
         result = await client.auth.signUp({ ...credentials, options: { data: { full_name: name.trim(), role } } });
       }
       const { data, error } = result;
       if (error) throw error;
       if (data.session) window.location.assign('Index.html');
       else {
-        showMessage('Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.');
+        showMessage('Check your email to confirm your account before signing in.');
         form.reset();
       }
-    } catch (error) { showMessage(error.message || 'No se pudo completar la solicitud.', true); }
+    } catch (error) { showMessage(error.message || 'Could not complete the request.', true); }
     finally { busy(form, false); }
   });
 }
@@ -225,12 +225,12 @@ document.querySelector('#logoutButton')?.addEventListener('click', async event =
   button.disabled = true;
   try {
     const client = await supabaseReady;
-    if (!client) throw new Error('La conexión no está disponible.');
+    if (!client) throw new Error('The connection is unavailable.');
     const { error } = await client.auth.signOut();
     if (error) throw error;
     window.location.assign('Index.html');
   } catch (error) {
-    button.textContent = 'No se pudo cerrar sesión. Reintentar';
+    button.textContent = 'Could not sign out. Try again';
     button.title = error.message;
   } finally { button.disabled = false; }
 });
