@@ -123,7 +123,11 @@ async function render() {
     }
     const selected = crewSelect.value;
     crewSelect.replaceChildren(...members.map(member => {
-      const option = document.createElement('option'); option.value = member.id; option.textContent = member.username; return option;
+      const option = document.createElement('option'); option.value = member.id; // Profiles append the first 12 UUID characters to names for uniqueness.
+      // Keep that identifier as the option value, never in the visible label.
+      const suffix = '-' + member.id.replaceAll('-','').slice(0,12);
+      const name = member.username ?? '';
+      option.textContent = (name.endsWith(suffix) ? name.slice(0,-suffix.length) : name).trim() || 'Integrante'; return option;
     }));
     crewSelect.value = members.some(member => member.id === selected) ? selected : members[0].id;
     userId = crewSelect.value; controls.hidden = false;
