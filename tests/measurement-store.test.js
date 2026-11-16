@@ -54,7 +54,7 @@ test('all seven manual metrics round-trip as normalized values',async()=>{
   assert.deepEqual(Object.keys(rows[0]).sort(),['asleep','automatic_data','co2','gravity','hr','id','is_simulated','latency_s','manual_measurements','mission_day','phase','rad_rate','resp','rr','simulated_data','spo2','temp','ts','user_id']);
   assert.deepEqual(rows[0].manual_measurements,saved.values);
   assert.equal(rows[0].is_simulated,true);
-  assert.deepEqual(rows[0].automatic_data,{hr:rows[0].hr,rr:rows[0].rr,temp:rows[0].temp,spo2:rows[0].spo2,resp:rows[0].resp,rad_rate:rows[0].rad_rate,co2:rows[0].co2,asleep:false,phase:'prototipo',gravity:0.38,latency_s:rows[0].latency_s,mission_day:1});
+  assert.deepEqual(rows[0].automatic_data,{hr:rows[0].hr,rr:rows[0].rr,temp:rows[0].temp,spo2:rows[0].spo2,resp:rows[0].resp,rad_rate:rows[0].rad_rate,co2:rows[0].co2,asleep:false,phase:'prototipo',gravity:rows[0].simulated_data.gravity,latency_s:rows[0].latency_s,mission_day:1});
   assert.deepEqual(Object.keys(rows[0].simulated_data).sort(),metrics.filter(metric=>!manualMetrics.some(manual=>manual.id===metric.id)).map(metric=>metric.id).sort());
   assert.equal(rows[0].simulated_data.heartRate,rows[0].hr);
 });
@@ -80,9 +80,34 @@ test('simulated manual fields fill only unanswered values',async()=>{
 });
 
 test('generated simulation covers every metric with a valid display value',()=>{
-  const values=generateSimulatedValues({hr:72,co2:800,gravity:0.38,spo2:98,resp:16,temp:36.7});
+  const values=generateSimulatedValues();
   assert.deepEqual(Object.keys(values).sort(),metrics.map(metric=>metric.id).sort());
   for(const metric of metrics)assert(!['invalid','missing'].includes(classify(metric,values[metric.id],values)),metric.id);
+});
+
+test('new simulated metric states follow the 90/5/5 distribution where all states exist',()=>{
+  const sampleCount=4000;
+  const counts=Object.fromEntries(metrics.map(metric=>[metric.id,{green:0,yellow:0,red:0}]));
+  for(let sample=0;sample<sampleCount;sample++){
+    const values=generateSimulatedValues();
+    for(const metric of metrics){
+      const state=classify(metric,values[metric.id],values);
+      assert(state in counts[metric.id],`${metric.id} generated ${state}`);
+      counts[metric.id][state]++;
+    }
+  }
+  const limitedStates={
+    sleep:{green:90/95,yellow:5/95,red:0},
+    perfusion:{green:90/95,yellow:0,red:5/95},
+    respiratoryRate:{green:90/95,yellow:5/95,red:0},
+  };
+  for(const metric of metrics){
+    const expected=limitedStates[metric.id]??{green:0.9,yellow:0.05,red:0.05};
+    for(const state of ['green','yellow','red']){
+      const actual=counts[metric.id][state]/sampleCount;
+      assert.ok(Math.abs(actual-expected[state])<0.025,`${metric.id} ${state}: ${actual}`);
+    }
+  }
 });
 
 test('short-sleep alert uses a consecutive run of daily records',()=>{

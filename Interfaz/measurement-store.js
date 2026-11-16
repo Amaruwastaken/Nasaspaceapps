@@ -1,4 +1,4 @@
-﻿import {manualMetrics,classify} from './report-data.js';
+import {manualMetrics,metrics,classify} from './report-data.js';
 
 const TABLE = 'telemetry';
 const COLUMNS = 'id,user_id,manual_measurements,ts';
@@ -7,7 +7,98 @@ const isMissing = value => value === undefined || value === null || value === ''
 const plainObject = value => value !== null && typeof value === 'object' && !Array.isArray(value) && [Object.prototype,null].includes(Object.getPrototypeOf(value));
 const randomInteger = (min,max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const randomDecimal = (min,max,places) => Number((min + Math.random() * (max - min)).toFixed(places));
-const option = values => values[randomInteger(0,values.length - 1)];
+const simulationWeights = {green:90,yellow:5,red:5};
+const simulationRanges = {
+  pvt:{green:[240,265],yellow:[266,499],red:[500,700]},
+  tlx:{green:[0,45],yellow:[46,74],red:[75,100]},
+  amsler:{green:[],yellow:[],red:[]},
+  sleep:{green:[7.5,9,1],yellow:[6,7.4,1]},
+  hrv:{green:[50,120],yellow:[35,49],red:[0,34]},
+  heartRate:{green:[55,85],yellow:[45,54],red:[30,44]},
+  co2:{green:[400,1499],yellow:[1500,3500],red:[3501,6000]},
+  fluids:{green:[1.8,2.5,1],yellow:[1.5,1.7,1],red:[0.5,1.4,1]},
+  radiation:{green:[0.01,0.49,2],yellow:[0.5,1.5,2],red:[1.51,5,2]},
+  dose:{green:[5,299],yellow:[300,479],red:[600,1200]},
+  gravity:{green:[0.9,1.1,2],yellow:[0.1,0.89,2],red:[0,0,2]},
+  pressure:{green:[98,102.5,1],yellow:[95,97.9,1],red:[85,94.9,1]},
+  ventilation:{green:[0.08,0.2,3],yellow:[0.05,0.079,3],red:[0.01,0.049,3]},
+  bloodPressure:{green:[],yellow:[],red:[]},
+  heartRecovery:{green:[20,60],yellow:[12,19],red:[0,11]},
+  arrhythmia:{green:[0,0],yellow:[1,1],red:[2,10]},
+  perfusion:{green:[0,1.9,1],red:[2,4,1]},
+  glucose:{green:[70,105],yellow:[106,125],red:[126,250]},
+  bmr:{green:[0.9,1.2,2],yellow:[0.85,0.899,3],red:[0.5,0.849,3]},
+  bodyFat:{green:[],yellow:[],red:[]},
+  calories:{green:[90,140],yellow:[75,89],red:[0,74]},
+  sodium:{green:[1500,2300],yellow:[2301,3000],red:[3001,5000]},
+  calcium:{green:[1000,1200],yellow:[750,999],red:[0,749]},
+  vitaminD:{green:[800,1000],yellow:[400,799],red:[0,399]},
+  caffeine:{green:[0,200],yellow:[201,400],red:[401,1000]},
+  sleepApnea:{green:[0,4],yellow:[5,14],red:[15,40]},
+  medication:{green:[],yellow:[],red:[]},
+  spo2:{green:[95,100],yellow:[92,94],red:[60,91]},
+  oxygen:{green:[20,23,1],yellow:[19.5,19.9,1],red:[15,19.4,1]},
+  respiratoryRate:{green:[12,20],yellow:[10,11]},
+  temperature:{green:[36.1,37.2,1],yellow:[35.5,36,1],red:[38,42,1]},
+  sleepEfficiency:{green:[85,100],yellow:[75,84],red:[0,74]},
+  orthostatic:{green:[],yellow:[],red:[]},
+  who5:{green:[50,100],yellow:[29,49],red:[0,28]},
+  hemoglobin:{green:[],yellow:[],red:[]},
+  leanMassChange:{green:[-2,5,1],yellow:[-5,-2.1,1],red:[-10,-5.1,1]},
+  boneDensity:{green:[],yellow:[],red:[]},
+};
+function simulationState(metricId) {
+  const states = Object.keys(simulationRanges[metricId] ?? {});
+  if (!states.length) throw new Error(`No simulated ranges are defined for ${metricId}.`);
+  const totalWeight = states.reduce((total,state) => total + simulationWeights[state],0);
+  let choice = Math.random() * totalWeight;
+  for (const state of states) {
+    choice -= simulationWeights[state];
+    if (choice < 0) return state;
+  }
+  throw new Error(`Could not select a simulated state for ${metricId}.`);
+}
+function simulatedValue(metricId,state) {
+  switch (metricId) {
+    case 'amsler': return state;
+    case 'bloodPressure': {
+      const ranges = {green:[[100,120],[65,79]],yellow:[[126,139],[81,89]],red:[[140,180],[90,120]]};
+      const [[systolicMin,systolicMax],[diastolicMin,diastolicMax]] = ranges[state];
+      return `${randomInteger(systolicMin,systolicMax)}/${randomInteger(diastolicMin,diastolicMax)}`;
+    }
+    case 'bodyFat': {
+      const ranges = {green:[10,18],yellow:[19,23],red:[24,40]};
+      const [min,max] = ranges[state];
+      return {value:randomDecimal(min,max,1),sex:'male'};
+    }
+    case 'medication':
+      return state === 'green' ? {takenPercent:randomInteger(95,100),doubleDose:'no'}
+        : state === 'yellow' ? {takenPercent:randomInteger(80,94),doubleDose:'no'}
+          : {takenPercent:randomInteger(80,100),doubleDose:'yes'};
+    case 'orthostatic':
+      return state === 'green'
+        ? {hrRise:randomInteger(5,18),systolicDrop:randomInteger(0,8),diastolicDrop:randomInteger(0,5),symptoms:'none'}
+        : state === 'yellow'
+          ? {hrRise:randomInteger(20,29),systolicDrop:randomInteger(10,19),diastolicDrop:randomInteger(0,9),symptoms:'dizzy'}
+          : {hrRise:randomInteger(30,40),systolicDrop:randomInteger(20,25),diastolicDrop:randomInteger(10,12),symptoms:'syncope'};
+    case 'hemoglobin': {
+      const ranges = {green:[13,18],yellow:[11,12.9],red:[7,10.9]};
+      const [min,max] = ranges[state];
+      return {value:randomDecimal(min,max,1),sex:'male'};
+    }
+    case 'boneDensity':
+      return state === 'green'
+        ? {tScore:randomDecimal(-1,0.5,1),monthlyLoss:randomDecimal(0,0.49,2)}
+        : state === 'yellow'
+          ? {tScore:randomDecimal(-2,-1.1,1),monthlyLoss:randomDecimal(0.5,1,2)}
+          : {tScore:randomDecimal(-3,-2.5,1),monthlyLoss:randomDecimal(1.1,2,2)};
+    default: {
+      const range = simulationRanges[metricId]?.[state];
+      if (!range) throw new Error(`No ${state} simulation range is defined for ${metricId}.`);
+      return range.length === 3 ? randomDecimal(...range) : randomInteger(...range);
+    }
+  }
+}
 function invalid(name) { throw new Error(`Check this value: ${name}.`); }
 function scalar(definition,value,name) {
   if (definition.options) {
@@ -63,63 +154,28 @@ function databaseError(error,operation) {
   const code = error?.code ? ` (code ${error.code})` : '';
   return new Error(`Could not ${operation} your tests in Supabase${code}. Please try again.`);
 }
-export function generateSimulatedValues(automatic) {
-  return {
-    pvt:randomInteger(240,420),
-    tlx:randomInteger(30,70),
-    amsler:option(['green','yellow','red']),
-    sleep:randomDecimal(6.5,8.5,1),
-    hrv:randomInteger(40,70),
-    heartRate:automatic.hr,
-    co2:automatic.co2,
-    fluids:randomDecimal(1.6,2.4,1),
-    radiation:randomDecimal(0.1,0.45,2),
-    dose:randomDecimal(5,30,1),
-    gravity:automatic.gravity,
-    pressure:randomDecimal(97,102,1),
-    ventilation:randomDecimal(0.08,0.16,2),
-    bloodPressure:`${randomInteger(105,125)}/${randomInteger(65,80)}`,
-    heartRecovery:randomInteger(20,35),
-    arrhythmia:0,
-    perfusion:randomDecimal(1,1.9,1),
-    glucose:randomInteger(80,100),
-    bmr:randomDecimal(0.95,1.05,2),
-    bodyFat:{value:randomInteger(12,18),sex:'male'},
-    calories:randomInteger(90,110),
-    sodium:randomInteger(1600,2200),
-    calcium:randomInteger(1000,1200),
-    vitaminD:randomInteger(800,1000),
-    caffeine:randomInteger(0,200),
-    sleepApnea:randomInteger(0,4),
-    medication:{takenPercent:randomInteger(95,100),doubleDose:'no'},
-    spo2:automatic.spo2,
-    oxygen:randomDecimal(20.5,22,1),
-    respiratoryRate:automatic.resp,
-    temperature:automatic.temp,
-    sleepEfficiency:randomInteger(85,95),
-    orthostatic:{hrRise:randomInteger(5,18),systolicDrop:randomInteger(0,8),diastolicDrop:randomInteger(0,5),symptoms:'none'},
-    who5:randomInteger(50,85),
-    hemoglobin:{value:randomDecimal(13,16,1),sex:'male'},
-    leanMassChange:randomDecimal(-1,2,1),
-    boneDensity:{tScore:randomDecimal(-0.8,0.5,1),monthlyLoss:randomDecimal(0,0.3,2)},
-  };
+export function generateSimulatedValues() {
+  return Object.fromEntries(metrics.map(metric => {
+    const state = simulationState(metric.id);
+    return [metric.id,simulatedValue(metric.id,state)];
+  }));
 }
 function simulatedTelemetry(manualValues) {
+  const simulated = generateSimulatedValues();
   const automatic = {
-    hr:randomInteger(60,90),
+    hr:simulated.heartRate,
     rr:randomDecimal(0.6,1,2),
-    temp:randomDecimal(36.3,37.1,1),
-    spo2:randomInteger(95,99),
-    resp:randomInteger(12,20),
+    temp:simulated.temperature,
+    spo2:simulated.spo2,
+    resp:simulated.respiratoryRate,
     rad_rate:randomDecimal(0.01,0.08,3),
-    co2:randomInteger(450,1000),
+    co2:simulated.co2,
     asleep:false,
     phase:'prototipo',
-    gravity:0.38,
+    gravity:simulated.gravity,
     latency_s:randomDecimal(0.15,0.4,2),
     mission_day:1,
   };
-  const simulated = generateSimulatedValues(automatic);
   for (const [id,value] of Object.entries(manualValues)) {
     if (plainObject(value) && plainObject(simulated[id])) {
       for (const field of Object.keys(value)) delete simulated[id][field];
