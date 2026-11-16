@@ -27,18 +27,23 @@ function showStatus(message) {
   hint.classList.remove('is-error');
 }
 
+function hasMission() {
+  const state = plan.read();
+  return Boolean(state.name || state.origin || state.dest);
+}
+
 async function loadSharedMission() {
   const currentRequest = ++request;
   const client = await supabaseReady;
   const userId = getCurrentUser()?.id;
   if (!client) {
     showError('Could not connect to Supabase. Check the configuration and try again.');
-    resetButton.hidden = !plan.read().locked;
+    resetButton.hidden = !hasMission();
     return;
   }
   if (!userId) {
     showStatus('Sign in to load or save the shared mission in Supabase.');
-    resetButton.hidden = !plan.read().locked;
+    resetButton.hidden = !hasMission();
     return;
   }
 
@@ -57,12 +62,13 @@ async function loadSharedMission() {
       showStatus(`Mission "${mission.name}" loaded from Supabase.`);
     } else {
       if (plan.read().locked) plan.reset();
-      resetButton.hidden = true;
+      resetButton.hidden = !hasMission();
       showStatus('No mission has been saved yet. Complete the details and save it to Supabase.');
     }
   } catch (error) {
     if (currentRequest !== request) return;
     showError(`Could not load the mission from Supabase: ${error.message || 'unknown error'}`);
+    resetButton.hidden = !hasMission();
   } finally {
     if (currentRequest === request) {
       saveButton.disabled = plan.read().locked;
@@ -134,6 +140,11 @@ saveButton.addEventListener('click', async () => {
 
 resetButton.addEventListener('click', async () => {
   if (resetting) return;
+  if (!plan.read().locked) {
+    plan.reset();
+    showStatus('Mission reset in this browser. Save it to Supabase to share it.');
+    return;
+  }
   resetting = true;
   resetButton.disabled = true;
   saveButton.disabled = true;
@@ -142,7 +153,9 @@ resetButton.addEventListener('click', async () => {
     const userId = getCurrentUser()?.id;
     const client = await supabaseReady;
     if (!client || !userId || userId !== getCurrentUser()?.id) {
-      throw new Error('Sign in to reset the shared mission.');
+      plan.reset();
+      showStatus('Local mission cleared. Sign in to remove the shared mission from Supabase.');
+      return;
     }
     const { error } = await client.rpc('reset_shared_mission');
     if (error) throw error;
