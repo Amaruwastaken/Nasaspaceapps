@@ -130,7 +130,7 @@ sidebar.querySelectorAll('a').forEach(link => {
   const buttons = space.querySelectorAll('.planet');
 
   // Keep the selected departure (A) and destination (B) between renders.
-  let a = null, b = null, savedName = '', preset = '', routeDistance = null;
+  let a = null, b = null, savedName = '', preset = '', customSelected = false, routeDistance = null;
   let missionLocked = false, savedStart = '';
   const startInput = document.querySelector('#missionStartDate');
   const storageKey = 'farmacias-similunares.mission-plan';
@@ -143,7 +143,7 @@ sidebar.querySelectorAll('a').forEach(link => {
     apollo: { name: 'Apollo 11', travel: 4.28, stay: 0.9, info: 'Simplified simulation: 4.28 days to the lunar landing and 0.9 days (21 h 36 min) on the surface. The return trip is not included.', url: 'https://www.nasa.gov/wp-content/uploads/static/history/SP-4029/Apollo_11a_Summary.htm' }
   };
   function persist() {
-    try { localStorage.setItem(storageKey, JSON.stringify({locked:missionLocked,start:savedStart || startInput.value,a,b,name:savedName,draft:nameInput.value,preset,distance:routeDistance,travel:travelInput.value,stay:stayInput.value})); }
+    try { localStorage.setItem(storageKey, JSON.stringify({locked:missionLocked,start:savedStart || startInput.value,a,b,name:savedName,draft:nameInput.value,preset,customSelected,distance:routeDistance,travel:travelInput.value,stay:stayInput.value})); }
     catch { document.querySelector('#missionSaveHint').textContent = 'Your browser does not allow saving; data will only be kept while this page is open.'; }
   }
   try {
@@ -157,6 +157,7 @@ sidebar.querySelectorAll('a').forEach(link => {
       savedName = typeof data.name === 'string' ? data.name.slice(0,80) : '';
       nameInput.value = savedName || (typeof data.draft === 'string' ? data.draft.slice(0,80) : '');
       preset = Object.hasOwn(presets,data.preset) ? data.preset : '';
+      customSelected = data.customSelected === true;
       routeDistance = Number.isFinite(data.distance) && data.distance > 0 ? data.distance : null;
       travelInput.value = data.travel ?? ''; stayInput.value = data.stay ?? '';
     }
@@ -217,7 +218,7 @@ sidebar.querySelectorAll('a').forEach(link => {
     travelInput.readOnly = stayInput.readOnly = missionLocked;
     startInput.readOnly = missionLocked;
     startInput.dataset.missionLocked = String(missionLocked);
-    presetInput.value = preset;
+    presetInput.value = customSelected ? 'custom' : preset;
     presetInput.disabled = Boolean(a || savedName);
     presetInfo.hidden = !preset;
     presetInfo.replaceChildren();
@@ -228,7 +229,7 @@ sidebar.querySelectorAll('a').forEach(link => {
     buttons.forEach(btn => { btn.disabled = Boolean(b); });
     form.hidden = !(a && b);
 
-    if (!preset) {
+    if (customSelected) {
       chip.textContent = 'Step 3 of 3';
     } else if (!a) {
       hint.textContent = 'Select your departure point (A).';
@@ -238,6 +239,7 @@ sidebar.querySelectorAll('a').forEach(link => {
       chip.textContent = 'Step 2 of 3';
     } else {
       hint.textContent = 'Now enter your mission duration.';
+      chip.textContent = 'Step 3 of 3';
       stayPlace.textContent = PLANETS[b];
     }
     renderSummary();
@@ -272,6 +274,7 @@ sidebar.querySelectorAll('a').forEach(link => {
       savedName = mission.name.slice(0,80);
       nameInput.value = savedName;
       preset = savedName === 'Artemis I' ? 'artemis' : savedName === 'Apollo 11' ? 'apollo' : '';
+      customSelected = !preset;
       routeDistance = distance(a,b);
       travelInput.value = String(mission.transit_days);
       stayInput.value = String(mission.stay_days);
@@ -291,7 +294,7 @@ sidebar.querySelectorAll('a').forEach(link => {
     reset() {
       a = b = null;
       missionLocked = false; savedStart = '';
-      savedName = preset = ''; routeDistance = null; nameInput.value = '';
+      savedName = preset = ''; customSelected = false; routeDistance = null; nameInput.value = '';
       startInput.value = '';
       travelInput.value = ''; stayInput.value = '';
       startInput.dataset.missionLocked = 'false';
@@ -318,7 +321,15 @@ sidebar.querySelectorAll('a').forEach(link => {
   [travelInput,stayInput].forEach(input => input.addEventListener('input', () => { persist(); renderSummary(); }));
   nameInput.addEventListener('input', () => { persist(); resetBtn.hidden = !a && !nameInput.value; });
   presetInput.addEventListener('change', () => {
-    if (a || savedName || !Object.hasOwn(presets,presetInput.value)) return;
+    if (a || savedName) return;
+    if (presetInput.value === 'custom') {
+      preset = '';
+      customSelected = true;
+      persist(); render();
+      return;
+    }
+    if (!Object.hasOwn(presets,presetInput.value)) return;
+    customSelected = false;
     preset = presetInput.value;
     const data = presets[preset]; a = 'tierra'; b = 'luna'; routeDistance = 384400;
     savedName = data.name; nameInput.value = savedName;
