@@ -55,10 +55,20 @@
             </div>
 
             <div class="mission-settings">
-              <label class="field"><span class="field-label">Mission preset</span><span class="bubble"><select id="missionPreset"><option value="">Custom</option><option value="artemis">Artemis I (orbital)</option><option value="apollo">Apollo 11</option></select></span></label>
+              <label class="field"><span class="field-label">Mission preset</span><span class="bubble"><select id="missionPreset"><option value="">Custom</option><option value="artemis">Artemis II (lunar flyby)</option><option value="apollo">Apollo 11</option></select></span></label>
               <label class="field"><span class="field-label">Mission name</span><span class="bubble"><input id="missionName" maxlength="80" placeholder="Enter a mission name"></span></label>
               <p class="missions-hint" id="missionSaveHint" role="status">Sign in and save the mission to sync it with Supabase.</p>
               <p class="missions-hint" id="missionPresetInfo" hidden></p>
+              <section class="mission-crew" id="missionCrew" aria-labelledby="missionCrewTitle" hidden>
+                <h3 id="missionCrewTitle">Mission crew</h3>
+                <div class="mission-crew-table-wrap">
+                  <table class="mission-crew-table">
+                    <thead><tr><th>Full name</th><th>Assigned role</th><th>Example email</th></tr></thead>
+                    <tbody id="missionCrewMembers"></tbody>
+                  </table>
+                </div>
+                <p class="missions-hint">Example addresses only; these are not user accounts.</p>
+              </section>
             </div>
             <p class="missions-hint" id="missionsHint">Select your departure point (A).</p>
 

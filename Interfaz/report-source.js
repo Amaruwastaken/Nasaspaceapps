@@ -22,6 +22,12 @@ function decodeSimulatedValues(payload) {
   }
   const manualIds = new Set(manualMetrics.map(metric => metric.id));
   const manualPayload = Object.fromEntries(Object.entries(payload).filter(([id]) => manualIds.has(id)));
+  if (typeof manualPayload.bodyFat === 'object' && manualPayload.bodyFat !== null) manualPayload.bodyFat = manualPayload.bodyFat.value;
+  if (typeof manualPayload.hemoglobin === 'object' && manualPayload.hemoglobin !== null) manualPayload.hemoglobin = manualPayload.hemoglobin.value;
+  if (typeof manualPayload.bloodPressure === 'string') {
+    const match = manualPayload.bloodPressure.match(/^\s*(\d{2,3})\s*\/\s*(\d{2,3})\s*$/);
+    if (match) manualPayload.bloodPressure = {systolic:Number(match[1]),diastolic:Number(match[2])};
+  }
   const values = validateValues(manualPayload);
   for (const metric of metrics) {
     if (manualIds.has(metric.id) || !Object.hasOwn(payload,metric.id)) continue;
@@ -45,7 +51,7 @@ async function fetchAllRows(client,table,columns,userId) {
 
 async function fetchLatestTelemetry(client,userId) {
   const [latest,simulation] = await Promise.all([
-    client.from('telemetry').select('ts,hr,temp,spo2,resp,co2,gravity,is_simulated')
+    client.from('telemetry').select('ts,hr,temp,spo2,resp,co2,gravity,rad_rate,is_simulated')
       .eq('user_id',userId).order('ts',{ascending:false}).limit(1).maybeSingle(),
     client.from('telemetry').select('ts,simulated_data').eq('user_id',userId)
       .not('simulated_data','is',null).order('ts',{ascending:false}).limit(1).maybeSingle(),
@@ -99,9 +105,9 @@ export async function fetchDatabaseMeasurements(client,userId,{missionRead = fal
     fetchMissionStart(client,userId,missionRead),
   ]);
   const sources = [
-    {key:'sensors',warning:'Could not load all sensor data.',mapping:{hrv:'rmssd',co2:'co2_max',radiation:'rad_msv'}},
+    {key:'sensors',warning:'Could not load all sensor data.',mapping:{hrv:'rmssd',co2:'co2_max'}},
     {key:'records',warning:'Could not load all logs.',mapping:{sleep:'sleep',pvt:'pvt',tlx:'tlx'}},
-    {key:'telemetry',warning:'Could not load automatic telemetry readings.',mapping:{heartRate:'hr',temperature:'temp',spo2:'spo2',respiratoryRate:'resp',co2:'co2',gravity:'gravity'}},
+    {key:'telemetry',warning:'Could not load automatic telemetry readings.',mapping:{heartRate:'hr',temperature:'temp',spo2:'spo2',respiratoryRate:'resp',co2:'co2',gravity:'gravity',radiation:'rad_rate'}},
   ];
   results.slice(0,3).forEach((result,index) => {
     const source = sources[index];

@@ -105,6 +105,10 @@ the repository root.
 - The Report queries the latest `telemetry` check-in. A test skipped in that
   check-in is not replaced with an older value from `records`. Existing sensors
   and alerts keep their current connections.
+- `20261115150000_expand_body_measurements.sql` expands the validated Captura
+  snapshot schema for organ-linked cardiovascular, respiratory, metabolic,
+  gastrointestinal, renal, and lab measurements. Apply this migration before
+  deploying the expanded check-in.
 - Old `localStorage` data is not imported automatically; it is no longer the
   source for the report.
 

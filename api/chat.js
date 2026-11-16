@@ -84,50 +84,34 @@ async function searchNasa(question) {
   })).filter((item) => /^https:\/\/ntrs\.nasa\.gov\/citations\/\d+$/.test(item.url) && item.summary);
 }
 function pickRelevantEvidence(question, entries = []) {
-  const normalizedQuestion = question.toLowerCase();
+  const fold = (value) => String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const normalizedQuestion = fold(question);
   const concepts = [
-    ['sleep', 'sueño', 'dormir', 'descanso'],
-    ['circadian', 'circadiano', 'ritmo biológico'],
-    ['fatigue', 'fatiga', 'cansancio'],
-    ['alertness', 'vigilancia', 'alerta'],
-    ['reaction', 'reacción', 'respuesta'],
-    ['cognition', 'cognición', 'cognitivo'],
-    ['stress', 'estrés'],
-    ['heart', 'corazón', 'cardio', 'cardiovascular'],
-    ['oxygen', 'oxígeno', 'spo2'],
-    ['temperature', 'temperatura'],
-    ['co2', 'dióxido de carbono', 'ventilación', 'aire'],
-    ['respiration', 'respiración'],
-    ['radiation', 'radiación'],
-    ['vision', 'visión', 'visual', 'eye', 'ojos'],
-    ['hydration', 'hidratación'],
-    ['nutrition', 'nutrición', 'alimentación'],
-    ['wellness', 'bienestar', 'salud'],
-    ['exercise', 'ejercicio'],
-    ['recovery', 'recuperación'],
-    ['mission', 'misión']
+    ['sleep', 'sueno', 'dormir', 'descanso', 'circadian', 'circadiano', 'fatigue', 'fatiga', 'cansancio'],
+    ['reaction', 'reaccion', 'vigilance', 'vigilancia', 'alerta', 'pvt', 'cognition', 'cognicion', 'cognitive', 'cognitivo', 'tlx', 'workload', 'carga'],
+    ['stress', 'estres', 'behavioral', 'psychological', 'bienestar', 'who-5'],
+    ['heart', 'corazon', 'cardio', 'cardiovascular', 'blood pressure', 'presion arterial', 'hrv', 'hemoglobin', 'hemoglobina'],
+    ['oxygen', 'oxigeno', 'spo2', 'respiration', 'respiracion', 'co2', 'cabin', 'cabina', 'pressure', 'presion', 'ventilation', 'ventilacion'],
+    ['radiation', 'radiacion', 'neutron', 'dose', 'dosis', 'cumulative'],
+    ['vision', 'visual', 'eye', 'ojos', 'sans', 'amsler'],
+    ['gravity', 'gravedad', 'bone', 'hueso', 'dxa', 'muscle', 'musculo'],
+    ['hazard', 'peligro', 'risk', 'riesgo', 'isolation', 'aislamiento', 'distance from earth', 'distancia de la tierra', 'standard', 'estandar', 'protocol', 'twins study', 'gemelos'],
+    ['liver', 'higado', 'alt', 'ast', 'bilirubin', 'bilirrubina', 'stomach', 'estomago', 'nausea', 'kidney', 'rinon', 'creatinine', 'creatinina', 'intestine', 'intestino', 'nutrition', 'nutricion', 'hydration', 'hidratacion'],
   ];
 
-  return entries
-    .map((entry) => {
-      const haystack = [entry.title, entry.summary, ...(entry.excerpts || [])].join(' ').toLowerCase();
-      let score = 0;
-      for (const synonyms of concepts) {
-        const askedAboutConcept = synonyms.some((term) => normalizedQuestion.includes(term));
-        const evidenceCoversConcept = synonyms.some((term) => haystack.includes(term));
-        if (askedAboutConcept && evidenceCoversConcept) score += 2;
-      }
-      return { entry, score };
-    })
-    .filter(({ score }) => score > 0)
-    .sort((left, right) => right.score - left.score)
-    .slice(0, 2)
-    .map(({ entry }) => entry);
+  return entries.map((entry) => {
+    const haystack = fold([entry.title, entry.summary, ...(entry.excerpts || []), ...(entry.keywords || [])].join(' '));
+    let score = 0;
+    for (const synonyms of concepts) {
+      if (synonyms.some((term) => normalizedQuestion.includes(term)) && synonyms.some((term) => haystack.includes(term))) score += 3;
+    }
+    const keywordHits = (entry.keywords || []).filter((term) => normalizedQuestion.includes(fold(term))).length;
+    return { entry, score: score + keywordHits * 2 + (entry.authority === 'NASA' ? 1 : 0) };
+  }).filter(({ score }) => score > 0).sort((left, right) => right.score - left.score).slice(0, 3).map(({ entry }) => entry);
 }
-
 function buildPrompt(question, telemetrySummary, recordsSummary, evidenceEntries = []) {
   const context = evidenceEntries.length
-    ? evidenceEntries.map((entry) => `- ${entry.title} (${entry.date}): ${entry.url}\n  ${entry.excerpts?.slice(0, 2).join(' ') || entry.summary}`).join('\n\n')
+    ? evidenceEntries.map((entry) => `- ${entry.title}${entry.date ? ` (${entry.date})` : ''}: ${entry.url}${entry.alternateUrls?.length ? `; related source: ${entry.alternateUrls.join(', ')}` : ''}\n  ${entry.excerpts?.slice(0, 2).join(' ') || entry.summary}`).join('\n\n')
     : 'There is no relevant NASA reference for this question.';
 
   return `You are Dr. SIMI, the crew wellness assistant aboard a spacecraft on a mission far from Earth. Always reply in clear, direct English for a crew member.
@@ -139,7 +123,11 @@ Rules:
 - Use the supplied telemetry and daily astronaut records when relevant. Compare recent records for trends (sleep, NASA-TLX workload, PVT reaction time/false starts); briefly explain what they suggest, without presenting raw tables. Never invent readings or trends.
 - Telemetry marked simulated is excluded. Do not claim readings are normal or abnormal without an appropriate reference range. Do not diagnose or prescribe.
 - If symptoms or readings could indicate urgent danger, tell the astronaut to alert the onboard medical officer/mission control immediately and follow the emergency protocol.
-- Answer the actual question with a short description or one specific, practical recommendation. If the data or NASA references do not support a conclusion, say so briefly. When using a reference, name the NASA report and include its URL.
+- Answer the actual question with a short description or one specific, practical recommendation. If the data or references do not support a conclusion, say so briefly.
+- Treat NASA HRP and NASA-STD-3001 as primary mission guidance; CSA and peer-reviewed studies are supporting evidence.
+- Do not treat the single-astronaut NASA Twins Study as universal, diagnostic, or personal treatment guidance.
+- NASA standards depend on mission and program context. Follow the onboard medical officer/flight surgeon and mission protocols for care decisions.
+- When using a reference, name the source and include its URL.
 
 Recent verified telemetry:
 ${telemetrySummary}
@@ -147,7 +135,7 @@ ${telemetrySummary}
 Astronaut daily records (newest first):
 ${recordsSummary}
 
-NASA reference for context:
+NASA and supporting spaceflight evidence for context:
 ${context}
 
 Question:
@@ -268,7 +256,7 @@ export default async function handler(request, response) {
     const knowledge = await readJson(knowledgePath);
     const nasaEvidence = await searchNasa(question).catch(() => []);
     const localEvidence = pickRelevantEvidence(question, knowledge.entries || []);
-    const evidenceEntries = nasaEvidence.length ? nasaEvidence.slice(0, 3) : localEvidence;
+    const evidenceEntries = [...localEvidence, ...nasaEvidence].filter((entry, index, all) => all.findIndex((candidate) => candidate.url === entry.url) === index).slice(0, 3);
     const summary = summarizeTelemetry(telemetryRows);
     const recordsSummary = summarizeRecords(recordRows);
     const prompt = buildPrompt(question, summary, recordsSummary, evidenceEntries);
@@ -277,7 +265,7 @@ export default async function handler(request, response) {
     response.status(200).json({
       answer,
       telemetry: telemetryRows.slice(0, 3),
-      evidence: evidenceEntries.map((entry) => ({ title: entry.title, date: entry.date, url: entry.url })),
+      evidence: evidenceEntries.map((entry) => ({ title: entry.title, date: entry.date, url: entry.url, alternateUrls: entry.alternateUrls || [] })),
       userId: user.id,
     });
   } catch (error) {

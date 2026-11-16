@@ -24,6 +24,7 @@ const simulationRanges = {
   ventilation:{green:[0.08,0.2,3],yellow:[0.05,0.079,3],red:[0.01,0.049,3]},
   bloodPressure:{green:[],yellow:[],red:[]},
   heartRecovery:{green:[20,60],yellow:[12,19],red:[0,11]},
+  bloodPressure:{green:[],yellow:[],red:[]},
   arrhythmia:{green:[0,0],yellow:[1,1],red:[2,10]},
   perfusion:{green:[0,1.9,1],red:[2,4,1]},
   glucose:{green:[70,105],yellow:[106,125],red:[126,250]},
@@ -46,6 +47,19 @@ const simulationRanges = {
   hemoglobin:{green:[],yellow:[],red:[]},
   leanMassChange:{green:[-2,5,1],yellow:[-5,-2.1,1],red:[-10,-5.1,1]},
   boneDensity:{green:[],yellow:[],red:[]},
+  alt:{green:[5,40],yellow:[41,120],red:[121,500]},
+  ast:{green:[5,40],yellow:[41,120],red:[121,500]},
+  bilirubin:{green:[0,1.2],yellow:[1.21,3],red:[3.01,20]},
+  nauseaScore:{green:[0,1],yellow:[2,5],red:[6,10]},
+  appetite:{green:[7,10],yellow:[4,6],red:[0,3]},
+  gastricSymptoms:{green:[],yellow:[],red:[]},
+  urineOutput:{green:[1000,2500],yellow:[500,999],red:[0,499]},
+  urineSpecificGravity:{green:[1.005,1.02,3],yellow:[1.001,1.004,3],red:[1.021,1.04,3]},
+  creatinine:{green:[0.6,1.3,2],yellow:[1.31,2.5,2],red:[2.51,10,2]},
+  bun:{green:[7,20],yellow:[21,40],red:[41,100]},
+  bowelFrequency:{green:[1,3],yellow:[0,0],red:[4,8]},
+  stoolConsistency:{green:[],yellow:[],red:[]},
+  fiber:{green:[25,38],yellow:[15,24],red:[0,14]},
 };
 function simulationState(metricId) {
   const states = Object.keys(simulationRanges[metricId] ?? {});
@@ -64,13 +78,9 @@ function simulatedValue(metricId,state) {
     case 'bloodPressure': {
       const ranges = {green:[[100,120],[65,79]],yellow:[[126,139],[81,89]],red:[[140,180],[90,120]]};
       const [[systolicMin,systolicMax],[diastolicMin,diastolicMax]] = ranges[state];
-      return `${randomInteger(systolicMin,systolicMax)}/${randomInteger(diastolicMin,diastolicMax)}`;
+      return {systolic:randomInteger(systolicMin,systolicMax),diastolic:randomInteger(diastolicMin,diastolicMax)};
     }
-    case 'bodyFat': {
-      const ranges = {green:[10,18],yellow:[19,23],red:[24,40]};
-      const [min,max] = ranges[state];
-      return {value:randomDecimal(min,max,1),sex:'male'};
-    }
+    case 'bodyFat': return state === 'green' ? randomDecimal(10,18,1) : state === 'yellow' ? randomDecimal(19,23,1) : randomDecimal(24,40,1);
     case 'medication':
       return state === 'green' ? {takenPercent:randomInteger(95,100),doubleDose:'no'}
         : state === 'yellow' ? {takenPercent:randomInteger(80,94),doubleDose:'no'}
@@ -84,7 +94,7 @@ function simulatedValue(metricId,state) {
     case 'hemoglobin': {
       const ranges = {green:[13,18],yellow:[11,12.9],red:[7,10.9]};
       const [min,max] = ranges[state];
-      return {value:randomDecimal(min,max,1),sex:'male'};
+      return randomDecimal(min,max,1);
     }
     case 'boneDensity':
       return state === 'green'
@@ -92,6 +102,10 @@ function simulatedValue(metricId,state) {
         : state === 'yellow'
           ? {tScore:randomDecimal(-2,-1.1,1),monthlyLoss:randomDecimal(0.5,1,2)}
           : {tScore:randomDecimal(-3,-2.5,1),monthlyLoss:randomDecimal(1.1,2,2)};
+    case 'gastricSymptoms': return state === 'green' ? {bloating:0,indigestion:0,abdominalDiscomfort:0}
+      : state === 'yellow' ? {bloating:randomInteger(1,3),indigestion:randomInteger(1,3),abdominalDiscomfort:randomInteger(1,3)}
+        : {bloating:randomInteger(4,8),indigestion:randomInteger(4,8),abdominalDiscomfort:randomInteger(4,8)};
+    case 'stoolConsistency': return 'type4';
     default: {
       const range = simulationRanges[metricId]?.[state];
       if (!range) throw new Error(`No ${state} simulation range is defined for ${metricId}.`);

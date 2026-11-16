@@ -138,8 +138,26 @@ sidebar.querySelectorAll('a').forEach(link => {
   const saveName = document.querySelector('#saveMissionName');
   const presetInput = document.querySelector('#missionPreset');
   const presetInfo = document.querySelector('#missionPresetInfo');
+  const missionCrew = document.querySelector('#missionCrew');
+  const missionCrewMembers = document.querySelector('#missionCrewMembers');
+  const crews = {
+    artemis: [
+      ['Gregory Reid Wiseman', 'Commander', 'reid.wiseman@example.com'],
+      ['Christina Hammock Koch', 'Engineer / Mission Specialist', 'christina.koch@example.com'],
+      ['Victor Jerome Glover Jr.', 'Pilot', 'victor.glover@example.com'],
+      ['Michael Reed Barratt', 'Doctor (alternate)', 'michael.barratt@example.com'],
+      ['Jeremy Roger Hansen', 'Scientist / Mission Specialist', 'jeremy.hansen@example.com'],
+    ],
+    apollo: [
+      ['Neil Alden Armstrong', 'Commander', 'neil.armstrong@example.com'],
+      ['Edwin Eugene Aldrin Jr. (Buzz Aldrin)', 'Engineer', 'buzz.aldrin@example.com'],
+      ['Michael Collins', 'Pilot', 'michael.collins@example.com'],
+      ['Joseph Peter Kerwin', 'Doctor (alternate)', 'joseph.kerwin@example.com'],
+      ['Harrison Hagan Schmitt', 'Scientist (alternate)', 'harrison.schmitt@example.com'],
+    ],
+  };
   const presets = {
-    artemis: { name: 'Artemis I', travel: 5, stay: 6, info: 'Simplified simulation: 5 days to the first flyby and 6 days in distant lunar orbit; no landing. Other maneuvers and the return trip are not included.', url: 'https://www.nasa.gov/reference/artemis-i-mission-timeline/' },
+    artemis: { name: 'Artemis II', travel: 10, stay: 0, info: 'Simplified simulation: Artemis II was an approximately 10-day crewed lunar flyby and return, with no lunar landing. This planner treats the full round trip as transit and does not model the flyby separately.', url: 'https://www.nasa.gov/mission/artemis-ii/' },
     apollo: { name: 'Apollo 11', travel: 4.28, stay: 0.9, info: 'Simplified simulation: 4.28 days to the lunar landing and 0.9 days (21 h 36 min) on the surface. The return trip is not included.', url: 'https://www.nasa.gov/wp-content/uploads/static/history/SP-4029/Apollo_11a_Summary.htm' }
   };
   function persist() {
@@ -155,10 +173,13 @@ sidebar.querySelectorAll('a').forEach(link => {
       startInput.dataset.missionLocked = String(missionLocked);
       startInput.readOnly = missionLocked;
       savedName = typeof data.name === 'string' ? data.name.slice(0,80) : '';
+      const legacyArtemis = data.preset === 'artemis' && savedName === 'Artemis I';
+      if (legacyArtemis) savedName = 'Artemis II';
       nameInput.value = savedName || (typeof data.draft === 'string' ? data.draft.slice(0,80) : '');
       preset = Object.hasOwn(presets,data.preset) ? data.preset : '';
       routeDistance = Number.isFinite(data.distance) && data.distance > 0 ? data.distance : null;
-      travelInput.value = data.travel ?? ''; stayInput.value = data.stay ?? '';
+      travelInput.value = legacyArtemis ? presets.artemis.travel : data.travel ?? '';
+      stayInput.value = legacyArtemis ? presets.artemis.stay : data.stay ?? '';
     }
   } catch {}
 
@@ -225,6 +246,17 @@ sidebar.querySelectorAll('a').forEach(link => {
       const link = document.createElement('a'); link.href = presets[preset].url; link.textContent = 'Source: NASA';
       presetInfo.append(presets[preset].info + ' Average Earth-Moon distance: 384,400 km; this does not represent the full route. ',link);
     }
+    const crew = crews[preset] || [];
+    missionCrew.hidden = crew.length === 0;
+    missionCrewMembers.replaceChildren(...crew.map(([name, role, email]) => {
+      const row = document.createElement('tr');
+      for (const value of [name, role, email]) {
+        const cell = document.createElement('td');
+        cell.textContent = value;
+        row.append(cell);
+      }
+      return row;
+    }));
     buttons.forEach(btn => { btn.disabled = Boolean(b); });
     form.hidden = !(a && b);
 
@@ -268,12 +300,13 @@ sidebar.querySelectorAll('a').forEach(link => {
         throw new Error('Supabase returned an invalid mission.');
       }
       a = mission.origin; b = mission.dest;
-      savedName = mission.name.slice(0,80);
+      const legacyArtemis = mission.name === 'Artemis I' && mission.transit_days === 5 && mission.stay_days === 6;
+      savedName = legacyArtemis ? 'Artemis II' : mission.name.slice(0,80);
       nameInput.value = savedName;
-      preset = savedName === 'Artemis I' ? 'artemis' : savedName === 'Apollo 11' ? 'apollo' : '';
+      preset = ['Artemis I', 'Artemis II'].includes(mission.name) ? 'artemis' : savedName === 'Apollo 11' ? 'apollo' : '';
       routeDistance = distance(a,b);
-      travelInput.value = String(mission.transit_days);
-      stayInput.value = String(mission.stay_days);
+      travelInput.value = String(legacyArtemis ? presets.artemis.travel : mission.transit_days);
+      stayInput.value = String(legacyArtemis ? presets.artemis.stay : mission.stay_days);
       savedStart = start ? start.toISOString().slice(0,10) : '';
       startInput.value = savedStart;
       missionLocked = true;

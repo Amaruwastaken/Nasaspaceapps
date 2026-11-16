@@ -1,17 +1,17 @@
 import {metrics,classify} from './report-data.js';
 
 const areas = {
-  brain:{name:'Brain',x:183,y:65},
-  eyes:{name:'Eyes',x:129,y:96},
-  lungs:{name:'Lungs',x:260,y:269,ids:['spo2','respiratoryRate','sleepApnea']},
-  heart:{name:'Heart',x:216,y:298},
-  liver:{name:'Liver',x:169,y:355,ids:[]},
-  stomach:{name:'Stomach',x:232,y:386},
-  kidneys:{name:'Kidneys',x:263,y:409},
-  intestines:{name:'Intestines',x:205,y:460,ids:[]},
-  body:{name:'Body',x:197,y:178},
+  brain:{name:'Brain',x:183,y:65,ids:['pvt','tlx','amsler','sleep','sleepEfficiency','who5','dose','radiation','caffeine']},
+  eyes:{name:'Eyes',x:129,y:96,ids:['amsler']},
+  lungs:{name:'Lungs',x:260,y:269,ids:['spo2','respiratoryRate','sleepApnea','co2','oxygen','pressure','ventilation']},
+  heart:{name:'Heart',x:216,y:298,ids:['hrv','heartRate','bloodPressure','heartRecovery','arrhythmia','perfusion','orthostatic','hemoglobin']},
+  liver:{name:'Liver',x:169,y:355,ids:['alt','ast','bilirubin']},
+  stomach:{name:'Stomach',x:232,y:386,ids:['fluids','nauseaScore','appetite','gastricSymptoms']},
+  kidneys:{name:'Kidneys',x:263,y:409,ids:['fluids','sodium','bloodPressure','urineOutput','urineSpecificGravity','creatinine','bun']},
+  intestines:{name:'Intestines',x:205,y:460,ids:['gastricSymptoms','bowelFrequency','stoolConsistency','fiber']},
+  body:{name:'Body',x:197,y:178,ids:['temperature','glucose','bmr','bodyFat','leanMassChange','boneDensity','gravity','calories','calcium','sodium','vitaminD','medication','radiation','dose','fluids']},
 };
-const names = {green:'Normal',yellow:'Caution',red:'Alerta',unknown:'Unclassified',invalid:'Invalid data',missing:'No data'};
+const names = {green:'Normal',yellow:'Caution',red:'Alert',unknown:'Unclassified',invalid:'Invalid data',missing:'No data'};
 const priority = {red:0,yellow:1,unknown:2,invalid:3,green:4,missing:5};
 const node = (tag,text,className) => { const el = document.createElement(tag); if (text) el.textContent = text; if (className) el.className = className; return el; };
 

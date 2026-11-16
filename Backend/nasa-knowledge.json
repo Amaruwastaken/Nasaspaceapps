@@ -1,43 +1,113 @@
 {
   "entries": [
     {
-      "title": "Sleep and Circadian Rhythm",
-      "date": "2024",
-      "url": "https://humanresearchroadmap.nasa.gov/Evidence/",
-      "summary": "Los cambios de sueño y ritmos circadianos reducen la vigilancia, aumentan la fatiga, empeoran la velocidad de reacción y pueden afectar la cognición en misiones largas.",
+      "title": "Sleep and Circadian Rhythm Risks",
+      "date": "NASA HRP",
+      "authority": "NASA",
+      "url": "https://www.nasa.gov/hrp/risks/",
+      "summary": "NASA describes chronic sleep loss, constant work demands, and irregular body-clock schedules as interacting risks to crew health and safety during spaceflight.",
+      "keywords": ["sleep", "circadian", "fatigue", "alertness", "workload", "brain", "cognition"],
       "excerpts": [
-        "Sleep loss and circadian disruption reduce alertness, slow reaction time and can impair performance during long-duration missions.",
-        "Crewmembers should prioritize sleep opportunity, light exposure management and fatigue countermeasures to preserve mission performance."
+        "NASA HRP identifies inadequate sleep and irregular schedules as behavioral performance risks and studies ways to reduce their effects on crew health and safety.",
+        "Spaceflight risks can vary by destination and mission profile; use the crew's actual sleep and performance records rather than inferring an individual diagnosis from general research."
       ]
     },
     {
-      "title": "Cardiovascular and Behavioral Health",
-      "date": "2023",
-      "url": "https://humanresearchroadmap.nasa.gov/Evidence/",
-      "summary": "Mantener la salud cardiovascular y la respuesta al estrés es esencial durante misiones espaciales; la tolerancia al estrés y la recuperación influencian la seguridad operativa.",
+      "title": "Spaceflight Cardiovascular and Behavioral Health",
+      "date": "NASA HRP",
+      "authority": "NASA",
+      "url": "https://www.nasa.gov/hrp/risks/",
+      "summary": "NASA HRP tracks cardiorespiratory fitness, behavior, sleep, team function, and other effects of spaceflight hazards; exercise and mission-specific countermeasures help protect crew capability.",
+      "keywords": ["heart", "cardiovascular", "cardio", "blood pressure", "stress", "behavior", "team", "exercise", "fitness"],
       "excerpts": [
-        "Cardiovascular deconditioning, stress and altered autonomic regulation must be tracked to protect crew performance and decision making.",
-        "Behavioral health countermeasures should monitor stress, workload, recovery and interpersonal factors during long missions."
+        "NASA identifies reduced cardiorespiratory and musculoskeletal fitness, behavioral health, teamwork, and sleep as spaceflight risks under continuing research.",
+        "NASA-STD-3001 and the flight medical team govern mission-specific health care and countermeasure decisions."
       ]
     },
     {
-      "title": "Vision and Visual Function",
-      "date": "2024",
-      "url": "https://humanresearchroadmap.nasa.gov/Evidence/",
-      "summary": "La salud visual y la respuesta ocular deben revisarse si aparecen cambios de visión, fatiga visual o molestias de enfoque durante la misión.",
+      "title": "Spaceflight Vision and Neuro-Ocular Risk",
+      "date": "NASA HRP",
+      "authority": "NASA",
+      "url": "https://www.nasa.gov/hrp/risks/",
+      "summary": "NASA reports that eye and brain structure can change during spaceflight and studies Spaceflight-Associated Neuro-ocular Syndrome (SANS) and its long-term health effects.",
+      "keywords": ["vision", "eye", "eyes", "amsler", "ocular", "brain", "sans", "gravity"],
       "excerpts": [
-        "Eye and visual changes can affect task performance and should be monitored when symptoms appear during spaceflight.",
-        "Symptoms such as blurred vision, eye strain and visual discomfort warrant evaluation alongside workload and recovery context."
+        "NASA HRP identifies SANS as a spaceflight risk involving changes to eye and brain structure; visual symptoms should be assessed through mission medical procedures.",
+        "The NASA Twins Study included ocular measurements, but those results do not establish individual diagnostic thresholds."
       ]
     },
     {
       "title": "Environmental Health and Air Quality",
-      "date": "2023",
-      "url": "https://humanresearchroadmap.nasa.gov/Evidence/",
-      "summary": "La calidad ambiental, la ventilación y el nivel de CO₂ afectan la vigilancia mental, la concentración y la respuesta cognitiva.",
+      "date": "NASA HRP",
+      "authority": "NASA",
+      "url": "https://www.nasa.gov/hrp/hazards/",
+      "summary": "NASA identifies hostile or closed environments as a human-spaceflight hazard involving spacecraft temperature, pressure, lighting, noise, microbes, and immune response.",
+      "keywords": ["environment", "cabin", "co2", "oxygen", "pressure", "ventilation", "air", "closed environment"],
       "excerpts": [
-        "Environmental controls and air quality matter because elevated CO₂ and cabin stressors can affect crew alertness and performance.",
-        "Mission monitors should pay attention to ventilation, contamination risk and symptoms that relate to mental clarity or productivity."
+        "Maintaining a safe spacecraft ecosystem includes monitoring temperature, pressure, lighting, noise, microbes, and immune responses.",
+        "Interpret cabin sensor values using the applicable vehicle limits and mission procedures."
+      ]
+    },
+    {
+      "title": "NASA Spaceflight Hazards",
+      "date": "NASA HRP",
+      "authority": "NASA",
+      "url": "https://www.nasa.gov/hrp/hazards/",
+      "summary": "NASA groups human-spaceflight hazards as radiation, isolation and confinement, distance from Earth, altered gravity, and hostile or closed environments. These hazards can interact.",
+      "keywords": ["hazard", "environment", "cabin", "co2", "oxygen", "pressure", "ventilation", "gravity", "radiation", "isolation", "distance earth"],
+      "excerpts": [
+        "NASA notes that medical care, instructions, and supplies become harder to receive farther from Earth, and that gravity changes affect muscles, bones, the inner ear, and organs.",
+        "NASA studies interacting hazards using ground analogs, laboratories, and the International Space Station."
+      ]
+    },
+    {
+      "title": "NASA Human Spaceflight Risks",
+      "date": "NASA HRP",
+      "authority": "NASA",
+      "url": "https://www.nasa.gov/hrp/risks/",
+      "summary": "NASA HRP connects mission-dependent hazards to risks including immune and vestibular changes, decompression sickness, hypoxia, nutrition, spacewalk injury, reduced fitness, SANS, bone changes, sleep disruption, behavioral health, and radiation-related cancer risk.",
+      "keywords": ["risk", "health", "medical", "immune", "vestibular", "decompression", "hypoxia", "oxygen", "nutrition", "bone", "muscle", "radiation", "cancer", "sleep", "mental health"],
+      "excerpts": [
+        "NASA says risk effects vary for low Earth orbit, lunar, and Mars missions; risks include low oxygen and high carbon dioxide in spacewalk contexts, bone loss in microgravity, sleep disruption, and behavioral effects.",
+        "These are NASA research risk categories, not diagnostic cutoffs for an individual astronaut. Follow mission procedures and the flight medical team."
+      ]
+    },
+    {
+      "title": "NASA-STD-3001 Human Spaceflight Standards",
+      "date": "NASA OCHMO",
+      "authority": "NASA",
+      "url": "https://www.nasa.gov/ochmo/human-spaceflight-and-aviation-standards/",
+      "alternateUrls": ["https://www.nasa.gov/reference/nasa-std-3001v1/"],
+      "summary": "NASA-STD-3001 Volume 1 covers crew health and medical care; Volume 2 covers human factors, habitability, and environmental health. Applicability is tailored to each program and mission profile.",
+      "keywords": ["standard", "standards", "medical care", "crew health", "human factors", "habitability", "environment", "mission protocol", "safety"],
+      "excerpts": [
+        "NASA describes NASA-STD-3001 as a technical standard for minimizing health risks, setting vehicle design parameters, and supporting crew performance.",
+        "Mission-specific standards and clinical decisions belong to the program and flight medical team; Dr. SIMI should not invent or replace a standard or prescribe a treatment."
+      ]
+    },
+    {
+      "title": "The NASA Twins Study: A Multidimensional Analysis of a Year-Long Human Spaceflight",
+      "date": "2019",
+      "authority": "Peer-reviewed study",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/30975860/",
+      "alternateUrls": ["https://www.science.org/doi/10.1126/science.aau8650", "https://pmc.ncbi.nlm.nih.gov/articles/PMC7580864/"],
+      "summary": "A one-year ISS case study monitored one twin astronaut before, during, and after flight and compared him with his identical twin on Earth. It measured molecular, physiological, ocular, microbiome, and cognitive changes.",
+      "keywords": ["twins", "twins study", "scott kelly", "genomics", "molecular", "cognition", "cardiovascular", "eye", "ocular", "microbiome", "long duration", "spaceflight"],
+      "excerpts": [
+        "The study reported changes including body mass, telomere dynamics, genome stability, carotid artery structure, ocular structure, gene expression, metabolism, gut microbiota, and some postflight cognitive measures.",
+        "Some averages returned near preflight levels within six months after landing, while other changes persisted. This single-astronaut twin study is contextual evidence, not a universal prediction or personal medical threshold."
+      ]
+    },
+    {
+      "title": "Monitoring Radiation for Astronaut Health",
+      "date": "2026-02-26",
+      "authority": "Canadian Space Agency",
+      "url": "https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp",
+      "summary": "The Canadian Space Agency describes development of the Canadian Active Neutron Spectrometer (CANS), a compact autonomous instrument intended to measure neutron radiation exposure in space continuously.",
+      "keywords": ["radiation", "neutron", "cans", "dosimetry", "exposure", "astronaut health", "cumulative dose"],
+      "excerpts": [
+        "CSA says neutron radiation contributes to about 30% of total radiation on the ISS and describes CANS as a technology under development for continuous autonomous measurement.",
+        "The article describes an instrument-development project, not a personal dose limit or a treatment recommendation."
       ]
     }
   ]
