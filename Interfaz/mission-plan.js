@@ -20,11 +20,19 @@ let resetting = false;
 function showError(message) {
   hint.textContent = message;
   hint.classList.add('is-error');
+  hint.classList.remove('is-success');
 }
 
 function showStatus(message) {
   hint.textContent = message;
   hint.classList.remove('is-error');
+  hint.classList.remove('is-success');
+}
+
+function showSuccess(message) {
+  hint.textContent = message;
+  hint.classList.remove('is-error');
+  hint.classList.add('is-success');
 }
 
 function showSignInPrompt(message) {
@@ -33,6 +41,7 @@ function showSignInPrompt(message) {
   link.textContent = 'Sign in';
   hint.replaceChildren(document.createTextNode(`${message} `), link);
   hint.classList.remove('is-error');
+  hint.classList.remove('is-success');
 }
 
 function hasMission() {
@@ -141,7 +150,7 @@ saveButton.addEventListener('click', async () => {
 
     plan.commit();
     resetButton.hidden = false;
-    showStatus('Mission saved to Supabase and shared with all accounts.');
+    showSuccess('Mission saved successfully to Supabase and shared with all accounts.');
   } catch (error) {
     showError(`Could not save the mission to Supabase: ${error.message || 'unknown error'}`);
   } finally {
