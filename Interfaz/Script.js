@@ -15,30 +15,30 @@ function getMissionState({ missionStartDate, travelDays = 0, stayDays = 0, desti
   const stay = Number(stayDays) || 0;
 
   if (!start || Number.isNaN(start.getTime())) {
-    return { phase: 'No mission date', gravity: 1, isOrbit: false, body: 'tierra' };
+    return { phase: 'Sin fecha de misión', gravity: 1, isOrbit: false, body: 'tierra' };
   }
 
   const elapsedDays = (current.getTime() - start.getTime()) / 86400000;
   if (elapsedDays < 0) {
-    return { phase: 'Pre-launch preparation', gravity: 1, isOrbit: false, body: 'tierra' };
+    return { phase: 'Preparación previa al lanzamiento', gravity: 1, isOrbit: false, body: 'tierra' };
   }
 
   const totalDays = travel + stay;
   if (totalDays <= 0) {
-    return { phase: 'In space', gravity: 0, isOrbit: false, body: 'espacio' };
+    return { phase: 'En el espacio', gravity: 0, isOrbit: false, body: 'espacio' };
   }
 
   if (elapsedDays <= travel) {
-    return { phase: destination ? `In transit to ${planetNames[destination] ?? destination}` : 'In space', gravity: 0, isOrbit: false, body: 'espacio' };
+    return { phase: destination ? `En tránsito hacia ${planetNames[destination] ?? destination}` : 'En el espacio', gravity: 0, isOrbit: false, body: 'espacio' };
   }
 
   if (elapsedDays <= travel + stay) {
     const body = destination && Object.prototype.hasOwnProperty.call(PLANET_GRAVITY, destination) ? destination : 'tierra';
     const gravity = PLANET_GRAVITY[body] * 0.01;
-    return { phase: destination ? `Orbiting ${planetNames[destination] ?? destination}` : 'Orbiting a celestial body', gravity, isOrbit: true, body };
+    return { phase: destination ? `En órbita de ${planetNames[destination] ?? destination}` : 'En órbita de un cuerpo celeste', gravity, isOrbit: true, body };
   }
 
-  return { phase: 'Mission complete / out of orbit', gravity: 0, isOrbit: false, body: 'espacio' };
+  return { phase: 'Misión completada / fuera de órbita', gravity: 0, isOrbit: false, body: 'espacio' };
 }
 
 function setMenu(open) {
@@ -47,7 +47,7 @@ function setMenu(open) {
   menuToggle.setAttribute('aria-expanded', String(open));
   menuToggle.setAttribute(
     'aria-label',
-    open ? 'Close menu' : 'Open menu'
+    open ? 'Cerrar menú' : 'Abrir menú'
   );
 
   sidebar.setAttribute('aria-hidden', String(!open));
@@ -91,27 +91,27 @@ overlay.addEventListener('click', () => {
   setMenu(false);
 });
 
-// Close the menu with Escape.
+// Cerrar con Escape
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     setMenu(false);
   }
 });
 
-// Close menu al seleccionar un enlace
+// Cerrar menú al seleccionar un enlace
 sidebar.querySelectorAll('a').forEach(link => {
   link.addEventListener('click', () => {
     setMenu(false);
   });
 });
-// ===== Mission planner (only on mision.html) =====
+// ===== Misiones (solo existe en mision.html) =====
 (() => {
   // Skip mission setup on pages without the planet selector.
   const space = document.querySelector('#planets');
   if (!space) return;
 
-  const PLANETS = window.missionSolarSystem?.names ?? { tierra: 'Earth', luna: 'Moon', marte: 'Mars' };
-  const DIST = { // approximate average distance in km
+  const PLANETS = window.missionSolarSystem?.names ?? { tierra: 'Tierra', luna: 'Luna', marte: 'Marte' };
+  const DIST = { // km promedio aproximados
     'tierra-luna': 384400,
     'tierra-marte': 225e6,
     'luna-marte': 225e6,
@@ -155,7 +155,7 @@ sidebar.querySelectorAll('a').forEach(link => {
       startInput.dataset.missionLocked = String(missionLocked);
       startInput.readOnly = missionLocked;
       savedName = typeof data.name === 'string' ? data.name.slice(0,80) : '';
-      nameInput.value = missionLocked ? savedName : (typeof data.draft === 'string' ? data.draft.slice(0,80) : savedName);
+      nameInput.value = savedName || (typeof data.draft === 'string' ? data.draft.slice(0,80) : '');
       preset = Object.hasOwn(presets,data.preset) ? data.preset : '';
       routeDistance = Number.isFinite(data.distance) && data.distance > 0 ? data.distance : null;
       travelInput.value = data.travel ?? ''; stayInput.value = data.stay ?? '';
@@ -163,7 +163,7 @@ sidebar.querySelectorAll('a').forEach(link => {
   } catch {}
 
   const distance = (x, y) => window.missionSolarSystem?.distance(x, y) ?? DIST[`${x}-${y}`] ?? DIST[`${y}-${x}`];
-  const fmt = n => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  const fmt = n => n.toLocaleString('es-MX', { maximumFractionDigits: 2 });
 
   // Show the summary after both locations and day counts are available.
   function renderSummary() {
@@ -175,8 +175,8 @@ sidebar.querySelectorAll('a').forEach(link => {
 
     route.hidden = false;
     if (!valid) {
-      chip.textContent = 'Step 3 of 3';
-      route.innerHTML = '<p>Enter travel and stay durations to see the summary.</p>';
+      chip.textContent = 'Paso 3 de 3';
+      route.innerHTML = '<p>Escribe los días de viaje y los días de estancia para ver el resumen.</p>';
       return;
     }
 
@@ -193,21 +193,12 @@ sidebar.querySelectorAll('a').forEach(link => {
 
     route.innerHTML = `
       <h3>${PLANETS[a]} (A) ➔ ${PLANETS[b]} (B)</h3>
-<<<<<<< HEAD
-      <p><strong>Distance:</strong> ${fmt(distance(a, b))} km (approx.)</p>
-      <p><strong>Arrival at ${PLANETS[b]}:</strong> day ${fmt(travel)}</p>
-      <p><strong>Stay on ${PLANETS[b]}:</strong> ${fmt(stay)} days</p>
-      <p><strong>Departure from ${PLANETS[b]}:</strong> day ${fmt(total)}</p>
-      <p><strong>Total duration:</strong> ${fmt(total)} days (${fmt(total * 24)} hours)</p>
-      <p><strong>Current status:</strong> ${missionState.phase} · ${missionState.isOrbit ? `${missionState.gravity.toFixed(2)} G (microgravity)` : `${missionState.gravity.toFixed(2)} G`}</p>`;
-=======
       <p><strong>Distancia:</strong> ${fmt(routeDistance ?? distance(a, b))} km (aprox.)</p>
       <p><strong>Llegada a ${PLANETS[b]}:</strong> día ${fmt(travel)}</p>
       <p><strong>Estancia en ${PLANETS[b]}:</strong> ${fmt(stay)} días</p>
       <p><strong>Salida de ${PLANETS[b]}:</strong> día ${fmt(total)}</p>
       <p><strong>Duración total:</strong> ${fmt(total)} días (${fmt(total * 24)} horas)</p>
       <p><strong>Estado actual:</strong> ${missionState.phase} · ${missionState.isOrbit ? `${missionState.gravity.toFixed(2)} G (microgravedad)` : `${missionState.gravity.toFixed(2)} G`}</p>`;
->>>>>>> 1627b1e3111ac52a84b177c711dfceb5f7ca0ce7
   }
 
   // Update planet highlights, progress text, fields, and summary together.
@@ -221,49 +212,42 @@ sidebar.querySelectorAll('a').forEach(link => {
     nameA.textContent = a ? PLANETS[a] : '—';
     nameB.textContent = b ? PLANETS[b] : '—';
     resetBtn.hidden = !a && !nameInput.value;
-    nameInput.readOnly = missionLocked;
+    nameInput.readOnly = Boolean(savedName);
     saveName.disabled = missionLocked;
     travelInput.readOnly = stayInput.readOnly = missionLocked;
     startInput.readOnly = missionLocked;
     startInput.dataset.missionLocked = String(missionLocked);
     presetInput.value = preset;
-    presetInput.disabled = missionLocked;
+    presetInput.disabled = Boolean(a || savedName);
     presetInfo.hidden = !preset;
     presetInfo.replaceChildren();
     if (preset) {
       const link = document.createElement('a'); link.href = presets[preset].url; link.textContent = 'Fuente: NASA';
       presetInfo.append(presets[preset].info + ' Distancia media Tierra-Luna: 384,400 km; no representa la trayectoria total. ',link);
     }
-    buttons.forEach(btn => { btn.disabled = missionLocked; });
+    buttons.forEach(btn => { btn.disabled = Boolean(b); });
     form.hidden = !(a && b);
 
     if (!a) {
-      hint.textContent = 'Select your starting point (A).';
-      chip.textContent = 'Step 1 of 3';
+      hint.textContent = 'Toca tu punto de partida (A).';
+      chip.textContent = 'Paso 1 de 3';
     } else if (!b) {
-      hint.textContent = `Origin: ${PLANETS[a]}. Now select your destination (B).`;
-      chip.textContent = 'Step 2 of 3';
+      hint.textContent = `Partida: ${PLANETS[a]}. Ahora toca tu destino (B).`;
+      chip.textContent = 'Paso 2 de 3';
     } else {
-      hint.textContent = 'Now enter the number of mission days.';
+      hint.textContent = 'Ahora escribe los días de tu misión.';
       stayPlace.textContent = PLANETS[b];
     }
     renderSummary();
   }
 
-  // Lock editing only after the complete mission is saved.
+  // Keep the completed route locked until Reset.
   buttons.forEach(btn => btn.addEventListener('click', () => {
     const p = btn.dataset.planet;
-<<<<<<< HEAD
-    if (!a || b) { a = p; b = null; }   // Start or restart with a new origin.
-    else if (p === a) { a = null; }     // Select the origin again to clear it.
-    else { b = p; }
-=======
-    if (missionLocked) return;
-    if (b) { a = p; b = null; routeDistance = null; preset = ''; }
-    else if (!a) a = p;
+    if (b) return;
+    if (!a) a = p;
     else if (p !== a) { b = p; routeDistance = distance(a,b); }
     persist();
->>>>>>> 1627b1e3111ac52a84b177c711dfceb5f7ca0ce7
     render();
   }));
 
@@ -287,9 +271,7 @@ sidebar.querySelectorAll('a').forEach(link => {
     document.querySelector('#missionSaveHint').textContent = 'Datos guardados: nombre, ruta, distancia, tiempos y fecha. Pulsa Reiniciar para editar.';
   });
   presetInput.addEventListener('change', () => {
-    if (missionLocked) return;
-    if (!presetInput.value) { preset = ''; persist(); render(); return; }
-    if (!Object.hasOwn(presets,presetInput.value)) return;
+    if (a || savedName || !Object.hasOwn(presets,presetInput.value)) return;
     preset = presetInput.value;
     const data = presets[preset]; a = 'tierra'; b = 'luna'; routeDistance = 384400;
     savedName = data.name; nameInput.value = savedName;
