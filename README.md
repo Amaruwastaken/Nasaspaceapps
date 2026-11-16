@@ -44,7 +44,8 @@ The body view uses `Interfaz/Imagenes/silueta-cuerpo.jpeg` and only shows
 regions with available measurements.
 
 The report groups available daily history into collapsible categories and
-charts readings from the most recent seven calendar days.
+charts readings from the most recent seven calendar days. Its “Add to history”
+button opens the check-in flow.
 
 New client-generated simulated metrics target 90% green, 5% yellow, and 5% red.
 Metrics without all three defined states use the same proportions normalized
