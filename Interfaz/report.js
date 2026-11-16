@@ -123,17 +123,8 @@ function historyChart(category,series,points) {
     x:plot.left+index*(plot.right-plot.left)/(points.length-1),
     y:point.value === null ? null : plot.bottom-(point.value-min)/(max-min)*(plot.bottom-plot.top),
   }));
-  const segments = [];
-  let segment = [];
-  for (const point of coordinates) {
-    if (point.value === null) {
-      if (segment.length) segments.push(segment);
-      segment = [];
-    } else segment.push(point);
-  }
-  if (segment.length) segments.push(segment);
-  for (const linePoints of segments) {
-    if (linePoints.length < 2) continue;
+  const linePoints = coordinates.filter(point => point.value !== null);
+  if (linePoints.length > 1) {
     const path = svgElement('path',{
       d:linePoints.map((point,index) => `${index ? 'L' : 'M'}${point.x},${point.y}`).join(' '),
       class:'history-line',
