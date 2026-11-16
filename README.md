@@ -43,6 +43,9 @@ does not use it for alerts or health scores.
 The body view uses `Interfaz/Imagenes/silueta-cuerpo.jpeg` and only shows
 regions with available measurements.
 
+The report groups available daily history into collapsible categories and
+charts readings from the most recent seven calendar days.
+
 New client-generated simulated metrics target 90% green, 5% yellow, and 5% red.
 Metrics without all three defined states use the same proportions normalized
 across their available states.
