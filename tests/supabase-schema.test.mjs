@@ -23,12 +23,13 @@ test('prototype doctor signup role grants access to all report members', async (
 });
 
 test('mission planner saves and reloads the shared Supabase mission', async () => {
-  const [page, script, coreMigration, migration, resetMigration] = await Promise.all([
+  const [page, script, coreMigration, migration, resetMigration, scopedUpdatesMigration] = await Promise.all([
     readFile(path.join(process.cwd(), 'Interfaz', 'mision.html'), 'utf8'),
     readFile(path.join(process.cwd(), 'Interfaz', 'mission-plan.js'), 'utf8'),
     readFile(path.join(migrationDir, '20261115080000_ensure_core_schema.sql'), 'utf8'),
     readFile(path.join(migrationDir, '20261115130000_ensure_shared_mission_table.sql'), 'utf8'),
     readFile(path.join(migrationDir, '20261115120000_reset_shared_mission.sql'), 'utf8'),
+    readFile(path.join(migrationDir, '20261115140000_scope_shared_mission_profile_updates.sql'), 'utf8'),
   ]);
 
   assert.match(page, /mission-plan\.js/);
@@ -75,4 +76,9 @@ test('mission planner saves and reloads the shared Supabase mission', async () =
   const saveHandler = script.slice(script.indexOf("saveButton.addEventListener"), script.indexOf("resetButton.addEventListener"));
   assert.ok(saveHandler.indexOf('await supabaseReady') < saveHandler.indexOf('getCurrentUser()?.id'));
   assert.match(resetMigration, /delete\s+from\s+public\.missions/i);
+  const profileUpdates = [...scopedUpdatesMigration.matchAll(/update\s+public\.profiles\s+set[\s\S]*?;/gi)].map(([statement]) => statement);
+  assert.equal(profileUpdates.length, 3);
+  for (const statement of profileUpdates) {
+    assert.match(statement, /\bwhere\b/i, 'Profile updates must be scoped to the shared mission or caller');
+  }
 });
