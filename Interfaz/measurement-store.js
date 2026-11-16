@@ -161,7 +161,7 @@ async function requireUser(client,userId,readOnly = false) {
 }
 function databaseError(error,operation) {
   if (['42P01','PGRST205'].includes(error?.code)) return new Error('The unified telemetry migration has not been applied in Supabase.');
-  if (['42703','PGRST204'].includes(error?.code)) return new Error('The Supabase check-in schema is outdated. Apply the latest migrations.');
+  if (['42703','PGRST204'].includes(error?.code)) return new Error('The Supabase check-in schema is outdated. Run `supabase db push` to apply 20261115150000_allow_backdated_checkins.sql.');
   if (error?.code === '23503') return new Error('Your Supabase account is missing its associated profile. Sign out, then sign in again.');
   if (error?.code === '42501') return new Error('Supabase denied the save due to permissions. Sign in again and retry.');
   const code = error?.code ? ` (code ${error.code})` : '';

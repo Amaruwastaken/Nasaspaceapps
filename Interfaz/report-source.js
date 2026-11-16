@@ -186,7 +186,7 @@ export async function fetchDatabaseMeasurements(client,userId,{missionRead = fal
   } else {
     const code = checkinsResult.reason?.code;
     warnings.push(['42703','PGRST204'].includes(code)
-      ? 'The Supabase check-in history schema is outdated. Apply the latest migrations.'
+      ? 'The Supabase check-in history schema is outdated. Run supabase db push to apply 20261115150000_allow_backdated_checkins.sql.'
       : 'Could not load check-in history.');
   }
   // Daily radiation is accumulated from the stored current-mission start; hr_avg is not resting heart rate.
