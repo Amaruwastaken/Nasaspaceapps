@@ -55,13 +55,24 @@ function renderSession(session) {
   let crewLink = document.querySelector('[data-crew-link]');
   const nav = document.querySelector('.nav-link[href="reporte.html"]');
   if (!crewLink && nav) {
+<<<<<<< HEAD
     crewLink = document.createElement('a'); crewLink.href = 'doctor.html'; crewLink.className = 'nav-link';
     crewLink.dataset.crewLink = ''; crewLink.textContent = 'Doctor and commander'; crewLink.hidden = true; nav.after(crewLink);
     if (document.querySelector('[data-crew-report]')) { crewLink.classList.add('is-active'); crewLink.setAttribute('aria-current','page'); }
+=======
+    crewLink = document.createElement('a'); crewLink.href = 'doctor.html'; crewLink.className = 'nav-link nav-sublink';
+    crewLink.dataset.crewLink = ''; crewLink.textContent = 'Vista General'; crewLink.hidden = true;
+    const submenu = document.createElement('div');
+    submenu.className = 'nav-submenu'; submenu.setAttribute('role','group');
+    submenu.setAttribute('aria-label','Subpestañas de Reporte');
+    submenu.append(crewLink); nav.after(submenu);
+    if (document.querySelector('[data-crew-report]')) { crewLink.classList.add('is-active'); crewLink.setAttribute('aria-current','page'); nav.classList.add('is-parent-active'); }
+>>>>>>> 1627b1e3111ac52a84b177c711dfceb5f7ca0ce7
   }
   if (crewLink) {
     const assignedRole = currentUser?.app_metadata?.role ?? currentUser?.user_metadata?.role;
     crewLink.hidden = !['doctor','capitan'].includes(assignedRole);
+    crewLink.parentElement.hidden = crewLink.hidden;
   }
   document.dispatchEvent(new CustomEvent('sessionchange', { detail: currentUser }));
 }

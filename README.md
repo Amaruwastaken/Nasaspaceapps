@@ -27,9 +27,9 @@ Supabase Auth almacena las credenciales; el trigger crea el perfil relacionado
 en `public."Registry"` y guarda el nombre en `"Usuario"`. La columna
 `"Contraseña"` no se usa para autenticar ni debe contener contraseñas.
 El registro también solicita un rol (capitán, ingeniero, piloto, doctor o
-científico) y lo muestra junto al nombre de usuario. Ese valor de registro no
-concede permisos; el acceso médico se asigna por separado en `app_metadata`,
-como se describe en el panel del doctor y capitán.
+científico) y lo muestra junto al nombre de usuario. En este prototipo, las
+cuentas registradas como doctor o capitán pueden consultar los reportes de
+todas las cuentas; los datos deben ser ficticios.
 
 ### Métricas y reporte
 
@@ -73,20 +73,19 @@ La migración no reemplaza las tablas existentes `records`, `daily_sensor`, `tel
 
 ### Panel del doctor y capitán
 
-`Interfaz/doctor.html` permite seleccionar integrantes de la misma misión y consultar sus indicadores, pruebas de Captura e historial de registros y sensores. El panel es de consulta; las capturas y alertas personales conservan su flujo habitual.
+`Interfaz/doctor.html` permite seleccionar integrantes y consultar sus
+indicadores, pruebas de Captura e historial de registros y sensores. El panel es
+de consulta; las capturas y alertas personales conservan su flujo habitual.
 
 Aplicar en orden las migraciones `20261115070000_mission_start_at.sql`,
-`20261115080000_ensure_core_schema.sql` y
-`20261115090000_mission_medical_access.sql` (en proyectos conectados, usar
-`supabase db push`). Las políticas RLS dejan a cada usuario consultar sus propios
-datos; solo las cuentas con `role: "doctor"` o `role: "capitan"` en
-`app_metadata`, asignado por un administrador, pueden consultar los reportes de
-compañeros de su misión. El rol elegido al registrarse en `user_metadata` no
-concede esos permisos; solo controla la visibilidad del enlace junto con el rol
-administrativo. Mostrar el enlace no autoriza la lectura. Conservar los demás
-campos de `app_metadata` al actualizarlo.
+`20261115080000_ensure_core_schema.sql`,
+`20261115090000_mission_medical_access.sql` y
+`20261115100000_demo_doctor_signup_access.sql` (en proyectos conectados, usar
+`supabase db push`). La última migración permite que el rol doctor o capitán
+seleccionado durante el registro habilite el acceso de lectura a todos los
+reportes de esta instancia.
 
-La pertenencia se determina por `profiles.mission`; su modificación queda
-reservada a la administración porque delimita el acceso a los reportes. La vista
-`daily_sensor` aplica las políticas de sus tablas de origen. La migración no
-autoriza cuentas automáticamente.
+**No usar con datos reales.** Cualquier persona puede registrarse como doctor o
+capitán y consultar los datos de las demás cuentas; el aviso correspondiente
+también aparece en `doctor.html`. La vista `daily_sensor` aplica las políticas
+de sus tablas de origen.

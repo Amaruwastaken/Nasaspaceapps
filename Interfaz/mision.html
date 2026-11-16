@@ -53,7 +53,17 @@
               <span class="card-chip" id="missionsChip">Step 1 of 3</span>
             </div>
 
+<<<<<<< HEAD
             <p class="missions-hint" id="missionsHint">Select your starting point (A).</p>
+=======
+            <div class="mission-settings">
+              <label class="field"><span class="field-label">Misión predeterminada</span><span class="bubble"><select id="missionPreset"><option value="">Personalizada</option><option value="artemis">Artemis I (orbital)</option><option value="apollo">Apollo 11</option></select></span></label>
+              <label class="field"><span class="field-label">Nombre de la misión</span><span class="bubble"><input id="missionName" maxlength="80" placeholder="Nombre de tu misión"></span></label>
+              <p class="missions-hint" id="missionSaveHint" role="status">Guarda todos los datos para bloquearlos hasta reiniciar. Los datos se conservan en este navegador.</p>
+              <p class="missions-hint" id="missionPresetInfo" hidden></p>
+            </div>
+            <p class="missions-hint" id="missionsHint">Toca tu punto de partida (A).</p>
+>>>>>>> 1627b1e3111ac52a84b177c711dfceb5f7ca0ce7
 
             <div class="trip">
               <div class="trip-slot"><span>A · ORIGIN</span><strong id="slotAName">—</strong></div>
@@ -96,12 +106,19 @@
                   <input type="date" id="missionStartDate">
                 </span>
               </label>
+<<<<<<< HEAD
               <button type="button" class="reset-btn" id="saveMissionStart">Save date</button>
+=======
+              <button type="button" class="reset-btn" id="saveMissionStart" hidden>Guardar fecha</button>
+>>>>>>> 1627b1e3111ac52a84b177c711dfceb5f7ca0ce7
               <p class="form-message" id="missionStartMessage" role="status" aria-live="polite"></p>
             </div>
 
             <div class="route" id="route" aria-live="polite" hidden></div>
-            <button class="reset-btn" id="missionsReset" type="button" hidden>↺ Reiniciar</button>
+            <div class="mission-actions">
+              <button class="reset-btn" id="saveMissionName" type="button">Guardar misión</button>
+              <button class="reset-btn" id="missionsReset" type="button" hidden>↺ Reiniciar</button>
+            </div>
           </div>
         </section>
       </main>

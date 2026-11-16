@@ -111,19 +111,32 @@ async function render() {
   let userId = viewerId;
   if (crewPage) {
     const controls = document.querySelector('.crew-controls'); controls.hidden = true;
+<<<<<<< HEAD
     if (!client || !viewerId) { message.textContent = 'Sign in as a doctor or commander to view mission reports.'; return; }
+=======
+    if (!client || !viewerId) { message.textContent = 'Inicia sesión con una cuenta cuyo rol sea doctor o capitán para consultar los reportes.'; return; }
+>>>>>>> 1627b1e3111ac52a84b177c711dfceb5f7ca0ce7
     const {data:members,error} = await client.rpc('get_mission_report_members');
     if (request !== version || viewerId !== getCurrentUser()?.id) return;
     if (error || !members?.length) {
       crewSelect.replaceChildren();
       message.textContent = error?.code === '42501'
+<<<<<<< HEAD
         ? 'The role selected at sign-up does not grant medical access. An administrator must assign the doctor or commander role in Supabase app_metadata.'
         : error ? 'Could not load crew members. Check the connection and Supabase migrations.' : 'There are no crew members on this mission.';
+=======
+        ? 'Solo las cuentas con rol doctor o capitán pueden consultar los reportes.'
+        : error ? 'No se pudieron consultar los integrantes. Revisa la conexión y las migraciones de Supabase.' : 'No hay integrantes en esta misión.';
+>>>>>>> 1627b1e3111ac52a84b177c711dfceb5f7ca0ce7
       return;
     }
     const selected = crewSelect.value;
     crewSelect.replaceChildren(...members.map(member => {
-      const option = document.createElement('option'); option.value = member.id; option.textContent = member.username; return option;
+      const option = document.createElement('option'); option.value = member.id; // Profiles append the first 12 UUID characters to names for uniqueness.
+      // Keep that identifier as the option value, never in the visible label.
+      const suffix = '-' + member.id.replaceAll('-','').slice(0,12);
+      const name = member.username ?? '';
+      option.textContent = (name.endsWith(suffix) ? name.slice(0,-suffix.length) : name).trim() || 'Integrante'; return option;
     }));
     crewSelect.value = members.some(member => member.id === selected) ? selected : members[0].id;
     userId = crewSelect.value; controls.hidden = false;

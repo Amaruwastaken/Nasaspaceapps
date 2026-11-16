@@ -40,6 +40,7 @@ async function fetchMissionStartViaFallback(client, userId) {
 }
 
 async function loadMissionStart() {
+  if (dateInput.dataset.missionLocked === 'true') return;
   const currentRequest = ++request;
   const userId = getCurrentUser()?.id ?? null;
   saving = false;
@@ -63,6 +64,7 @@ async function loadMissionStart() {
       data = await fetchMissionStartViaFallback(client, userId).catch(() => null);
     }
     if (currentRequest !== request || userId !== getCurrentUser()?.id) return;
+    if (dateInput.dataset.missionLocked === 'true') return;
     if (data !== null) {
       const timestamp = Date.parse(data);
       if (!Number.isFinite(timestamp)) throw new Error('Supabase returned an invalid mission date.');

@@ -130,7 +130,37 @@ sidebar.querySelectorAll('a').forEach(link => {
   const buttons = space.querySelectorAll('.planet');
 
   // Keep the selected departure (A) and destination (B) between renders.
-  let a = null, b = null;
+  let a = null, b = null, savedName = '', preset = '', routeDistance = null;
+  let missionLocked = false, savedStart = '';
+  const startInput = document.querySelector('#missionStartDate');
+  const storageKey = 'farmacias-similunares.mission-plan';
+  const nameInput = document.querySelector('#missionName');
+  const saveName = document.querySelector('#saveMissionName');
+  const presetInput = document.querySelector('#missionPreset');
+  const presetInfo = document.querySelector('#missionPresetInfo');
+  const presets = {
+    artemis: { name: 'Artemis I', travel: 5, stay: 6, info: 'Simulación simplificada: 5 días hasta el primer sobrevuelo y 6 días en órbita lunar distante; sin alunizaje. No incluye las demás maniobras ni el regreso.', url: 'https://www.nasa.gov/reference/artemis-i-mission-timeline/' },
+    apollo: { name: 'Apollo 11', travel: 4.28, stay: 0.9, info: 'Simulación simplificada: 4.28 días hasta el alunizaje y 0.9 días (21 h 36 min) en la superficie. No incluye el regreso.', url: 'https://www.nasa.gov/wp-content/uploads/static/history/SP-4029/Apollo_11a_Summary.htm' }
+  };
+  function persist() {
+    try { localStorage.setItem(storageKey, JSON.stringify({locked:missionLocked,start:savedStart || startInput.value,a,b,name:savedName,draft:nameInput.value,preset,distance:routeDistance,travel:travelInput.value,stay:stayInput.value})); }
+    catch { document.querySelector('#missionSaveHint').textContent = 'El navegador no permite guardar; los datos solo se conservarán mientras esta página est? abierta.'; }
+  }
+  try {
+    const data = JSON.parse(localStorage.getItem(storageKey) || 'null');
+    if (data && (!data.a || Object.hasOwn(PLANETS,data.a)) && (!data.b || (data.a && data.b !== data.a && Object.hasOwn(PLANETS,data.b)))) {
+      a = data.a; b = data.b;
+      missionLocked = data.locked === true; savedStart = typeof data.start === 'string' ? data.start : '';
+      if (missionLocked && savedStart) startInput.value = savedStart;
+      startInput.dataset.missionLocked = String(missionLocked);
+      startInput.readOnly = missionLocked;
+      savedName = typeof data.name === 'string' ? data.name.slice(0,80) : '';
+      nameInput.value = missionLocked ? savedName : (typeof data.draft === 'string' ? data.draft.slice(0,80) : savedName);
+      preset = Object.hasOwn(presets,data.preset) ? data.preset : '';
+      routeDistance = Number.isFinite(data.distance) && data.distance > 0 ? data.distance : null;
+      travelInput.value = data.travel ?? ''; stayInput.value = data.stay ?? '';
+    }
+  } catch {}
 
   const distance = (x, y) => window.missionSolarSystem?.distance(x, y) ?? DIST[`${x}-${y}`] ?? DIST[`${y}-${x}`];
   const fmt = n => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
@@ -163,12 +193,21 @@ sidebar.querySelectorAll('a').forEach(link => {
 
     route.innerHTML = `
       <h3>${PLANETS[a]} (A) ➔ ${PLANETS[b]} (B)</h3>
+<<<<<<< HEAD
       <p><strong>Distance:</strong> ${fmt(distance(a, b))} km (approx.)</p>
       <p><strong>Arrival at ${PLANETS[b]}:</strong> day ${fmt(travel)}</p>
       <p><strong>Stay on ${PLANETS[b]}:</strong> ${fmt(stay)} days</p>
       <p><strong>Departure from ${PLANETS[b]}:</strong> day ${fmt(total)}</p>
       <p><strong>Total duration:</strong> ${fmt(total)} days (${fmt(total * 24)} hours)</p>
       <p><strong>Current status:</strong> ${missionState.phase} · ${missionState.isOrbit ? `${missionState.gravity.toFixed(2)} G (microgravity)` : `${missionState.gravity.toFixed(2)} G`}</p>`;
+=======
+      <p><strong>Distancia:</strong> ${fmt(routeDistance ?? distance(a, b))} km (aprox.)</p>
+      <p><strong>Llegada a ${PLANETS[b]}:</strong> día ${fmt(travel)}</p>
+      <p><strong>Estancia en ${PLANETS[b]}:</strong> ${fmt(stay)} días</p>
+      <p><strong>Salida de ${PLANETS[b]}:</strong> día ${fmt(total)}</p>
+      <p><strong>Duración total:</strong> ${fmt(total)} días (${fmt(total * 24)} horas)</p>
+      <p><strong>Estado actual:</strong> ${missionState.phase} · ${missionState.isOrbit ? `${missionState.gravity.toFixed(2)} G (microgravedad)` : `${missionState.gravity.toFixed(2)} G`}</p>`;
+>>>>>>> 1627b1e3111ac52a84b177c711dfceb5f7ca0ce7
   }
 
   // Update planet highlights, progress text, fields, and summary together.
@@ -181,7 +220,21 @@ sidebar.querySelectorAll('a').forEach(link => {
 
     nameA.textContent = a ? PLANETS[a] : '—';
     nameB.textContent = b ? PLANETS[b] : '—';
-    resetBtn.hidden = !a;
+    resetBtn.hidden = !a && !nameInput.value;
+    nameInput.readOnly = missionLocked;
+    saveName.disabled = missionLocked;
+    travelInput.readOnly = stayInput.readOnly = missionLocked;
+    startInput.readOnly = missionLocked;
+    startInput.dataset.missionLocked = String(missionLocked);
+    presetInput.value = preset;
+    presetInput.disabled = missionLocked;
+    presetInfo.hidden = !preset;
+    presetInfo.replaceChildren();
+    if (preset) {
+      const link = document.createElement('a'); link.href = presets[preset].url; link.textContent = 'Fuente: NASA';
+      presetInfo.append(presets[preset].info + ' Distancia media Tierra-Luna: 384,400 km; no representa la trayectoria total. ',link);
+    }
+    buttons.forEach(btn => { btn.disabled = missionLocked; });
     form.hidden = !(a && b);
 
     if (!a) {
@@ -197,22 +250,60 @@ sidebar.querySelectorAll('a').forEach(link => {
     renderSummary();
   }
 
-  // First click selects A, second selects B; a later click starts a new route.
+  // Lock editing only after the complete mission is saved.
   buttons.forEach(btn => btn.addEventListener('click', () => {
     const p = btn.dataset.planet;
+<<<<<<< HEAD
     if (!a || b) { a = p; b = null; }   // Start or restart with a new origin.
     else if (p === a) { a = null; }     // Select the origin again to clear it.
     else { b = p; }
+=======
+    if (missionLocked) return;
+    if (b) { a = p; b = null; routeDistance = null; preset = ''; }
+    else if (!a) a = p;
+    else if (p !== a) { b = p; routeDistance = distance(a,b); }
+    persist();
+>>>>>>> 1627b1e3111ac52a84b177c711dfceb5f7ca0ce7
     render();
   }));
 
   // Keep the summary current as travel and stay durations change.
-  travelInput.addEventListener('input', renderSummary);
-  stayInput.addEventListener('input', renderSummary);
+  [travelInput,stayInput].forEach(input => input.addEventListener('input', () => { persist(); renderSummary(); }));
+  nameInput.addEventListener('input', () => { persist(); resetBtn.hidden = !a && !nameInput.value; });
+  saveName.addEventListener('click', () => {
+    if (missionLocked) return;
+    const value = nameInput.value.trim();
+    if (!value) { nameInput.setCustomValidity('Escribe el nombre.'); nameInput.reportValidity(); nameInput.setCustomValidity(''); return; }
+    if (!a || !b) { hint.textContent = 'Selecciona partida y destino antes de guardar.'; return; }
+    for (const input of [travelInput, stayInput, startInput]) {
+      if (!input.value || !input.checkValidity()) { input.setCustomValidity('Completa este dato con un valor valido.'); input.reportValidity(); input.setCustomValidity(''); return; }
+    }
+    routeDistance ??= distance(a,b);
+    savedName = value; nameInput.value = value;
+    savedStart = startInput.value; missionLocked = true;
+    try { localStorage.setItem('farmacias-similunares.mission-start', savedStart); } catch {}
+    document.querySelector('#saveMissionStart').click();
+    persist(); render();
+    document.querySelector('#missionSaveHint').textContent = 'Datos guardados: nombre, ruta, distancia, tiempos y fecha. Pulsa Reiniciar para editar.';
+  });
+  presetInput.addEventListener('change', () => {
+    if (missionLocked) return;
+    if (!presetInput.value) { preset = ''; persist(); render(); return; }
+    if (!Object.hasOwn(presets,presetInput.value)) return;
+    preset = presetInput.value;
+    const data = presets[preset]; a = 'tierra'; b = 'luna'; routeDistance = 384400;
+    savedName = data.name; nameInput.value = savedName;
+    travelInput.value = data.travel; stayInput.value = data.stay;
+    persist(); render();
+  });
 
   // Clear the route and day counts to begin another mission.
   resetBtn.addEventListener('click', () => {
     a = b = null;
+    missionLocked = false; savedStart = '';
+    savedName = preset = ''; routeDistance = null; nameInput.value = '';
+    document.querySelector('#missionSaveHint').textContent = 'Completa los datos y pulsa Guardar.';
+    try { localStorage.removeItem(storageKey); } catch {}
     travelInput.value = '';
     stayInput.value = '';
     render();

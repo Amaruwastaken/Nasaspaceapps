@@ -33,3 +33,10 @@
 .orbit-controls p, .orbit-note { font-size: 12px; color: #626e86; line-height: 1.7; }
 .orbit-controls button { border: 1px solid #b9cce3; border-radius: 999px; background: #eff6ff; color: #365579; padding: 10px 16px; cursor: pointer; }
 .orbit-note a { color: #365579; }
+
+.mission-settings { display: grid; gap: 14px; margin-bottom: 22px; }
+.mission-settings select { width: 100%; min-height: 44px; border: 0; background: transparent; color: inherit; font: inherit; }
+.mission-settings input[readonly] { opacity: .75; }
+.space .solar-planet:disabled { cursor: default; }
+
+.mission-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 18px; }
