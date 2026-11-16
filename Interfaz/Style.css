@@ -250,6 +250,9 @@ h2 { margin: 8px 0 0; color: var(--navy); font-size: 23px; letter-spacing: -.5px
   display: flex;
   width: min(320px, 88vw);
   flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 28px 18px 18px;
   visibility: hidden;
   border-left: 1px solid #d9e0e8;
