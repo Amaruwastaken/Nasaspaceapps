@@ -34,9 +34,42 @@ test('mission planner saves and reloads the shared Supabase mission', async () =
   assert.match(page, /mission-plan\.js/);
   assert.match(coreMigration, /create\s+table\s+if\s+not\s+exists\s+public\.missions/i);
   assert.match(migration, /create\s+table\s+if\s+not\s+exists\s+public\.missions/i);
+  for (const column of [
+    'code text primary key',
+    'name text not null',
+    'origin text not null',
+    'dest text not null',
+    'transit_days double precision not null',
+    'stay_days double precision not null',
+    "stay_mode text not null default 'orbit' check (stay_mode in ('orbit', 'surface'))",
+    "tz text not null default 'America/Chicago'",
+    'start_at timestamptz',
+    'clock_real timestamptz',
+    'clock_mission timestamptz',
+    'time_scale double precision not null default 1',
+  ]) {
+    assert.ok(migration.includes(column), `Missing missions schema definition: ${column}`);
+  }
   assert.match(migration, /grant\s+select\s+on\s+table\s+public\.missions\s+to\s+authenticated/i);
   assert.match(script, /rpc\('get_shared_mission'\)/);
   assert.match(script, /rpc\('save_shared_mission'/);
+  assert.match(script, /link\.href\s*=\s*'login\.html'/);
+  assert.match(script, /showSignInPrompt\('Sign in to save the shared mission\.'\)/);
+  for (const field of [
+    'p_name:',
+    'p_origin:',
+    'p_dest:',
+    'p_transit_days:',
+    'p_stay_days:',
+    'p_stay_mode:',
+    'p_tz:',
+    'p_start_at:',
+    'p_clock_real:',
+    'p_clock_mission:',
+    'p_time_scale:',
+  ]) {
+    assert.ok(script.includes(field), `Mission save is missing RPC field ${field}`);
+  }
   assert.match(script, /data\s*!==\s*'Farmacias Similunares'/);
   assert.match(script, /rpc\('reset_shared_mission'\)/);
   const saveHandler = script.slice(script.indexOf("saveButton.addEventListener"), script.indexOf("resetButton.addEventListener"));
