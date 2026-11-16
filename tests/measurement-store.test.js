@@ -137,7 +137,7 @@ test('database report derives sleep streak from the daily record history',async(
   client.rpc = () => Promise.resolve({data:null,error:null});
   const withoutMissionStart = await fetchDatabaseMeasurements(client,'user-a');
   assert.equal(withoutMissionStart.values.dose,undefined);
-  assert(withoutMissionStart.warnings.some(warning => warning.includes('fecha de inicio de misión')));
+  assert(withoutMissionStart.warnings.some(warning => warning.includes('mission start date')));
 });
 
 test('automatic-only telemetry rows are not treated as Captura snapshots',async()=>{
@@ -161,12 +161,12 @@ test('invalid types, values, fractions, oversized strings and unknown measuremen
 
 test('signed-in identity must match the requested account before reads or writes',async()=>{
   const {client,calls}=database();
-  await assert.rejects(loadMeasurements(client,'user-b'),/sesión cambió/);
-  await assert.rejects(saveMeasurements(client,'user-b',{pvt:250}),/sesión cambió/);
+  await assert.rejects(loadMeasurements(client,'user-b'),/session changed/);
+  await assert.rejects(saveMeasurements(client,'user-b',{pvt:250}),/session changed/);
   assert.equal(calls.length,0);
-  await assert.rejects(saveMeasurements(client,null,{}),/Inicia sesión/);
-  await assert.rejects(loadMeasurements(database({anonymous:true}).client,'user-a'),/Inicia sesión/);
-  await assert.rejects(loadMeasurements(null,'user-a'),/conexión/);
+  await assert.rejects(saveMeasurements(client,null,{}),/Sign in/);
+  await assert.rejects(loadMeasurements(database({anonymous:true}).client,'user-a'),/Sign in/);
+  await assert.rejects(loadMeasurements(null,'user-a'),/connection/);
 });
 
 test('queries filter snapshots by account and reject mismatched returned owners',async()=>{
@@ -176,19 +176,19 @@ test('queries filter snapshots by account and reject mismatched returned owners'
   assert(calls.some(([method,key,value])=>method==='eq'&&key==='user_id'&&value==='user-a'));
   assert(calls.some(([method,key,operator,value])=>method==='not'&&key==='manual_measurements'&&operator==='is'&&value===null));
   const wrong={id:2,user_id:'user-b',manual_measurements:{pvt:600},ts:'2026-11-15T00:00:00Z'};
-  await assert.rejects(loadMeasurements(database({badRow:wrong}).client,'user-a'),/inválida/);
-  await assert.rejects(saveMeasurements(database({badRow:wrong}).client,'user-a',{}),/inválida/);
+  await assert.rejects(loadMeasurements(database({badRow:wrong}).client,'user-a'),/invalid/);
+  await assert.rejects(saveMeasurements(database({badRow:wrong}).client,'user-a',{}),/invalid/);
 });
 
 test('database and network errors are surfaced; missing tables have an actionable error',async()=>{
-  await assert.rejects(loadMeasurements(database({readThrows:true}).client,'user-a'),/consultar/);
-  await assert.rejects(loadMeasurements(database({readError:{code:'42501'}}).client,'user-a'),/rechazó el guardado/);
-  await assert.rejects(saveMeasurements(database({writeThrows:true}).client,'user-a',{}),/guardar/);
-  await assert.rejects(saveMeasurements(database({writeError:{code:'42501'}}).client,'user-a',{}),/rechazó el guardado/);
-  await assert.rejects(saveMeasurements(database({writeError:{code:'23503'}}).client,'user-a',{}),/perfil asociado/);
-  for(const code of ['42P01','42703','PGRST204','PGRST205'])await assert.rejects(loadMeasurements(database({readError:{code}}).client,'user-a'),/migración de telemetría/);
-  await assert.rejects(loadMeasurements(database({authThrows:true}).client,'user-a'),/sesión/);
-  await assert.rejects(saveMeasurements(database({authError:true}).client,'user-a',{}),/sesión/);
+  await assert.rejects(loadMeasurements(database({readThrows:true}).client,'user-a'),/Could not load/);
+  await assert.rejects(loadMeasurements(database({readError:{code:'42501'}}).client,'user-a'),/denied the save/);
+  await assert.rejects(saveMeasurements(database({writeThrows:true}).client,'user-a',{}),/Could not save/);
+  await assert.rejects(saveMeasurements(database({writeError:{code:'42501'}}).client,'user-a',{}),/denied the save/);
+  await assert.rejects(saveMeasurements(database({writeError:{code:'23503'}}).client,'user-a',{}),/associated profile/);
+  for(const code of ['42P01','42703','PGRST204','PGRST205'])await assert.rejects(loadMeasurements(database({readError:{code}}).client,'user-a'),/unified telemetry migration/);
+  await assert.rejects(loadMeasurements(database({authThrows:true}).client,'user-a'),/session/);
+  await assert.rejects(saveMeasurements(database({authError:true}).client,'user-a',{}),/session/);
 });
 
 test('malformed stored data is rejected, and invalid input never issues an insert',async()=>{
