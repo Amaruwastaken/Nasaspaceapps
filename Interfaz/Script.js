@@ -130,7 +130,7 @@ sidebar.querySelectorAll('a').forEach(link => {
   const buttons = space.querySelectorAll('.planet');
 
   // Keep the selected departure (A) and destination (B) between renders.
-  let a = null, b = null, savedName = '', preset = '', customSelected = false, routeDistance = null;
+  let a = null, b = null, savedName = '', preset = '', customSelected = false, presetStepTwo = false, routeDistance = null;
   let missionLocked = false, savedStart = '';
   const startInput = document.querySelector('#missionStartDate');
   const storageKey = 'farmacias-similunares.mission-plan';
@@ -158,6 +158,7 @@ sidebar.querySelectorAll('a').forEach(link => {
       nameInput.value = savedName || (typeof data.draft === 'string' ? data.draft.slice(0,80) : '');
       preset = Object.hasOwn(presets,data.preset) ? data.preset : '';
       customSelected = data.customSelected === true;
+      presetStepTwo = false;
       routeDistance = Number.isFinite(data.distance) && data.distance > 0 ? data.distance : null;
       travelInput.value = data.travel ?? ''; stayInput.value = data.stay ?? '';
     }
@@ -229,7 +230,11 @@ sidebar.querySelectorAll('a').forEach(link => {
     buttons.forEach(btn => { btn.disabled = Boolean(b); });
     form.hidden = !(a && b);
 
-    if (!a) {
+    if (customSelected) {
+      chip.textContent = 'Step 3 of 3';
+    } else if (presetStepTwo) {
+      chip.textContent = 'Step 2 of 3';
+    } else if (!a) {
       hint.textContent = 'Select your departure point (A).';
       chip.textContent = 'Step 1 of 3';
     } else if (!b) {
@@ -273,6 +278,7 @@ sidebar.querySelectorAll('a').forEach(link => {
       nameInput.value = savedName;
       preset = savedName === 'Artemis I' ? 'artemis' : savedName === 'Apollo 11' ? 'apollo' : '';
       customSelected = !preset;
+      presetStepTwo = false;
       routeDistance = distance(a,b);
       travelInput.value = String(mission.transit_days);
       stayInput.value = String(mission.stay_days);
@@ -292,7 +298,7 @@ sidebar.querySelectorAll('a').forEach(link => {
     reset() {
       a = b = null;
       missionLocked = false; savedStart = '';
-      savedName = preset = ''; customSelected = false; routeDistance = null; nameInput.value = '';
+      savedName = preset = ''; customSelected = presetStepTwo = false; routeDistance = null; nameInput.value = '';
       startInput.value = '';
       travelInput.value = ''; stayInput.value = '';
       startInput.dataset.missionLocked = 'false';
@@ -316,18 +322,28 @@ sidebar.querySelectorAll('a').forEach(link => {
   }));
 
   // Keep the summary current as travel and stay durations change.
-  [travelInput,stayInput].forEach(input => input.addEventListener('input', () => { persist(); renderSummary(); }));
+  [travelInput,stayInput].forEach(input => {
+    input.addEventListener('focus', () => {
+      if (presetStepTwo) {
+        presetStepTwo = false;
+        render();
+      }
+    });
+    input.addEventListener('input', () => { persist(); renderSummary(); });
+  });
   nameInput.addEventListener('input', () => { persist(); resetBtn.hidden = !a && !nameInput.value; });
   presetInput.addEventListener('change', () => {
     if (a || savedName) return;
     if (presetInput.value === 'custom') {
       preset = '';
       customSelected = true;
+      presetStepTwo = false;
       persist(); render();
       return;
     }
     if (!Object.hasOwn(presets,presetInput.value)) return;
     customSelected = false;
+    presetStepTwo = true;
     preset = presetInput.value;
     const data = presets[preset]; a = 'tierra'; b = 'luna'; routeDistance = 384400;
     savedName = data.name; nameInput.value = savedName;
