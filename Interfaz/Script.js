@@ -15,12 +15,12 @@ function getMissionState({ missionStartDate, travelDays = 0, stayDays = 0, desti
   const stay = Number(stayDays) || 0;
 
   if (!start || Number.isNaN(start.getTime())) {
-    return { phase: 'Sin fecha de misión', gravity: 1, isOrbit: false, body: 'tierra' };
+    return { phase: 'No mission start date', gravity: 1, isOrbit: false, body: 'tierra' };
   }
 
   const elapsedDays = (current.getTime() - start.getTime()) / 86400000;
   if (elapsedDays < 0) {
-    return { phase: 'Preparación previa al lanzamiento', gravity: 1, isOrbit: false, body: 'tierra' };
+    return { phase: 'Pre-launch preparation', gravity: 1, isOrbit: false, body: 'tierra' };
   }
 
   const totalDays = travel + stay;
@@ -29,16 +29,16 @@ function getMissionState({ missionStartDate, travelDays = 0, stayDays = 0, desti
   }
 
   if (elapsedDays <= travel) {
-    return { phase: destination ? `En tránsito hacia ${planetNames[destination] ?? destination}` : 'En el espacio', gravity: 0, isOrbit: false, body: 'espacio' };
+    return { phase: destination ? `In transit to ${planetNames[destination] ?? destination}` : 'In space', gravity: 0, isOrbit: false, body: 'espacio' };
   }
 
   if (elapsedDays <= travel + stay) {
     const body = destination && Object.prototype.hasOwnProperty.call(PLANET_GRAVITY, destination) ? destination : 'tierra';
     const gravity = PLANET_GRAVITY[body] * 0.01;
-    return { phase: destination ? `En órbita de ${planetNames[destination] ?? destination}` : 'En órbita de un cuerpo celeste', gravity, isOrbit: true, body };
+    return { phase: destination ? `Orbiting ${planetNames[destination] ?? destination}` : 'Orbiting a celestial body', gravity, isOrbit: true, body };
   }
 
-  return { phase: 'Misión completada / fuera de órbita', gravity: 0, isOrbit: false, body: 'espacio' };
+  return { phase: 'Mission complete / out of orbit', gravity: 0, isOrbit: false, body: 'espacio' };
 }
 
 function setMenu(open) {
@@ -47,7 +47,7 @@ function setMenu(open) {
   menuToggle.setAttribute('aria-expanded', String(open));
   menuToggle.setAttribute(
     'aria-label',
-    open ? 'Cerrar menú' : 'Abrir menú'
+    open ? 'Close menu' : 'Open menu'
   );
 
   sidebar.setAttribute('aria-hidden', String(!open));
@@ -91,27 +91,27 @@ overlay.addEventListener('click', () => {
   setMenu(false);
 });
 
-// Cerrar con Escape
+// Close with Escape.
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     setMenu(false);
   }
 });
 
-// Cerrar menú al seleccionar un enlace
+// Close the menu after selecting a link.
 sidebar.querySelectorAll('a').forEach(link => {
   link.addEventListener('click', () => {
     setMenu(false);
   });
 });
-// ===== Misiones (solo existe en mision.html) =====
+// ===== Mission planner (only available on mision.html) =====
 (() => {
   // Skip mission setup on pages without the planet selector.
   const space = document.querySelector('#planets');
   if (!space) return;
 
-  const PLANETS = window.missionSolarSystem?.names ?? { tierra: 'Tierra', luna: 'Luna', marte: 'Marte' };
-  const DIST = { // km promedio aproximados
+  const PLANETS = window.missionSolarSystem?.names ?? { tierra: 'Earth', luna: 'Moon', marte: 'Mars' };
+  const DIST = { // Approximate average distances in km.
     'tierra-luna': 384400,
     'tierra-marte': 225e6,
     'luna-marte': 225e6,
@@ -139,12 +139,12 @@ sidebar.querySelectorAll('a').forEach(link => {
   const presetInput = document.querySelector('#missionPreset');
   const presetInfo = document.querySelector('#missionPresetInfo');
   const presets = {
-    artemis: { name: 'Artemis I', travel: 5, stay: 6, info: 'Simulación simplificada: 5 días hasta el primer sobrevuelo y 6 días en órbita lunar distante; sin alunizaje. No incluye las demás maniobras ni el regreso.', url: 'https://www.nasa.gov/reference/artemis-i-mission-timeline/' },
-    apollo: { name: 'Apollo 11', travel: 4.28, stay: 0.9, info: 'Simulación simplificada: 4.28 días hasta el alunizaje y 0.9 días (21 h 36 min) en la superficie. No incluye el regreso.', url: 'https://www.nasa.gov/wp-content/uploads/static/history/SP-4029/Apollo_11a_Summary.htm' }
+    artemis: { name: 'Artemis I', travel: 5, stay: 6, info: 'Simplified simulation: 5 days to the first flyby and 6 days in distant lunar orbit; no landing. Other maneuvers and the return trip are not included.', url: 'https://www.nasa.gov/reference/artemis-i-mission-timeline/' },
+    apollo: { name: 'Apollo 11', travel: 4.28, stay: 0.9, info: 'Simplified simulation: 4.28 days to the lunar landing and 0.9 days (21 h 36 min) on the surface. The return trip is not included.', url: 'https://www.nasa.gov/wp-content/uploads/static/history/SP-4029/Apollo_11a_Summary.htm' }
   };
   function persist() {
     try { localStorage.setItem(storageKey, JSON.stringify({locked:missionLocked,start:savedStart || startInput.value,a,b,name:savedName,draft:nameInput.value,preset,distance:routeDistance,travel:travelInput.value,stay:stayInput.value})); }
-    catch { document.querySelector('#missionSaveHint').textContent = 'El navegador no permite guardar; los datos solo se conservarán mientras esta página est? abierta.'; }
+    catch { document.querySelector('#missionSaveHint').textContent = 'Your browser does not allow saving; data will only be kept while this page is open.'; }
   }
   try {
     const data = JSON.parse(localStorage.getItem(storageKey) || 'null');
@@ -163,7 +163,7 @@ sidebar.querySelectorAll('a').forEach(link => {
   } catch {}
 
   const distance = (x, y) => window.missionSolarSystem?.distance(x, y) ?? DIST[`${x}-${y}`] ?? DIST[`${y}-${x}`];
-  const fmt = n => n.toLocaleString('es-MX', { maximumFractionDigits: 2 });
+  const fmt = n => n.toLocaleString('en-US', { maximumFractionDigits: 2 });
 
   // Show the summary after both locations and day counts are available.
   function renderSummary() {
@@ -175,8 +175,8 @@ sidebar.querySelectorAll('a').forEach(link => {
 
     route.hidden = false;
     if (!valid) {
-      chip.textContent = 'Paso 3 de 3';
-      route.innerHTML = '<p>Escribe los días de viaje y los días de estancia para ver el resumen.</p>';
+      chip.textContent = 'Step 3 of 3';
+      route.innerHTML = '<p>Enter the travel and stay durations to see the summary.</p>';
       return;
     }
 
@@ -193,12 +193,12 @@ sidebar.querySelectorAll('a').forEach(link => {
 
     route.innerHTML = `
       <h3>${PLANETS[a]} (A) ➔ ${PLANETS[b]} (B)</h3>
-      <p><strong>Distancia:</strong> ${fmt(routeDistance ?? distance(a, b))} km (aprox.)</p>
-      <p><strong>Llegada a ${PLANETS[b]}:</strong> día ${fmt(travel)}</p>
-      <p><strong>Estancia en ${PLANETS[b]}:</strong> ${fmt(stay)} días</p>
-      <p><strong>Salida de ${PLANETS[b]}:</strong> día ${fmt(total)}</p>
-      <p><strong>Duración total:</strong> ${fmt(total)} días (${fmt(total * 24)} horas)</p>
-      <p><strong>Estado actual:</strong> ${missionState.phase} · ${missionState.isOrbit ? `${missionState.gravity.toFixed(2)} G (microgravedad)` : `${missionState.gravity.toFixed(2)} G`}</p>`;
+      <p><strong>Distance:</strong> ${fmt(routeDistance ?? distance(a, b))} km (approx.)</p>
+      <p><strong>Arrival at ${PLANETS[b]}:</strong> day ${fmt(travel)}</p>
+      <p><strong>Stay at ${PLANETS[b]}:</strong> ${fmt(stay)} days</p>
+      <p><strong>Departure from ${PLANETS[b]}:</strong> day ${fmt(total)}</p>
+      <p><strong>Total duration:</strong> ${fmt(total)} days (${fmt(total * 24)} hours)</p>
+      <p><strong>Current status:</strong> ${missionState.phase} · ${missionState.isOrbit ? `${missionState.gravity.toFixed(2)} G (microgravity)` : `${missionState.gravity.toFixed(2)} G`}</p>`;
   }
 
   // Update planet highlights, progress text, fields, and summary together.
@@ -222,20 +222,20 @@ sidebar.querySelectorAll('a').forEach(link => {
     presetInfo.hidden = !preset;
     presetInfo.replaceChildren();
     if (preset) {
-      const link = document.createElement('a'); link.href = presets[preset].url; link.textContent = 'Fuente: NASA';
-      presetInfo.append(presets[preset].info + ' Distancia media Tierra-Luna: 384,400 km; no representa la trayectoria total. ',link);
+      const link = document.createElement('a'); link.href = presets[preset].url; link.textContent = 'Source: NASA';
+      presetInfo.append(presets[preset].info + ' Average Earth-Moon distance: 384,400 km; this does not represent the full route. ',link);
     }
     buttons.forEach(btn => { btn.disabled = Boolean(b); });
     form.hidden = !(a && b);
 
     if (!a) {
-      hint.textContent = 'Toca tu punto de partida (A).';
-      chip.textContent = 'Paso 1 de 3';
+      hint.textContent = 'Select your departure point (A).';
+      chip.textContent = 'Step 1 of 3';
     } else if (!b) {
-      hint.textContent = `Partida: ${PLANETS[a]}. Ahora toca tu destino (B).`;
-      chip.textContent = 'Paso 2 de 3';
+      hint.textContent = `Departure: ${PLANETS[a]}. Now select your destination (B).`;
+      chip.textContent = 'Step 2 of 3';
     } else {
-      hint.textContent = 'Ahora escribe los días de tu misión.';
+      hint.textContent = 'Now enter your mission duration.';
       stayPlace.textContent = PLANETS[b];
     }
     renderSummary();
@@ -256,7 +256,7 @@ sidebar.querySelectorAll('a').forEach(link => {
     },
     restore(mission) {
       if (!mission || typeof mission.name !== 'string') {
-        throw new Error('Supabase devolvió una misión inválida.');
+        throw new Error('Supabase returned an invalid mission.');
       }
       const start = mission.start_at ? new Date(mission.start_at) : null;
       if (!Object.hasOwn(PLANETS,mission.origin)
@@ -264,7 +264,7 @@ sidebar.querySelectorAll('a').forEach(link => {
           || !Number.isFinite(mission.transit_days) || mission.transit_days < 0
           || !Number.isFinite(mission.stay_days) || mission.stay_days < 0
           || (mission.start_at && !Number.isFinite(start?.getTime()))) {
-        throw new Error('Supabase devolvió una misión inválida.');
+        throw new Error('Supabase returned an invalid mission.');
       }
       a = mission.origin; b = mission.dest;
       savedName = mission.name.slice(0,80);

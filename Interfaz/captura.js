@@ -65,7 +65,7 @@ function updateProgress() {
   const percent = Math.round(((currentIndex + 1) / questions.length) * 100);
   progress.setAttribute('aria-valuenow',String(percent));
   progressBar.style.width = `${percent}%`;
-  stepLabel.textContent = `Question ${currentIndex + 1} de ${questions.length} · ${percent}%`;
+  stepLabel.textContent = `Question ${currentIndex + 1} of ${questions.length} · ${percent}%`;
   previous.hidden = currentIndex === 0;
   skip.textContent = currentIndex === questions.length - 1 ? 'Skip and save' : 'Skip';
   next.textContent = currentIndex === questions.length - 1 ? 'Save and view report' : 'Next';

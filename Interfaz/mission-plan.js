@@ -32,19 +32,19 @@ async function loadSharedMission() {
   const client = await supabaseReady;
   const userId = getCurrentUser()?.id;
   if (!client) {
-    showError('No se pudo conectar con Supabase. Revisa la configuración e inténtalo de nuevo.');
+    showError('Could not connect to Supabase. Check the configuration and try again.');
     resetButton.hidden = !plan.read().locked;
     return;
   }
   if (!userId) {
-    showStatus('Inicia sesión para cargar o guardar la misión compartida en Supabase.');
+    showStatus('Sign in to load or save the shared mission in Supabase.');
     resetButton.hidden = !plan.read().locked;
     return;
   }
 
   saveButton.disabled = true;
   resetButton.disabled = true;
-  showStatus('Consultando la misión en Supabase…');
+  showStatus('Loading the shared mission from Supabase…');
   try {
     const { data, error } = await client.rpc('get_shared_mission');
     if (error) throw error;
@@ -54,15 +54,15 @@ async function loadSharedMission() {
     if (mission) {
       plan.restore(mission);
       resetButton.hidden = false;
-      showStatus(`Misión "${mission.name}" cargada desde Supabase.`);
+      showStatus(`Mission "${mission.name}" loaded from Supabase.`);
     } else {
       if (plan.read().locked) plan.reset();
       resetButton.hidden = true;
-      showStatus('Aún no hay una misión guardada. Completa los datos y guárdala en Supabase.');
+      showStatus('No mission has been saved yet. Complete the details and save it to Supabase.');
     }
   } catch (error) {
     if (currentRequest !== request) return;
-    showError(`No se pudo cargar la misión desde Supabase: ${error.message || 'error desconocido'}`);
+    showError(`Could not load the mission from Supabase: ${error.message || 'unknown error'}`);
   } finally {
     if (currentRequest === request) {
       saveButton.disabled = plan.read().locked;
@@ -75,18 +75,18 @@ saveButton.addEventListener('click', async () => {
   if (saving || plan.read().locked) return;
   const state = plan.read();
   if (!state.name) {
-    nameInput.setCustomValidity('Escribe el nombre de la misión.');
+    nameInput.setCustomValidity('Enter a mission name.');
     nameInput.reportValidity();
     nameInput.setCustomValidity('');
     return;
   }
   if (!state.origin || !state.dest) {
-    showError('Selecciona el punto de partida y el destino antes de guardar.');
+    showError('Select a departure point and destination before saving.');
     return;
   }
   for (const input of [travelInput, stayInput, startInput]) {
     if (!input.value || !input.checkValidity()) {
-      input.setCustomValidity('Completa este dato antes de guardar.');
+      input.setCustomValidity('Complete this field before saving.');
       input.reportValidity();
       input.setCustomValidity('');
       return;
@@ -95,12 +95,12 @@ saveButton.addEventListener('click', async () => {
 
   saving = true;
   saveButton.disabled = true;
-  showStatus('Guardando la misión en Supabase…');
+  showStatus('Saving the mission to Supabase…');
   try {
     const userId = getCurrentUser()?.id;
     const client = await supabaseReady;
     if (!client || !userId || userId !== getCurrentUser()?.id) {
-      throw new Error('Inicia sesión para guardar la misión compartida.');
+      throw new Error('Sign in to save the shared mission.');
     }
 
     const startAt = `${state.startDate}T00:00:00.000Z`;
@@ -123,9 +123,9 @@ saveButton.addEventListener('click', async () => {
 
     plan.commit();
     resetButton.hidden = false;
-    showStatus('Misión guardada en Supabase y compartida con las demás cuentas.');
+    showStatus('Mission saved to Supabase and shared with all accounts.');
   } catch (error) {
-    showError(`No se pudo guardar la misión en Supabase: ${error.message || 'error desconocido'}`);
+    showError(`Could not save the mission to Supabase: ${error.message || 'unknown error'}`);
   } finally {
     saving = false;
     saveButton.disabled = plan.read().locked;
@@ -137,20 +137,20 @@ resetButton.addEventListener('click', async () => {
   resetting = true;
   resetButton.disabled = true;
   saveButton.disabled = true;
-  showStatus('Eliminando la misión compartida de Supabase…');
+  showStatus('Removing the shared mission from Supabase…');
   try {
     const userId = getCurrentUser()?.id;
     const client = await supabaseReady;
     if (!client || !userId || userId !== getCurrentUser()?.id) {
-      throw new Error('Inicia sesión para reiniciar la misión compartida.');
+      throw new Error('Sign in to reset the shared mission.');
     }
     const { error } = await client.rpc('reset_shared_mission');
     if (error) throw error;
     plan.reset();
     resetButton.hidden = true;
-    showStatus('Misión eliminada de Supabase. Puedes planear una nueva.');
+    showStatus('Mission removed from Supabase. You can plan a new one.');
   } catch (error) {
-    showError(`No se pudo reiniciar la misión en Supabase: ${error.message || 'error desconocido'}`);
+    showError(`Could not reset the mission in Supabase: ${error.message || 'unknown error'}`);
   } finally {
     resetting = false;
     resetButton.disabled = false;

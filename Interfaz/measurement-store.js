@@ -61,7 +61,7 @@ function databaseError(error,operation) {
   if (error?.code === '23503') return new Error('Your Supabase account is missing its associated profile. Sign out, then sign in again.');
   if (error?.code === '42501') return new Error('Supabase denied the save due to permissions. Sign in again and retry.');
   const code = error?.code ? ` (code ${error.code})` : '';
-  return new Error(`Could not ${operation} your tests in Supabase${code}. Intenta de nuevo.`);
+  return new Error(`Could not ${operation} your tests in Supabase${code}. Please try again.`);
 }
 export function generateSimulatedValues(automatic) {
   return {

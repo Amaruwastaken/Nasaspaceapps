@@ -1,7 +1,7 @@
 # Nasaspaceapps
 
-Spanish-language static prototype for astronaut health capture, reporting, and
-approximate solar-system mission planning.
+Static prototype for astronaut health check-ins, reporting, and approximate
+solar-system mission planning.
 
 ## Supabase
 
@@ -15,87 +15,115 @@ must never be used in the browser. The static-site build reads its public
 configuration from the process environment; Vercel should define
 `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` (or the documented aliases).
 
-### Registro e inicio de sesión web
+### Web registration and sign-in
 
-Las páginas estáticas de `Interfaz/` usan Supabase Auth. Configura la URL del
-proyecto y su publishable key (o `anon` key) en `Interfaz/supabase-config.js`;
-esta clave está diseñada para el navegador. Nunca pongas una `service_role`
-key en archivos del cliente.
+The static pages in `Interfaz/` use Supabase Auth. Configure the project URL
+and its publishable key (or `anon` key) in `Interfaz/supabase-config.js`; this
+key is designed for browser use. Never put a `service_role` key in client files.
 
-Aplica `supabase/migrations/20261114223000_registry_auth.sql` al proyecto.
-Supabase Auth almacena las credenciales; el trigger crea el perfil relacionado
-en `public."Registry"` y guarda el nombre en `"Usuario"`. La columna
-`"Contraseña"` no se usa para autenticar ni debe contener contraseñas.
-El registro también solicita un rol (capitán, ingeniero, piloto, doctor o
-científico) y lo muestra junto al nombre de usuario. En este prototipo, las
-cuentas registradas como doctor o capitán pueden consultar los reportes de
-todas las cuentas; los datos deben ser ficticios.
+Apply `supabase/migrations/20261114223000_registry_auth.sql` to the project.
+Supabase Auth stores credentials; the trigger creates the related profile in
+`public."Registry"` and stores the name in `"Usuario"`. The `"Contraseña"`
+column is not used for authentication and should not contain passwords.
+Registration also requests a role (commander, engineer, pilot, doctor, or
+scientist) and displays it beside the username. In this prototype, accounts
+registered as doctors or commanders can view reports from all accounts; all
+data must be fictional.
 
-### Métricas y reporte
+### Metrics and reports
 
-`Interfaz/report-data.js` define las métricas, sus rangos y si son manuales o
-automáticas. `captura.html` pregunta únicamente las manuales, una por una, y
-guarda esas respuestas en Supabase por cuenta autenticada. `report-source.js`
-consulta los indicadores disponibles en `records`, `daily_sensor` y `telemetry`.
-Cuando falta un valor, el reporte puede usar `telemetry.simulated_data`; lo
-identifica como “Simulado (prototipo)” y no lo utiliza para alertas ni puntajes
-de salud.
+`Interfaz/report-data.js` defines metrics, their ranges, and whether they are
+manual or automatic. `captura.html` asks for the manual metrics one at a time
+and saves responses to Supabase for the authenticated account.
+`report-source.js` queries available indicators from `records`, `daily_sensor`,
+and `telemetry`. If a value is missing, the report may use
+`telemetry.simulated_data`; it labels the value as “Simulated (prototype)” and
+does not use it for alerts or health scores.
 
-La vista corporal usa `Interfaz/Imagenes/silueta-cuerpo.jpeg` y solo muestra
-regiones con mediciones disponibles.
+The body view uses `Interfaz/Imagenes/silueta-cuerpo.jpeg` and only shows
+regions with available measurements.
 
-### Sistema de emergencia
+### Emergency system
 
-El reporte suma 2 puntos por cada indicador rojo y 1.25 por cada amarillo
-(redondeando el total al entero más cercano). Con un puntaje mayor que 10,
-registra al tripulante como crítico en Supabase y la interfaz consulta los
-estados activos para mostrarlos en un panel inferior izquierdo. Aplica también
+The report adds 2 points for each red indicator and 1.25 for each yellow
+indicator (rounding the total to the nearest integer). A score above 10 records
+the crew member as critical in Supabase, and the interface queries active
+statuses to display them in a panel at the lower left. Also apply
 `supabase/migrations/20261115020000_health_emergency_notifications.sql`,
-`supabase/migrations/20261115020300_health_alert_popup.sql` y
+`supabase/migrations/20261115020300_health_alert_popup.sql`, and
 `supabase/migrations/20261115024000_live_health_emergency_panel.sql`.
 
-### Misión compartida
+### Shared mission
 
-`Interfaz/mision.html` carga la misión compartida desde `public.missions` y
-guarda nombre, ruta, duración, modo de estancia, zona horaria, fecha y relojes
-con `save_shared_mission`. Requiere `20261115110000_persist_shared_mission.sql`;
-`20261115120000_reset_shared_mission.sql` permite borrar la misión compartida al
-reiniciarla. Guardar o reiniciar requiere una sesión de Supabase. El plan usa el
-código fijo `Farmacias Similunares`, por lo que todas las cuentas ven la misma
-misión.
+`Interfaz/mision.html` loads the shared mission from `public.missions` and saves
+the name, route, duration, stay mode, time zone, date, and clocks with
+`save_shared_mission`. It requires
+`20261115110000_persist_shared_mission.sql`;
+`20261115120000_reset_shared_mission.sql` allows the shared mission to be
+deleted when it is reset. Saving or resetting requires a Supabase session. The
+plan uses the fixed code `Farmacias Similunares`, so every account sees the
+same mission.
 
-### Captura conectada a Supabase en Vercel
+### Supabase-connected check-in on Vercel
 
-Proyecto Vercel: nasaspaceapps-farmacias-similunares. El directorio del proyecto es la raiz del repositorio.
+Vercel project: `nasaspaceapps-farmacias-similunares`. The project directory is
+the repository root.
 
-- npm run build copia Interfaz a dist y genera la configuracion publica desde SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY. Tambien admite los alias NEXT_PUBLIC_SUPABASE_* y SUPABASE_ANON_KEY. Nunca publica claves service_role ni sb_secret.
-- npm test ejecuta los tests de configuracion y persistencia.
-- Aplica las migraciones de `supabase/migrations/` en orden en el proyecto Supabase conectado. `20261115040000_unify_measurements_telemetry.sql` elimina únicamente la tabla anterior `manual_measurements` y agrega a `telemetry` el JSON validado de Captura, el JSON de telemetría y una marca de datos simulados.
-- `20261115050000_create_user_profiles.sql` completa perfiles faltantes de cuentas Auth existentes y los crea al registrar usuarios nuevos, para que las filas de `telemetry` cumplan su relación con `profiles`. Si no hay una misión en los metadatos de Auth, usa `Farmacias Similunares`.
-- `20261115060000_simulate_missing_report_metrics.sql` agrega `telemetry.simulated_data` y completa solo la fila más reciente de cada cuenta. Las capturas nuevas también generan valores de prototipo únicamente para campos omitidos; se etiquetan como simulados y no reemplazan respuestas reales.
-- `20261115070000_mission_start_at.sql` agrega una fecha de inicio a `profiles`. La página Misión permite guardarla; el reporte suma radiación diaria solo desde esa fecha y muestra el intervalo usado.
-- Captura requiere iniciar sesion y confirma el INSERT antes de abrir Reporte. Si falla, mantiene las respuestas en la pagina; no simula un guardado local.
-- Cada envío de Captura agrega una sola fila a `telemetry`: incluye las respuestas manuales y una lectura automática genérica marcada como simulada. Las lecturas automáticas existentes pueden seguir usando las columnas de sensores; `manual_measurements` queda en `NULL` para esas filas.
-- Reporte consulta la última captura de `telemetry`. Una prueba omitida en esa captura no se reemplaza por un valor antiguo de `records`. Los sensores y las alertas existentes mantienen sus conexiones actuales.
-- Los datos antiguos de localStorage no se importan automaticamente: ya no son la fuente del reporte.
+- `npm run build` copies `Interfaz` to `dist` and generates public configuration
+  from `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`. It also supports the
+  `NEXT_PUBLIC_SUPABASE_*` and `SUPABASE_ANON_KEY` aliases. It never publishes
+  `service_role` or `sb_secret` keys.
+- `npm test` runs the configuration and persistence tests.
+- Apply the migrations in `supabase/migrations/` in order to the connected
+  Supabase project. `20261115040000_unify_measurements_telemetry.sql` removes
+  only the previous `manual_measurements` table and adds validated check-in
+  JSON, telemetry JSON, and a simulated-data marker to `telemetry`.
+- `20261115050000_create_user_profiles.sql` fills in missing profiles for
+  existing Auth accounts and creates them for new registrations, so `telemetry`
+  rows satisfy their relationship with `profiles`. If there is no mission in
+  the Auth metadata, it uses `Farmacias Similunares`.
+- `20261115060000_simulate_missing_report_metrics.sql` adds
+  `telemetry.simulated_data` and fills only the latest row for each account.
+  New check-ins also generate prototype values only for omitted fields; those
+  values are labeled simulated and do not replace real answers.
+- `20261115070000_mission_start_at.sql` adds a start date to `profiles`. The
+  Mission page lets users save it; the report sums daily radiation only from
+  that date and shows the interval used.
+- Check-in requires a sign-in and confirms the insert before opening the
+  Report. If it fails, answers stay on the page; it does not simulate a local
+  save.
+- Each check-in submission adds one row to `telemetry`, including manual
+  answers and a generic automatic reading marked as simulated. Existing
+  automatic readings can continue using sensor columns;
+  `manual_measurements` remains `NULL` for those rows.
+- The Report queries the latest `telemetry` check-in. A test skipped in that
+  check-in is not replaced with an older value from `records`. Existing sensors
+  and alerts keep their current connections.
+- Old `localStorage` data is not imported automatically; it is no longer the
+  source for the report.
 
-La migración no reemplaza las tablas existentes `records`, `daily_sensor`, `telemetry` o `Registry`; requiere que estén configuradas junto con las migraciones anteriores. La migración nueva solo elimina la tabla anterior `manual_measurements` y amplía `telemetry`. En un Supabase totalmente nuevo hay que configurar el esquema base antes de activar sensores y alertas.
+The migration does not replace the existing `records`, `daily_sensor`,
+`telemetry`, or `Registry` tables; they must be configured along with the
+previous migrations. The new migration only removes the old
+`manual_measurements` table and extends `telemetry`. A new Supabase project must
+have its base schema configured before sensors and alerts are enabled.
 
-### Panel del doctor y capitán
+### Doctor and commander dashboard
 
-`Interfaz/doctor.html` permite seleccionar integrantes y consultar sus
-indicadores, pruebas de Captura e historial de registros y sensores. El panel es
-de consulta; las capturas y alertas personales conservan su flujo habitual.
+`Interfaz/doctor.html` allows users to select crew members and view their
+indicators, check-in tests, and log and sensor history. This is a read-only
+dashboard; personal check-ins and alerts keep their usual flow.
 
-Aplicar en orden las migraciones `20261115070000_mission_start_at.sql`,
+Apply these migrations in order:
+`20261115070000_mission_start_at.sql`,
 `20261115080000_ensure_core_schema.sql`,
-`20261115090000_mission_medical_access.sql` y
-`20261115100000_demo_doctor_signup_access.sql` (en proyectos conectados, usar
-`supabase db push`). La última migración permite que el rol doctor o capitán
-seleccionado durante el registro habilite el acceso de lectura a todos los
-reportes de esta instancia.
+`20261115090000_mission_medical_access.sql`, and
+`20261115100000_demo_doctor_signup_access.sql` (for connected projects, use
+`supabase db push`). The last migration allows the doctor or commander role
+selected during registration to enable read access to all reports in this
+instance.
 
-**No usar con datos reales.** Cualquier persona puede registrarse como doctor o
-capitán y consultar los datos de las demás cuentas; el aviso correspondiente
-también aparece en `doctor.html`. La vista `daily_sensor` aplica las políticas
-de sus tablas de origen.
+**Do not use with real data.** Anyone can register as a doctor or commander and
+view other accounts’ data; the corresponding notice also appears in
+`doctor.html`. The `daily_sensor` view follows the policies of its source
+tables.
