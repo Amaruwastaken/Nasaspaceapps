@@ -23,15 +23,23 @@ test('prototype doctor signup role grants access to all report members', async (
 });
 
 test('mission planner saves and reloads the shared Supabase mission', async () => {
-  const [page, script, migration] = await Promise.all([
+  const [page, script, coreMigration, migration, resetMigration] = await Promise.all([
     readFile(path.join(process.cwd(), 'Interfaz', 'mision.html'), 'utf8'),
     readFile(path.join(process.cwd(), 'Interfaz', 'mission-plan.js'), 'utf8'),
+    readFile(path.join(migrationDir, '20261115080000_ensure_core_schema.sql'), 'utf8'),
+    readFile(path.join(migrationDir, '20261115130000_ensure_shared_mission_table.sql'), 'utf8'),
     readFile(path.join(migrationDir, '20261115120000_reset_shared_mission.sql'), 'utf8'),
   ]);
 
   assert.match(page, /mission-plan\.js/);
+  assert.match(coreMigration, /create\s+table\s+if\s+not\s+exists\s+public\.missions/i);
+  assert.match(migration, /create\s+table\s+if\s+not\s+exists\s+public\.missions/i);
+  assert.match(migration, /grant\s+select\s+on\s+table\s+public\.missions\s+to\s+authenticated/i);
   assert.match(script, /rpc\('get_shared_mission'\)/);
   assert.match(script, /rpc\('save_shared_mission'/);
+  assert.match(script, /data\s*!==\s*'Farmacias Similunares'/);
   assert.match(script, /rpc\('reset_shared_mission'\)/);
-  assert.match(migration, /delete\s+from\s+public\.missions/i);
+  const saveHandler = script.slice(script.indexOf("saveButton.addEventListener"), script.indexOf("resetButton.addEventListener"));
+  assert.ok(saveHandler.indexOf('await supabaseReady') < saveHandler.indexOf('getCurrentUser()?.id'));
+  assert.match(resetMigration, /delete\s+from\s+public\.missions/i);
 });

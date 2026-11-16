@@ -2,6 +2,21 @@
 -- against an empty Supabase instance. These are the tables the browser app and
 -- migration chain actually rely on.
 
+create table if not exists public.missions (
+  code text primary key,
+  name text not null,
+  origin text not null,
+  dest text not null,
+  transit_days double precision not null,
+  stay_days double precision not null,
+  stay_mode text not null default 'orbit' check (stay_mode in ('orbit', 'surface')),
+  tz text not null default 'America/Chicago',
+  start_at timestamptz,
+  clock_real timestamptz,
+  clock_mission timestamptz,
+  time_scale double precision not null default 1
+);
+
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   username text not null default 'astronauta',

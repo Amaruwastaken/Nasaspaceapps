@@ -103,16 +103,16 @@ saveButton.addEventListener('click', async () => {
   saveButton.disabled = true;
   showStatus('Saving the mission to Supabase…');
   try {
-    const userId = getCurrentUser()?.id;
     const client = await supabaseReady;
-    if (!client || !userId || userId !== getCurrentUser()?.id) {
-      throw new Error('Sign in to save the shared mission.');
-    }
+    if (!client) throw new Error('Could not connect to Supabase. Check the configuration and try again.');
+    const userId = getCurrentUser()?.id;
+    if (!userId) throw new Error('Sign in to save the shared mission.');
+    if (userId !== getCurrentUser()?.id) throw new Error('Your session changed. Try saving the mission again.');
 
     const startAt = `${state.startDate}T00:00:00.000Z`;
     const clockReal = new Date().toISOString();
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Chicago';
-    const { error } = await client.rpc('save_shared_mission', {
+    const { data, error } = await client.rpc('save_shared_mission', {
       p_name: state.name,
       p_origin: state.origin,
       p_dest: state.dest,
@@ -126,6 +126,7 @@ saveButton.addEventListener('click', async () => {
       p_time_scale: 1,
     });
     if (error) throw error;
+    if (data !== 'Farmacias Similunares') throw new Error('Supabase did not confirm that the mission was saved.');
 
     plan.commit();
     resetButton.hidden = false;
@@ -150,13 +151,15 @@ resetButton.addEventListener('click', async () => {
   saveButton.disabled = true;
   showStatus('Removing the shared mission from Supabase…');
   try {
-    const userId = getCurrentUser()?.id;
     const client = await supabaseReady;
-    if (!client || !userId || userId !== getCurrentUser()?.id) {
+    const userId = getCurrentUser()?.id;
+    if (!userId) {
       plan.reset();
       showStatus('Local mission cleared. Sign in to remove the shared mission from Supabase.');
       return;
     }
+    if (!client) throw new Error('Could not connect to Supabase. Check the configuration and try again.');
+    if (userId !== getCurrentUser()?.id) throw new Error('Your session changed. Try resetting the mission again.');
     const { error } = await client.rpc('reset_shared_mission');
     if (error) throw error;
     plan.reset();

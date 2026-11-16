@@ -62,7 +62,9 @@ the name, route, duration, stay mode, time zone, date, and clocks with
 `20261115120000_reset_shared_mission.sql` allows the shared mission to be
 deleted when it is reset. Saving or resetting requires a Supabase session. The
 plan uses the fixed code `Farmacias Similunares`, so every account sees the
-same mission.
+same mission. `20261115130000_ensure_shared_mission_table.sql` creates the
+shared mission table when it is missing, applies authenticated read access, and
+reloads the PostgREST schema cache.
 
 ### Supabase-connected check-in on Vercel
 
