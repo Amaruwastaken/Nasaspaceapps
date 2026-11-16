@@ -1,5 +1,5 @@
 import {manualMetrics} from './report-data.js';
-import {loadMeasurements,saveMeasurements} from './measurement-store.js';
+import {loadMeasurements,saveMeasurements,localDateString} from './measurement-store.js';
 import {supabaseReady,getCurrentUser} from './auth.js';
 import {mountDigitalTest} from './digital-tests.js';
 const form = document.querySelector('#captureForm');
@@ -11,14 +11,18 @@ const stepLabel = document.querySelector('#captureStep');
 const previous = document.querySelector('#capturePrevious');
 const skip = document.querySelector('#captureSkip');
 const next = document.querySelector('#captureNext');
+const captureDate = document.querySelector('#captureDate');
 const questions = manualMetrics.flatMap(metric => (metric.fields ?? [{
   id:metric.id,label:metric.name,options:metric.options,unit:metric.unit,min:metric.min,max:metric.max,step:metric.step,example:metric.example,
 }]).map(definition => ({metric,definition})));
 let activeUser = null, initialized = false, ready = false, saving = false;
 let currentIndex = 0, values = {};
+let selectedDate = captureDate.value = localDateString();
+captureDate.max = selectedDate;
 let loadRequest = 0;
 let digital = null;
 let testDrafts = {};
+let hasUnsavedChanges = false;
 const digitalIds = new Set(['pvt','tlx','amsler']);
 const feedback = (text,error = false) => { message.textContent = text; message.setAttribute('role',error ? 'alert' : 'status'); };
 
@@ -30,7 +34,10 @@ function renderCurrent() {
     field.append(Object.assign(document.createElement('h2'),{textContent:metric.name}));
     fields.replaceChildren(field);
     testDrafts[metric.id] ??= {result:values[metric.id] ?? null};
-    digital = mountDigitalTest(metric.id,field,testDrafts[metric.id],() => feedback('Result not saved.'));
+    digital = mountDigitalTest(metric.id,field,testDrafts[metric.id],() => {
+      hasUnsavedChanges = true;
+      feedback('Unsaved changes.');
+    });
     updateProgress(); return;
   }
   if (metric.fields) {
@@ -106,24 +113,26 @@ function skipCurrent() {
 async function saveAndViewReport() {
   if (!ready) { feedback('Wait for the session check to finish.'); return; }
   if (saving) return;
+  if (!captureDate.value || captureDate.value !== selectedDate) { feedback('Choose a valid check-in date.',true); return; }
   const userId = getCurrentUser()?.id;
   if (!userId) { feedback('Sign in to save your tests to Supabase.',true); return; }
   const request = loadRequest;
   const snapshot = structuredClone(values);
   saving = true; next.disabled = true; skip.disabled = true; previous.disabled = true;
+  captureDate.disabled = true;
   fields.inert = true;
   feedback('Saving your tests to Supabase…');
   try {
     const client = await supabaseReady;
     if (getCurrentUser()?.id !== userId || request !== loadRequest) return;
-    await saveMeasurements(client,userId,snapshot);
+    await saveMeasurements(client,userId,snapshot,{date:selectedDate});
     if (getCurrentUser()?.id !== userId || request !== loadRequest) return;
     window.location.assign('reporte.html');
   } catch (error) {
     if (request === loadRequest) feedback(error.message || 'Could not save your tests. Your answers are still on this page.',true);
   } finally {
     saving = false;
-    if (request === loadRequest) { fields.inert = false; next.disabled = !ready; skip.disabled = !ready; previous.disabled = !ready; }
+    if (request === loadRequest) { fields.inert = false; captureDate.disabled = !ready; next.disabled = !ready; skip.disabled = !ready; previous.disabled = !ready; }
   }
 }
 
@@ -132,7 +141,10 @@ async function syncUser() {
   if (initialized && userId === activeUser) return;
   const request = ++loadRequest;
   activeUser = userId; initialized = true; ready = false;
+  selectedDate = captureDate.value = localDateString();
+  captureDate.max = selectedDate; captureDate.disabled = true;
   values = {}; testDrafts = {}; currentIndex = 0;
+  hasUnsavedChanges = false;
   digital?.destroy(); digital = null; fields.replaceChildren(); fields.inert = false;
   next.disabled = true; skip.disabled = true; previous.disabled = true;
   feedback('Loading your tests from Supabase…');
@@ -145,7 +157,9 @@ async function syncUser() {
   try {
     const saved = await loadMeasurements(client,userId);
     if (request !== loadRequest || userId !== getCurrentUser()?.id) return;
-    values = {...(saved?.values ?? {})}; ready = true;
+    const savedDate = saved?.recordedDate ?? (saved?.savedAt ? localDateString(new Date(saved.savedAt)) : null);
+    values = savedDate === selectedDate ? {...(saved?.values ?? {})} : {};
+    ready = true; captureDate.disabled = false;
     next.disabled = false; skip.disabled = false; previous.disabled = false;
     renderCurrent(); feedback('');
   } catch (error) {
@@ -156,8 +170,25 @@ async function syncUser() {
   }
 }
 
+captureDate.addEventListener('change',() => {
+  const date = captureDate.value;
+  if (!date) { captureDate.value = selectedDate; return; }
+  if (date === selectedDate) return;
+  if (hasUnsavedChanges && !window.confirm('Changing the date clears this unsaved check-in. Continue?')) {
+    captureDate.value = selectedDate;
+    return;
+  }
+  selectedDate = date;
+  values = {}; testDrafts = {}; currentIndex = 0; hasUnsavedChanges = false;
+  digital?.destroy(); digital = null;
+  if (ready) { renderCurrent(); feedback('Date updated. Start a new check-in for this day.'); }
+});
 document.addEventListener('sessionchange',syncUser);
-form.addEventListener('input',() => { rememberCurrent(); feedback('Unsaved changes.'); });
+form.addEventListener('input',event => {
+  if (event.target === captureDate) return;
+  hasUnsavedChanges = true;
+  rememberCurrent(); feedback('Unsaved changes.');
+});
 previous.addEventListener('click',() => {
   if (!ready) { feedback('Wait for the session check to finish.'); return; }
   if (saving) return;
@@ -166,6 +197,7 @@ previous.addEventListener('click',() => {
 skip.addEventListener('click',() => {
   if (!ready) { feedback('Wait for the session check to finish.'); return; }
   if (saving) return;
+  hasUnsavedChanges = true;
   skipCurrent();
   if (currentIndex === questions.length - 1) { saveAndViewReport(); return; }
   currentIndex++; renderCurrent(); feedback('');

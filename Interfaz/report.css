@@ -50,6 +50,41 @@
 .body-marker[data-state=green] { fill:#21834f; }
 .body-marker[data-state=yellow] { fill:#bd850b; }
 .body-marker[data-state=red] { fill:#c5443d; }
+.history-trends { margin:0 0 24px; padding:24px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+.history-trends-heading { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:18px; }
+.history-trends-heading h2 { margin:0 0 5px; color:var(--ink); font-size:21px; }
+.history-trends-heading p:not(.history-kicker) { margin:0; color:var(--muted); font-size:13px; line-height:1.6; }
+.history-heading-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:10px; }
+.history-kicker { margin:0 0 5px; color:var(--blue); font-size:10px; font-weight:800; letter-spacing:.12em; }
+.history-period { flex:none; padding:8px 12px; border:1px solid var(--line); border-radius:20px; color:var(--ink); background:#f4f7fa; font-size:12px; font-weight:750; }
+.history-add-button { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:38px; padding:8px 13px; border:1px solid var(--blue); border-radius:6px; background:var(--blue); color:#fff; font-size:12px; font-weight:750; text-decoration:none; }
+.history-add-button:hover { background:var(--navy); border-color:var(--navy); }
+.history-add-button:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+.history-add-button span { font-size:17px; line-height:1; }
+.history-categories { display:grid; gap:10px; }
+.history-category { min-width:0; border:1px solid var(--line); border-radius:7px; background:#fff; }
+.history-category-summary { display:grid; grid-template-columns:38px minmax(0,1fr) auto 18px; align-items:center; gap:12px; padding:13px 15px; color:var(--ink); list-style:none; cursor:pointer; }
+.history-category-summary::-webkit-details-marker { display:none; }
+.history-category[open] .history-category-summary { border-bottom:1px solid var(--line); }
+.history-category-mark { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:#edf3f8; color:var(--blue); font-size:11px; font-weight:800; }
+.history-category-name { font-size:15px; font-weight:750; }
+.history-category-count { color:var(--muted); font-size:11px; }
+.history-category-chevron { color:var(--muted); font-size:20px; line-height:1; transition:transform .18s ease; }
+.history-category[open] .history-category-chevron { transform:rotate(180deg); }
+.history-chart-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding:14px; }
+.history-chart { min-width:0; margin:0; padding:14px; border:1px solid var(--line); border-radius:6px; background:#fbfcfe; }
+.history-chart-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.history-chart-heading h4 { margin:0; color:var(--ink); font-size:13px; line-height:1.4; }
+.history-chart-heading span { flex:none; color:var(--muted); font-size:10px; }
+.history-chart-range { margin:4px 0 0; color:var(--muted); font-size:10px; }
+.history-chart svg { display:block; width:100%; height:auto; margin-top:8px; overflow:visible; }
+.history-gridline { stroke:#e3e9ef; stroke-width:1; }
+.history-axis-label { fill:var(--muted); font-family:inherit; font-size:10px; }
+.history-line { fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.history-point { stroke:#fff; stroke-width:2; vector-effect:non-scaling-stroke; }
+.history-empty { padding:18px; border:1px dashed #cbd5df; border-radius:7px; background:#f8fafc; }
+.history-empty h3 { margin:0 0 4px; color:var(--ink); font-size:14px; }
+.history-empty p { margin:0; color:var(--muted); font-size:12px; line-height:1.6; }
 .report-message { color:var(--muted); font-size:14px; line-height:1.7; margin:0 0 24px; }
 .attention-areas { margin:0 0 24px; padding:24px; border:1px solid var(--line); border-radius:8px; background:#fff; }
 .attention-heading { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:18px; }
@@ -91,7 +126,6 @@
 .report-details th { background:#f4f7fa; color:var(--ink); white-space:nowrap; }
 .report-details td { color:var(--ink); }
 .report-detail-note { color:var(--muted); font-size:13px; line-height:1.6; }
-.report-capture-link { display:inline-block; margin-top:24px; color:var(--blue); font-weight:700; font-size:14px; }
 .report-footnote { color:var(--muted); font-size:12px; line-height:1.7; margin-top:24px; max-width:650px; }
 .dr-simi-widget {
   position: fixed;
@@ -332,6 +366,12 @@
   }
 }
 .capture-form { max-width:580px; padding:24px; background:white; border:1px solid var(--line); border-radius:6px; }
+.capture-date-card { display:grid; gap:8px; padding:14px; margin:0 0 20px; border:1px solid var(--line); border-radius:4px; background:#f8fafc; }
+.capture-date-card label { color:var(--ink); font-size:14px; font-weight:700; }
+.capture-date-card input { width:100%; min-height:44px; padding:10px 12px; border:1px solid #cbd5df; border-radius:4px; color:var(--ink); background:#fff; font:inherit; }
+.capture-date-card input:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+.capture-date-card input:disabled { background:#edf1f5; color:var(--muted); }
+.capture-date-card p { margin:0; }
 .capture-progress { margin-bottom:22px; }
 .capture-progress-track { height:10px; overflow:hidden; border-radius:8px; background:#e6edf4; }
 .capture-progress-track span { display:block; width:0; height:100%; border-radius:inherit; background:var(--blue); transition:width .2s ease; }
@@ -371,6 +411,9 @@
   .attention-areas { padding:18px; }
   .attention-heading { flex-direction:column; align-items:flex-start; }
   .attention-grid { grid-template-columns:1fr; }
+  .history-trends { padding:18px; }
+  .history-trends-heading { flex-direction:column; align-items:flex-start; }
+  .history-chart-grid { grid-template-columns:1fr; padding:10px; }
   .body-overview { padding:18px; }
   .body-overview-heading { flex-direction:column; }
   .body-map { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }

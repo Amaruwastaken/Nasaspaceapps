@@ -7,8 +7,192 @@ const bodyOverview = document.querySelector('#bodyOverview');
 const message = document.querySelector('#reportMessage');
 const allMeasurements = document.querySelector('#allMeasurements');
 const measurementHistory = document.querySelector('#measurementHistory');
+const historyTrends = document.querySelector('#historyTrends');
+const historyPeriod = document.querySelector('#historyPeriod');
+const historyCategoriesList = document.querySelector('#historyCategories');
 const reportDetails = document.querySelector('#reportDetails');
 const statusNames = {green:'Green · Normal',yellow:'Yellow · Caution',red:'Red · Alert',missing:'No data',unknown:'Unclassified',invalid:'Invalid data'};
+const historyCategoryDefinitions = [
+  {id:'brain',name:'Brain and focus',series:[
+    {id:'sleep',name:'Sleep duration',source:'records',key:'sleep',unit:'h/night',aggregate:'average'},
+    {id:'pvt',name:'Reaction time (PVT)',source:'checkins',fallbackSource:'records',key:'pvt',unit:'ms',aggregate:'average'},
+    {id:'tlx',name:'NASA-TLX workload',source:'checkins',fallbackSource:'records',key:'tlx',unit:'points / 100',aggregate:'average'},
+    {id:'who5',name:'Psychological well-being (WHO-5)',source:'checkins',key:'who5',unit:'points / 100',aggregate:'average'},
+  ]},
+  {id:'heart',name:'Heart',series:[
+    {id:'hr-average',name:'Average heart rate',source:'sensors',key:'hr_avg',unit:'bpm',aggregate:'average'},
+    {id:'hr-maximum',name:'Maximum heart rate',source:'sensors',key:'hr_max',unit:'bpm',aggregate:'maximum'},
+    {id:'hrv',name:'Heart rate variability (RMSSD)',source:'sensors',key:'rmssd',unit:'ms',aggregate:'average'},
+    {id:'orthostatic-hr',name:'Standing heart-rate increase',source:'checkins',key:'hrRise',unit:'bpm',aggregate:'average'},
+  ]},
+  {id:'lungs',name:'Lungs',series:[
+    {id:'spo2',name:'Minimum oxygen saturation (SpO₂)',source:'sensors',key:'spo2_min',unit:'%',aggregate:'minimum'},
+    {id:'co2',name:'Maximum CO₂',source:'sensors',key:'co2_max',unit:'ppm',aggregate:'maximum'},
+  ]},
+  {id:'body',name:'Body and mission',series:[
+    {id:'temperature',name:'Average temperature',source:'sensors',key:'temp_avg',unit:'°C',aggregate:'average'},
+    {id:'radiation',name:'Daily radiation',source:'sensors',key:'rad_msv',unit:'mSv',aggregate:'sum'},
+    {id:'perfusion',name:'Peripheral perfusion',source:'checkins',key:'perfusion',unit:'seconds',aggregate:'average'},
+    {id:'medication',name:'Medication adherence',source:'checkins',key:'medicationPercent',unit:'%',aggregate:'average'},
+  ]},
+];
+const historyColors = {brain:'#5867c7',heart:'#c5443d',lungs:'#168078',body:'#b17b16'};
+const svgNamespace = 'http://www.w3.org/2000/svg';
+function dateKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+function recentHistoryDates() {
+  const today = new Date();
+  today.setHours(12,0,0,0);
+  return Array.from({length:7},(_,index) => {
+    const date = new Date(today);
+    date.setDate(today.getDate()-6+index);
+    return dateKey(date);
+  });
+}
+function historyDateLabel(key,options = {month:'numeric',day:'numeric'}) {
+  const [year,month,day] = key.split('-').map(Number);
+  return new Date(year,month-1,day,12).toLocaleDateString('en-US',options);
+}
+function historyNumber(value) {
+  return new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(value);
+}
+function historyPoints(rows,series,dates) {
+  const allowedDates = new Set(dates);
+  const byDate = new Map(dates.map(date => [date,[]]));
+  for (const row of rows) {
+    if (!allowedDates.has(row.date)) continue;
+    const value = row[series.key];
+    if (typeof value === 'number' && Number.isFinite(value)) byDate.get(row.date).push(value);
+  }
+  return dates.map(date => {
+    const values = byDate.get(date);
+    if (!values.length) return {date,value:null};
+    const value = series.aggregate === 'maximum' ? Math.max(...values)
+      : series.aggregate === 'minimum' ? Math.min(...values)
+        : series.aggregate === 'sum' ? values.reduce((total,item) => total+item,0)
+          : values.reduce((total,item) => total+item,0)/values.length;
+    return {date,value};
+  });
+}
+function historySeriesRows(history,series) {
+  const rows = history[series.source] ?? [];
+  if (!series.fallbackSource) return rows;
+  const primaryDates = new Set(rows.filter(row => typeof row[series.key] === 'number' && Number.isFinite(row[series.key])).map(row => row.date));
+  return [...rows,...(history[series.fallbackSource] ?? []).filter(row => !primaryDates.has(row.date))];
+}
+function svgElement(name,attributes = {}) {
+  const element = document.createElementNS(svgNamespace,name);
+  for (const [attribute,value] of Object.entries(attributes)) element.setAttribute(attribute,String(value));
+  return element;
+}
+function historyChart(category,series,points) {
+  const figure = document.createElement('figure'); figure.className = 'history-chart';
+  const caption = document.createElement('figcaption'); caption.className = 'history-chart-heading';
+  const title = document.createElement('h4'); title.textContent = series.name;
+  const unit = document.createElement('span'); unit.textContent = series.unit;
+  caption.append(title,unit);
+  const available = points.filter(point => point.value !== null);
+  const range = document.createElement('p'); range.className = 'history-chart-range';
+  range.textContent = `${available.length} of 7 days with readings`;
+  const svg = svgElement('svg',{viewBox:'0 0 600 230',role:'img'});
+  const titleId = `history-${category.id}-${series.id}-title`;
+  const descriptionId = `history-${category.id}-${series.id}-description`;
+  svg.setAttribute('aria-labelledby',`${titleId} ${descriptionId}`);
+  const svgTitle = svgElement('title',{id:titleId});
+  svgTitle.textContent = `${series.name}, 7-day history`;
+  const svgDescription = svgElement('desc',{id:descriptionId});
+  svgDescription.textContent = available.map(point => `${historyDateLabel(point.date,{month:'long',day:'numeric'})}: ${historyNumber(point.value)} ${series.unit}`).join('. ');
+  svg.append(svgTitle,svgDescription);
+
+  const plot = {left:52,right:586,top:18,bottom:178};
+  const numbers = available.map(point => point.value);
+  const rawMin = Math.min(...numbers), rawMax = Math.max(...numbers);
+  const padding = (rawMax-rawMin)*0.12 || Math.max(Math.abs(rawMax)*0.12,1);
+  const min = rawMin-padding, max = rawMax+padding;
+  for (let index=0;index<=4;index++) {
+    const fraction = index/4;
+    const y = plot.bottom-fraction*(plot.bottom-plot.top);
+    const grid = svgElement('line',{x1:plot.left,x2:plot.right,y1:y,y2:y,class:'history-gridline'});
+    const label = svgElement('text',{x:plot.left-8,y:y+4,'text-anchor':'end',class:'history-axis-label'});
+    label.textContent = historyNumber(min+fraction*(max-min));
+    svg.append(grid,label);
+  }
+  const coordinates = points.map((point,index) => ({
+    ...point,
+    x:plot.left+index*(plot.right-plot.left)/(points.length-1),
+    y:point.value === null ? null : plot.bottom-(point.value-min)/(max-min)*(plot.bottom-plot.top),
+  }));
+  const linePoints = coordinates.filter(point => point.value !== null);
+  if (linePoints.length > 1) {
+    const path = svgElement('path',{
+      d:linePoints.map((point,index) => `${index ? 'L' : 'M'}${point.x},${point.y}`).join(' '),
+      class:'history-line',
+      stroke:historyColors[category.id],
+    });
+    svg.append(path);
+  }
+  for (const point of coordinates) {
+    const label = svgElement('text',{x:point.x,y:205,'text-anchor':'middle',class:'history-axis-label'});
+    label.textContent = historyDateLabel(point.date);
+    svg.append(label);
+    if (point.value === null) continue;
+    const circle = svgElement('circle',{cx:point.x,cy:point.y,r:4.5,class:'history-point',fill:historyColors[category.id]});
+    const pointTitle = svgElement('title');
+    pointTitle.textContent = `${historyDateLabel(point.date,{month:'long',day:'numeric'})}: ${historyNumber(point.value)} ${series.unit}`;
+    circle.append(pointTitle); svg.append(circle);
+  }
+  figure.append(caption,range,svg);
+  return figure;
+}
+function renderHistoryTrends(history,userId) {
+  historyCategoriesList.replaceChildren();
+  historyTrends.hidden = false;
+  const dates = recentHistoryDates();
+  historyPeriod.textContent = `${historyDateLabel(dates[0],{month:'short',day:'numeric'})} – ${historyDateLabel(dates.at(-1),{month:'short',day:'numeric'})}`;
+  let categoryCount = 0;
+  for (const category of historyCategoryDefinitions) {
+    const charts = category.series.map(series => ({
+      series,
+      points:historyPoints(historySeriesRows(history,series),series,dates),
+    })).filter(chart => chart.points.some(point => point.value !== null));
+    if (!charts.length) continue;
+    const details = document.createElement('details'); details.className = 'history-category';
+    details.id = `history-category-${category.id}`;
+    details.open = categoryCount === 0;
+    const summary = document.createElement('summary'); summary.className = 'history-category-summary';
+    const mark = document.createElement('span'); mark.className = 'history-category-mark';
+    mark.setAttribute('aria-hidden','true'); mark.textContent = String(categoryCount+1).padStart(2,'0');
+    const name = document.createElement('span'); name.className = 'history-category-name'; name.textContent = category.name;
+    const count = document.createElement('span'); count.className = 'history-category-count';
+    count.textContent = `${charts.length} ${charts.length === 1 ? 'chart' : 'charts'}`;
+    const chevron = document.createElement('span'); chevron.className = 'history-category-chevron';
+    chevron.setAttribute('aria-hidden','true'); chevron.textContent = '⌄';
+    summary.append(mark,name,count,chevron);
+    const grid = document.createElement('div'); grid.className = 'history-chart-grid';
+    for (const chart of charts) grid.append(historyChart(category,chart.series,chart.points));
+    details.append(summary,grid); historyCategoriesList.append(details);
+    categoryCount++;
+  }
+  if (categoryCount) return;
+  const empty = document.createElement('div'); empty.className = 'history-empty';
+  const title = document.createElement('h3');
+  const description = document.createElement('p');
+  if (!userId) {
+    title.textContent = 'Sign in to view your history';
+    description.textContent = 'Your saved check-ins, daily records, and sensor trends will appear here.';
+  } else if (!history.recordsLoaded && !history.sensorsLoaded && !history.checkinsLoaded) {
+    title.textContent = 'History could not be loaded';
+    description.textContent = 'The report could not retrieve daily records, check-ins, or sensor readings. Check the connection and try again.';
+  } else if (!history.recordsLoaded || !history.sensorsLoaded || !history.checkinsLoaded) {
+    title.textContent = 'Some history sources are unavailable';
+    description.textContent = 'Available seven-day charts appear by category when readings can be loaded.';
+  } else {
+    title.textContent = 'No history to chart yet';
+    description.textContent = 'Check-ins, daily records, and sensor readings from the last seven days will appear here when available.';
+  }
+  empty.append(title,description); historyCategoriesList.append(empty);
+}
 function metricValue(metric,value) {
   if (value === undefined || value === null || value === '') return 'No data';
   if (metric.fields && typeof value === 'object' && !Array.isArray(value)) {
@@ -161,6 +345,24 @@ function renderDetails(values,dates,history,userId,simulatedMetrics,partiallySim
       'No sensor data has been saved yet.');
   }
   measurementHistory.append(sensors);
+
+  const checkins = detailSection('Check-in history');
+  if (!history.checkinsLoaded) {
+    const note = document.createElement('p'); note.className = 'report-detail-note';
+    note.textContent = 'Could not load check-in history.';
+    checkins.append(note);
+  } else {
+    const visualResults = {green:'No visual distortion',yellow:'Wavy lines / eye strain',red:'Blurred spot / severe distortion'};
+    renderTable(checkins,'All saved check-ins',[
+      'Date','Reaction time (ms)','NASA-TLX (/100)','Amsler result','Perfusion (s)',
+      'Medication on time (%)','Double dose','Standing HR rise (bpm)','WHO-5 (/100)',
+    ],history.checkins.map(row => [
+      row.date,row.values.pvt,row.values.tlx,visualResults[row.values.amsler] ?? row.values.amsler,
+      row.values.perfusion,row.values.medication?.takenPercent,row.values.medication?.doubleDose,
+      row.values.orthostatic?.hrRise,row.values.who5,
+    ]),'No check-ins have been saved yet.');
+  }
+  measurementHistory.append(checkins);
 }
 const crewPage = document.querySelector('[data-crew-report]');
 const crewSelect = document.querySelector('#crewMember');
@@ -169,7 +371,7 @@ crewSelect?.addEventListener('change',render);
 async function render() {
   const request = ++version;
   anatomyView.update({},{}); message.textContent = 'Loading data\u2026';
-  allMeasurements.replaceChildren(); measurementHistory.replaceChildren();
+  allMeasurements.replaceChildren(); measurementHistory.replaceChildren(); historyCategoriesList.replaceChildren(); historyTrends.hidden = true;
   const client = await supabaseReady;
   const viewerId = getCurrentUser()?.id;
   let userId = viewerId;
@@ -209,7 +411,12 @@ async function render() {
     delete actualValues[metric.id]; delete dates[metric.id];
   }
   Object.assign(actualValues,manual?.values);
-  if (manual) for (const id of Object.keys(manual.values)) dates[id] = new Date(manual.savedAt).toLocaleDateString('en-US');
+  if (manual) {
+    const manualDate = manual.recordedDate
+      ? new Date(`${manual.recordedDate}T12:00:00`).toLocaleDateString('en-US')
+      : new Date(manual.savedAt).toLocaleDateString('en-US');
+    for (const id of Object.keys(manual.values)) dates[id] = manualDate;
+  }
   const values = {...actualValues};
   const simulatedMetrics = new Set(), partiallySimulatedMetrics = new Set();
   const simulatedDate = database.simulatedAt ? new Date(database.simulatedAt).toLocaleDateString('en-US') : null;
@@ -236,6 +443,7 @@ async function render() {
     }
   }
   renderDetails(values,dates,database.history,userId,simulatedMetrics,partiallySimulatedMetrics);
+  renderHistoryTrends(database.history,userId);
   anatomyView.update(actualValues,dates);
   const applicable = metrics.filter(m => m.group !== 'environment');
   const classified = applicable.filter(m => ['green','yellow','red'].includes(classify(m,actualValues[m.id],actualValues))).length;

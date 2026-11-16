@@ -43,6 +43,12 @@ does not use it for alerts or health scores.
 The body view uses `Interfaz/Imagenes/silueta-cuerpo.jpeg` and only shows
 regions with available measurements.
 
+The report groups available daily history into collapsible categories and
+charts readings from the most recent seven calendar days. Its “Add to history”
+button opens the check-in flow. Users can assign each check-in to today or a
+past calendar date; those snapshots appear in the check-in history and relevant
+seven-day charts.
+
 New client-generated simulated metrics target 90% green, 5% yellow, and 5% red.
 Metrics without all three defined states use the same proportions normalized
 across their available states.
@@ -131,7 +137,8 @@ Apply these migrations in order:
 `20261115100000_demo_doctor_signup_access.sql` (for connected projects, use
 `supabase db push`). The last migration allows the doctor or commander role
 selected during registration to enable read access to all reports in this
-instance.
+instance. Apply `20261115150000_allow_backdated_checkins.sql` to enable dated
+check-in history.
 
 **Do not use with real data.** Anyone can register as a doctor or commander and
 view other accounts’ data; the corresponding notice also appears in
