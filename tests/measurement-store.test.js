@@ -71,6 +71,12 @@ test('check-ins save a validated calendar date and future dates are rejected',as
   await assert.rejects(saveMeasurements(client,'user-a',{pvt:250},{date:'2026-02-31'}),/valid check-in date/);
   await assert.rejects(saveMeasurements(client,'user-a',{pvt:250},{date:'2099-12-31'}),/future/);
   assert.equal(calls.filter(([method])=>method==='insert').length,1);
+
+  const savedAt=new Date(); savedAt.setHours(23,30,0,0);
+  const legacyFutureDate=new Date(savedAt); legacyFutureDate.setDate(legacyFutureDate.getDate()+1);
+  const legacyRow={id:1,user_id:'user-a',manual_measurements:{pvt:250},ts:savedAt.toISOString(),recorded_date:localDateString(legacyFutureDate)};
+  const loadedLegacy=await loadMeasurements(database({badRow:legacyRow}).client,'user-a');
+  assert.equal(loadedLegacy.recordedDate,localDateString(savedAt));
 });
 
 test('empty snapshots supersede previous readings; missing and skipped fields stay absent',async()=>{
@@ -182,7 +188,11 @@ test('database report derives sleep streak from the daily record history',async(
 test('report history includes dated manual check-ins',async()=>{
   const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
   const date=localDateString(yesterday);
-  const checkin={user_id:'user-a',recorded_date:date,ts:new Date().toISOString(),manual_measurements:{pvt:250,tlx:30,who5:75}};
+  const savedAt=new Date(),tomorrow=new Date(savedAt);tomorrow.setDate(tomorrow.getDate()+1);
+  const checkins=[
+    {user_id:'user-a',recorded_date:date,ts:savedAt.toISOString(),manual_measurements:{pvt:250,tlx:30,who5:75}},
+    {user_id:'user-a',recorded_date:localDateString(tomorrow),ts:savedAt.toISOString(),manual_measurements:{pvt:260}},
+  ];
   const client={
     rpc(){return Promise.resolve({data:null,error:null});},
     from(table){
@@ -192,7 +202,7 @@ test('report history includes dated manual check-ins',async()=>{
         eq(key,value){if(key==='user_id')owner=value;return query;},
         order(){return query;},
         not(){manualOnly=true;return query;},
-        range(){return Promise.resolve({data:table==='telemetry'&&manualOnly&&owner==='user-a'?[checkin]:[],error:null});},
+        range(){return Promise.resolve({data:table==='telemetry'&&manualOnly&&owner==='user-a'?checkins:[],error:null});},
         limit(){return query;},
         maybeSingle(){return Promise.resolve({data:null,error:null});},
       };
@@ -205,6 +215,7 @@ test('report history includes dated manual check-ins',async()=>{
     date,values:{pvt:250,tlx:30,who5:75},pvt:250,tlx:30,who5:75,
     hrRise:undefined,perfusion:undefined,medicationPercent:undefined,
   });
+  assert.equal(result.history.checkins[1].date,localDateString(savedAt));
 });
 
 test('automatic-only telemetry rows are not treated as Captura snapshots',async()=>{

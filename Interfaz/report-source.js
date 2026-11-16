@@ -62,7 +62,9 @@ async function fetchManualCheckins(client,userId) {
     if (row.user_id !== userId || !Number.isFinite(Date.parse(row.ts))) {
       throw new Error('Supabase returned an invalid check-in history row.');
     }
-    const date = row.recorded_date ?? localDateKey(new Date(row.ts));
+    const savedDate = localDateKey(new Date(row.ts));
+    const recordedDate = row.recorded_date ?? savedDate;
+    const date = recordedDate > savedDate ? savedDate : recordedDate;
     if (!validDateKey(date)) throw new Error('Supabase returned an invalid check-in date.');
     const values = validateValues(row.manual_measurements);
     return {
