@@ -73,6 +73,7 @@ function setupWidget() {
         <img src="Imagenes/farmacias-similunares.png" alt="" />
       </button>
       <strong class="dr-simi-title">Dr. SIMI bot</strong>
+      <button class="dr-simi-close" type="button" aria-label="Close Dr. SIMI bot" aria-controls="drSimiContent">&times;</button>
     </div>
     <div class="dr-simi-content" id="drSimiContent">
       <div class="dr-simi-output" id="drSimiOutput">What would you like to check today?</div>
@@ -87,14 +88,17 @@ function setupWidget() {
   const form = widget.querySelector('#drSimiForm');
   const input = widget.querySelector('#drSimiInput');
   const toggle = widget.querySelector('.dr-simi-toggle');
+  const close = widget.querySelector('.dr-simi-close');
   const previousAnswer = loadHistory().filter((item) => item.role === 'assistant').at(-1);
   if (previousAnswer) output.textContent = previousAnswer.text;
 
-  toggle.addEventListener('click', () => {
-    const collapsed = widget.classList.toggle('is-collapsed');
+  const setCollapsed = (collapsed) => {
+    widget.classList.toggle('is-collapsed', collapsed);
     toggle.setAttribute('aria-expanded', String(!collapsed));
-    toggle.setAttribute('aria-label', `${collapsed ? 'Open' : 'Minimize'} Dr. SIMI bot`);
-  });
+    toggle.setAttribute('aria-label', collapsed ? 'Open Dr. SIMI bot' : 'Dr. SIMI bot is open');
+  };
+  toggle.addEventListener('click', () => setCollapsed(false));
+  close.addEventListener('click', () => setCollapsed(true));
 
   const updateSessionMessage = (user) => {
     if (!user) output.textContent = 'Sign in to chat with Dr. SIMI.';

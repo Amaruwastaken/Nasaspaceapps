@@ -93,6 +93,7 @@
   display:flex;
   align-items:center;
   gap:9px;
+  justify-content:space-between;
   padding: 10px 12px;
   background: #eef5ff;
   border-bottom: 1px solid #dce9f7;
@@ -122,6 +123,30 @@
   outline:2px solid var(--blue);
   outline-offset:3px;
 }
+.dr-simi-close {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:30px;
+  height:30px;
+  flex:none;
+  margin-left:auto;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:var(--ink);
+  font-size:24px;
+  line-height:1;
+  cursor:pointer;
+}
+.dr-simi-close:hover {
+  background:rgba(20,44,71,.08);
+}
+.dr-simi-close:focus-visible {
+  outline:2px solid var(--blue);
+  outline-offset:2px;
+}
 .dr-simi-content {
   display:block;
 }
@@ -149,6 +174,7 @@
   height:42px;
 }
 .dr-simi-widget.is-collapsed .dr-simi-title,
+.dr-simi-widget.is-collapsed .dr-simi-close,
 .dr-simi-widget.is-collapsed .dr-simi-content {
   display:none;
 }
