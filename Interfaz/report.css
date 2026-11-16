@@ -51,16 +51,32 @@
 .body-marker[data-state=yellow] { fill:#bd850b; }
 .body-marker[data-state=red] { fill:#c5443d; }
 .report-message { color:var(--muted); font-size:14px; line-height:1.7; margin:0 0 24px; }
-.affected-organs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
-.organ-alert { display:flex; align-items:center; gap:20px; padding:24px; background:#fff; border:1px solid var(--line); border-left:4px solid #bc810b; border-radius:6px; }
-.organ-alert[data-state=red] { border-left-color:#c5443d; }
-.organ-alert svg { width:90px; height:100px; flex:none; fill:#fff0d5; stroke:#b17b16; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
-.organ-alert[data-state=red] svg { fill:#ffe2de; stroke:#bd4e47; }
-.organ-alert h2 { margin:0 0 8px; font-size:22px; }
-.organ-status { display:inline-block; padding:3px 9px; border-radius:20px; background:#fff1cf; color:#85600c; font-size:12px; font-weight:700; }
-[data-state=red]>.organ-status,.organ-alert[data-state=red] .organ-status { background:#ffe9e6; color:#a5332d; }
-.organ-reading { margin:10px 0 0; color:var(--ink); font-size:13px; line-height:1.6; overflow-wrap:anywhere; }
-.organ-reading small { display:block; color:var(--muted); font-size:11px; }
+.attention-areas { margin:0 0 24px; padding:24px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+.attention-heading { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:18px; }
+.attention-heading h2 { margin:0 0 5px; color:var(--ink); font-size:21px; }
+.attention-heading p:not(.attention-kicker) { margin:0; color:var(--muted); font-size:13px; line-height:1.6; }
+.attention-kicker { margin:0 0 5px; color:var(--blue); font-size:10px; font-weight:800; letter-spacing:.12em; }
+.attention-count { flex:none; padding:8px 12px; border:1px solid var(--line); border-radius:20px; color:var(--ink); background:#f4f7fa; font-size:12px; font-weight:750; }
+.attention-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.attention-card { min-width:0; padding:18px; border:1px solid var(--line); border-left:4px solid #bd850b; border-radius:7px; background:#fff; }
+.attention-card[data-state=red] { border-left-color:#c5443d; background:#fffdfd; }
+.attention-card-header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+.attention-rank { color:var(--muted); font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.attention-status { padding:4px 9px; border-radius:20px; background:#fff1cf; color:#85600c; font-size:10px; font-weight:800; text-transform:uppercase; }
+.attention-card[data-state=red] .attention-status { background:#ffe9e6; color:#a5332d; }
+.attention-card h3 { margin:0; color:var(--ink); font-size:19px; }
+.attention-metric-count { margin:5px 0 0; color:var(--muted); font-size:11px; }
+.attention-readings { display:grid; gap:10px; margin:14px 0 0; padding:0; list-style:none; }
+.attention-readings li { display:grid; gap:3px; padding:0 0 0 13px; border-left:2px solid #bd850b; overflow-wrap:anywhere; }
+.attention-readings li[data-state=red] { border-left-color:#c5443d; }
+.attention-readings strong { color:var(--ink); font-size:12px; }
+.attention-reading-value { color:var(--muted); font-size:11px; line-height:1.5; }
+.attention-empty { display:flex; align-items:center; gap:13px; padding:18px; border:1px solid var(--line); border-radius:7px; background:#f7f9fb; }
+.attention-empty[data-state=green] { border-color:#c9e2d3; background:#f3faf6; }
+.attention-empty-icon { display:grid; place-items:center; width:34px; height:34px; flex:none; border-radius:50%; background:#e9eef3; color:var(--muted); font-size:18px; font-weight:800; }
+.attention-empty[data-state=green] .attention-empty-icon { background:#dcefe3; color:#176b3f; }
+.attention-empty h3 { margin:0 0 3px; color:var(--ink); font-size:14px; }
+.attention-empty p { margin:0; color:var(--muted); font-size:12px; line-height:1.5; }
 .report-details { margin-top:28px; border:1px solid var(--line); border-radius:6px; background:#fff; }
 .report-details summary { padding:17px 20px; color:var(--blue); font-weight:700; cursor:pointer; }
 .report-details summary:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
@@ -352,9 +368,9 @@
   .body-stat-card { padding:10px; }
 }
 @media(max-width:700px) {
-  .affected-organs { grid-template-columns:1fr; }
-  .organ-alert { padding:18px; gap:15px; }
-  .organ-alert svg { width:70px; height:85px; }
+  .attention-areas { padding:18px; }
+  .attention-heading { flex-direction:column; align-items:flex-start; }
+  .attention-grid { grid-template-columns:1fr; }
   .body-overview { padding:18px; }
   .body-overview-heading { flex-direction:column; }
   .body-map { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }

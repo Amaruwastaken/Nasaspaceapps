@@ -29,6 +29,70 @@ function metricValue(metric,value) {
   return `${value}${metric.unit ? ` ${metric.unit}` : ''}`;
 }
 const anatomyView = createAnatomyView(bodyOverview,metricValue);
+const attentionSection = document.querySelector('#attentionAreas');
+const attentionCount = document.querySelector('#attentionCount');
+const attentionList = document.querySelector('#affectedOrgans');
+function renderAttentionAreas(organs,dates,classified,totalMetrics) {
+  attentionList.replaceChildren();
+  attentionSection.hidden = false;
+  const priority = {red:0,yellow:1};
+  const ranked = [...organs].sort((a,b) => {
+    const stateOrder = priority[a.state]-priority[b.state];
+    if (stateOrder) return stateOrder;
+    const redDifference = b.items.filter(item => item.state === 'red').length-a.items.filter(item => item.state === 'red').length;
+    return redDifference || b.items.length-a.items.length;
+  });
+  attentionCount.textContent = ranked.length
+    ? `${ranked.length} ${ranked.length === 1 ? 'area' : 'areas'} flagged`
+    : classified === totalMetrics ? 'No active alerts' : 'Partial assessment';
+
+  if (!ranked.length) {
+    const empty = document.createElement('div'); empty.className = 'attention-empty';
+    empty.dataset.state = classified === totalMetrics ? 'green' : 'unknown';
+    const icon = document.createElement('span'); icon.className = 'attention-empty-icon';
+    icon.setAttribute('aria-hidden','true'); icon.textContent = classified === totalMetrics ? '✓' : '…';
+    const content = document.createElement('div');
+    const title = document.createElement('h3');
+    const description = document.createElement('p');
+    if (!classified) {
+      title.textContent = 'Not enough data to rank areas';
+      description.textContent = 'No classifiable measurements are available yet.';
+    } else if (classified < totalMetrics) {
+      title.textContent = 'No alerts in the available readings';
+      description.textContent = 'This is a partial assessment; some indicators still need readings.';
+    } else {
+      title.textContent = 'No areas currently need attention';
+      description.textContent = 'All assessed indicators are within their green ranges.';
+    }
+    content.append(title,description); empty.append(icon,content); attentionList.append(empty);
+    return;
+  }
+
+  for (const [index,organ] of ranked.entries()) {
+    const card = document.createElement('article'); card.className = 'attention-card';
+    card.dataset.state = organ.state; card.dataset.organ = organ.id;
+    const header = document.createElement('div'); header.className = 'attention-card-header';
+    const rank = document.createElement('span'); rank.className = 'attention-rank';
+    rank.textContent = `Priority ${index+1}`;
+    const badge = document.createElement('span'); badge.className = 'attention-status';
+    badge.textContent = organ.state === 'red' ? 'Red alert' : 'Caution';
+    header.append(rank,badge);
+    const title = document.createElement('h3'); title.textContent = organ.name;
+    const count = document.createElement('p'); count.className = 'attention-metric-count';
+    count.textContent = `${organ.items.length} flagged ${organ.items.length === 1 ? 'indicator' : 'indicators'}`;
+    const readings = document.createElement('ul'); readings.className = 'attention-readings';
+    const items = [...organ.items].sort((a,b) => priority[a.state]-priority[b.state]);
+    for (const {metric,value,state} of items) {
+      const item = document.createElement('li'); item.dataset.state = state;
+      const name = document.createElement('strong'); name.textContent = metric.name;
+      const reading = document.createElement('span'); reading.className = 'attention-reading-value';
+      const formatted = metricValue(metric,value);
+      reading.textContent = `${formatted} · ${statusNames[state] ?? state}${dates[metric.id] ? ` · ${dates[metric.id]}` : ''}`;
+      item.append(name,reading); readings.append(item);
+    }
+    card.append(header,title,count,readings); attentionList.append(card);
+  }
+}
 function detailSection(title) {
   const section = document.createElement('section'); section.className = 'report-detail-section';
   const heading = document.createElement('h2'); heading.textContent = title; section.append(heading);
@@ -190,6 +254,7 @@ async function render() {
   }
   if (request !== version || viewerId !== getCurrentUser()?.id) return;
   const organs = affectedOrgans(actualValues);
+  renderAttentionAreas(organs,dates,classified,applicable.length);
   const missingAutomatic = metrics.filter(m => m.source !== 'manual' && classify(m,actualValues[m.id],actualValues) === 'missing');
   const simulatedCount = simulatedMetrics.size + partiallySimulatedMetrics.size;
   const parts = [];

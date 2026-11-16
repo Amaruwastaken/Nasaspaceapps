@@ -43,6 +43,10 @@ does not use it for alerts or health scores.
 The body view uses `Interfaz/Imagenes/silueta-cuerpo.jpeg` and only shows
 regions with available measurements.
 
+New client-generated simulated metrics target 90% green, 5% yellow, and 5% red.
+Metrics without all three defined states use the same proportions normalized
+across their available states.
+
 ### Emergency system
 
 The report adds 2 points for each red indicator and 1.25 for each yellow
