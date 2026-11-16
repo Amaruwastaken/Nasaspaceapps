@@ -96,6 +96,15 @@
 #mision .intro { margin-bottom: 30px; }
 #mision .missions { max-width: 1040px; }
 .missions-hint { margin: 20px 0 16px; color: #5e6b7e; font-size: 15px; }
+.missions-hint.is-success {
+  padding: 12px 14px;
+  border: 1px solid #9bd5ad;
+  border-radius: 8px;
+  background: #eaf7ee;
+  color: #17613a;
+  font-weight: 600;
+}
+.missions-hint.is-success::before { content: "✓ "; }
 .trip { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 8px; }
 .trip-slot {
   flex: 1;

@@ -23,12 +23,14 @@ test('prototype doctor signup role grants access to all report members', async (
 });
 
 test('mission planner saves and reloads the shared Supabase mission', async () => {
-  const [page, script, coreMigration, migration, resetMigration] = await Promise.all([
+  const [page, script, formsCss, coreMigration, migration, resetMigration, scopedUpdatesMigration] = await Promise.all([
     readFile(path.join(process.cwd(), 'Interfaz', 'mision.html'), 'utf8'),
     readFile(path.join(process.cwd(), 'Interfaz', 'mission-plan.js'), 'utf8'),
+    readFile(path.join(process.cwd(), 'Interfaz', 'Forms.css'), 'utf8'),
     readFile(path.join(migrationDir, '20261115080000_ensure_core_schema.sql'), 'utf8'),
     readFile(path.join(migrationDir, '20261115130000_ensure_shared_mission_table.sql'), 'utf8'),
     readFile(path.join(migrationDir, '20261115120000_reset_shared_mission.sql'), 'utf8'),
+    readFile(path.join(migrationDir, '20261115140000_scope_shared_mission_profile_updates.sql'), 'utf8'),
   ]);
 
   assert.match(page, /mission-plan\.js/);
@@ -53,6 +55,9 @@ test('mission planner saves and reloads the shared Supabase mission', async () =
   assert.match(migration, /grant\s+select\s+on\s+table\s+public\.missions\s+to\s+authenticated/i);
   assert.match(script, /rpc\('get_shared_mission'\)/);
   assert.match(script, /rpc\('save_shared_mission'/);
+  assert.match(script, /function showSuccess/);
+  assert.match(script, /showSuccess\('Mission saved successfully to Supabase and shared with all accounts\.'\)/);
+  assert.match(formsCss, /\.missions-hint\.is-success/);
   assert.match(script, /link\.href\s*=\s*'login\.html'/);
   assert.match(script, /showSignInPrompt\('Sign in to save the shared mission\.'\)/);
   for (const field of [
@@ -74,5 +79,11 @@ test('mission planner saves and reloads the shared Supabase mission', async () =
   assert.match(script, /rpc\('reset_shared_mission'\)/);
   const saveHandler = script.slice(script.indexOf("saveButton.addEventListener"), script.indexOf("resetButton.addEventListener"));
   assert.ok(saveHandler.indexOf('await supabaseReady') < saveHandler.indexOf('getCurrentUser()?.id'));
+  assert.ok(saveHandler.indexOf("data !== 'Farmacias Similunares'") < saveHandler.indexOf('showSuccess('));
   assert.match(resetMigration, /delete\s+from\s+public\.missions/i);
+  const profileUpdates = [...scopedUpdatesMigration.matchAll(/update\s+public\.profiles\s+set[\s\S]*?;/gi)].map(([statement]) => statement);
+  assert.equal(profileUpdates.length, 3);
+  for (const statement of profileUpdates) {
+    assert.match(statement, /\bwhere\b/i, 'Profile updates must be scoped to the shared mission or caller');
+  }
 });
