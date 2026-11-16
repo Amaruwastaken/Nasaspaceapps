@@ -155,7 +155,7 @@ sidebar.querySelectorAll('a').forEach(link => {
       startInput.dataset.missionLocked = String(missionLocked);
       startInput.readOnly = missionLocked;
       savedName = typeof data.name === 'string' ? data.name.slice(0,80) : '';
-      nameInput.value = savedName || (typeof data.draft === 'string' ? data.draft.slice(0,80) : '');
+      nameInput.value = missionLocked ? savedName : (typeof data.draft === 'string' ? data.draft.slice(0,80) : savedName);
       preset = Object.hasOwn(presets,data.preset) ? data.preset : '';
       routeDistance = Number.isFinite(data.distance) && data.distance > 0 ? data.distance : null;
       travelInput.value = data.travel ?? ''; stayInput.value = data.stay ?? '';
@@ -212,20 +212,20 @@ sidebar.querySelectorAll('a').forEach(link => {
     nameA.textContent = a ? PLANETS[a] : '—';
     nameB.textContent = b ? PLANETS[b] : '—';
     resetBtn.hidden = !a && !nameInput.value;
-    nameInput.readOnly = Boolean(savedName);
+    nameInput.readOnly = missionLocked;
     saveName.disabled = missionLocked;
     travelInput.readOnly = stayInput.readOnly = missionLocked;
     startInput.readOnly = missionLocked;
     startInput.dataset.missionLocked = String(missionLocked);
     presetInput.value = preset;
-    presetInput.disabled = Boolean(a || savedName);
+    presetInput.disabled = missionLocked;
     presetInfo.hidden = !preset;
     presetInfo.replaceChildren();
     if (preset) {
       const link = document.createElement('a'); link.href = presets[preset].url; link.textContent = 'Fuente: NASA';
       presetInfo.append(presets[preset].info + ' Distancia media Tierra-Luna: 384,400 km; no representa la trayectoria total. ',link);
     }
-    buttons.forEach(btn => { btn.disabled = Boolean(b); });
+    buttons.forEach(btn => { btn.disabled = missionLocked; });
     form.hidden = !(a && b);
 
     if (!a) {
@@ -241,11 +241,12 @@ sidebar.querySelectorAll('a').forEach(link => {
     renderSummary();
   }
 
-  // Keep the completed route locked until Reset.
+  // Lock editing only after the complete mission is saved.
   buttons.forEach(btn => btn.addEventListener('click', () => {
     const p = btn.dataset.planet;
-    if (b) return;
-    if (!a) a = p;
+    if (missionLocked) return;
+    if (b) { a = p; b = null; routeDistance = null; preset = ''; }
+    else if (!a) a = p;
     else if (p !== a) { b = p; routeDistance = distance(a,b); }
     persist();
     render();
@@ -271,7 +272,9 @@ sidebar.querySelectorAll('a').forEach(link => {
     document.querySelector('#missionSaveHint').textContent = 'Datos guardados: nombre, ruta, distancia, tiempos y fecha. Pulsa Reiniciar para editar.';
   });
   presetInput.addEventListener('change', () => {
-    if (a || savedName || !Object.hasOwn(presets,presetInput.value)) return;
+    if (missionLocked) return;
+    if (!presetInput.value) { preset = ''; persist(); render(); return; }
+    if (!Object.hasOwn(presets,presetInput.value)) return;
     preset = presetInput.value;
     const data = presets[preset]; a = 'tierra'; b = 'luna'; routeDistance = 384400;
     savedName = data.name; nameInput.value = savedName;
