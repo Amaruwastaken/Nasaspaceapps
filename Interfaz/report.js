@@ -444,7 +444,8 @@ async function render() {
   }
   renderDetails(values,dates,database.history,userId,simulatedMetrics,partiallySimulatedMetrics);
   renderHistoryTrends(database.history,userId);
-  anatomyView.update(actualValues,dates);
+  // Show the same completed data set as the details panel; simulated values remain excluded from alerts.
+  anatomyView.update(values,dates,simulatedMetrics,partiallySimulatedMetrics);
   const applicable = metrics.filter(m => m.group !== 'environment');
   const classified = applicable.filter(m => ['green','yellow','red'].includes(classify(m,actualValues[m.id],actualValues))).length;
   const score = emergencyScore(actualValues);

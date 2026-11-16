@@ -34,7 +34,7 @@ export function createAnatomyView(root,formatValue) {
   const closeButton = root.querySelector('#bodyPopupClose');
   const markerLayer = root.querySelector('#bodyMarkers');
   const targets = [...root.querySelectorAll('.body-organ[data-anatomy]')];
-  let values = {},dates = {},active = null,timer,positionFrame;
+  let values = {},dates = {},simulatedMetrics = new Set(),partiallySimulatedMetrics = new Set(),active = null,timer,positionFrame;
 
   function cancelClose() { clearTimeout(timer); }
   function position() {
@@ -77,7 +77,8 @@ export function createAnatomyView(root,formatValue) {
         const dot = node('span','','body-reading-dot'); dot.dataset.state = state; dot.setAttribute('aria-hidden','true');
         const text = node('span'); text.append(node('strong',metric.name));
         const date = dates[metric.id] ? ` · ${dates[metric.id]}` : '';
-        text.append(node('small',`${formatValue(metric,values[metric.id])} · ${names[state]}${date}`));
+        const sourceTag = simulatedMetrics.has(metric.id) ? ' · Simulated' : partiallySimulatedMetrics.has(metric.id) ? ' · Partly simulated' : '';
+        text.append(node('small',`${formatValue(metric,values[metric.id])} · ${names[state]}${sourceTag}${date}`));
         item.append(dot,text); list.append(item);
       }
       card.append(list);
@@ -119,8 +120,8 @@ export function createAnatomyView(root,formatValue) {
   window.addEventListener('resize',queuePosition);
   document.addEventListener('scroll',queuePosition,true);
 
-  function update(newValues,newDates) {
-    close(); values = newValues; dates = newDates;
+  function update(newValues,newDates,newSimulatedMetrics = new Set(),newPartiallySimulatedMetrics = new Set()) {
+    close(); values = newValues; dates = newDates; simulatedMetrics = newSimulatedMetrics; partiallySimulatedMetrics = newPartiallySimulatedMetrics;
     markerLayer.replaceChildren();
     const states = new Set();
     for (const [id,area] of Object.entries(areas)) {
