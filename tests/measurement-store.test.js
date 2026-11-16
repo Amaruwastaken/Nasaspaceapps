@@ -254,7 +254,7 @@ test('database and network errors are surfaced; missing tables have an actionabl
   await assert.rejects(saveMeasurements(database({writeError:{code:'42501'}}).client,'user-a',{}),/denied the save/);
   await assert.rejects(saveMeasurements(database({writeError:{code:'23503'}}).client,'user-a',{}),/associated profile/);
   for(const code of ['42P01','PGRST205'])await assert.rejects(loadMeasurements(database({readError:{code}}).client,'user-a'),/unified telemetry migration/);
-  for(const code of ['42703','PGRST204'])await assert.rejects(loadMeasurements(database({readError:{code}}).client,'user-a'),/latest migrations/);
+  for(const code of ['42703','PGRST204'])await assert.rejects(loadMeasurements(database({readError:{code}}).client,'user-a'),/20261115150000_allow_backdated_checkins\.sql/);
   await assert.rejects(loadMeasurements(database({authThrows:true}).client,'user-a'),/session/);
   await assert.rejects(saveMeasurements(database({authError:true}).client,'user-a',{}),/session/);
 });
