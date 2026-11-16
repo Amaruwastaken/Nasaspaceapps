@@ -10,7 +10,7 @@ const knowledgePath = path.join(__dirname, '..', 'Backend', 'nasa-knowledge.json
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+const GEMINI_MODEL = 'gemini-3.5-flash-lite';
 
 function readJson(pathname) {
   return readFile(pathname, 'utf8').then((data) => JSON.parse(data));
@@ -134,17 +134,16 @@ async function callGemini(prompt) {
     throw new Error('GEMINI_API_KEY is not configured.');
   }
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`, {
+  const response = await fetch('https://generativelanguage.googleapis.com/v1beta/interactions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'x-goog-api-key': GEMINI_API_KEY,
     },
     body: JSON.stringify({
-      contents: [{
-        role: 'user',
-        parts: [{ text: prompt }],
-      }],
+      model: GEMINI_MODEL,
+      input: prompt,
+      store: false,
     }),
   });
 
@@ -154,8 +153,11 @@ async function callGemini(prompt) {
     throw new Error(message);
   }
 
-  const text = payload?.candidates?.[0]?.content?.parts
-    ?.map((part) => part.text)
+  const text = payload?.steps
+    ?.filter((step) => step?.type === 'model_output')
+    .flatMap((step) => step.content || [])
+    .filter((part) => part?.type === 'text' && typeof part.text === 'string')
+    .map((part) => part.text)
     .join('')
     .trim();
 
