@@ -241,6 +241,67 @@ sidebar.querySelectorAll('a').forEach(link => {
     renderSummary();
   }
 
+  window.missionPlan = {
+    read() {
+      return {
+        name: nameInput.value.trim(),
+        origin: a,
+        dest: b,
+        preset,
+        transitDays: travelInput.value,
+        stayDays: stayInput.value,
+        startDate: startInput.value,
+        locked: missionLocked,
+      };
+    },
+    restore(mission) {
+      if (!mission || typeof mission.name !== 'string') {
+        throw new Error('Supabase devolvió una misión inválida.');
+      }
+      const start = mission.start_at ? new Date(mission.start_at) : null;
+      if (!Object.hasOwn(PLANETS,mission.origin)
+          || !Object.hasOwn(PLANETS,mission.dest) || mission.origin === mission.dest
+          || !Number.isFinite(mission.transit_days) || mission.transit_days < 0
+          || !Number.isFinite(mission.stay_days) || mission.stay_days < 0
+          || (mission.start_at && !Number.isFinite(start?.getTime()))) {
+        throw new Error('Supabase devolvió una misión inválida.');
+      }
+      a = mission.origin; b = mission.dest;
+      savedName = mission.name.slice(0,80);
+      nameInput.value = savedName;
+      preset = savedName === 'Artemis I' ? 'artemis' : savedName === 'Apollo 11' ? 'apollo' : '';
+      routeDistance = distance(a,b);
+      travelInput.value = String(mission.transit_days);
+      stayInput.value = String(mission.stay_days);
+      savedStart = start ? start.toISOString().slice(0,10) : '';
+      startInput.value = savedStart;
+      missionLocked = true;
+      persist(); render();
+    },
+    commit() {
+      savedName = nameInput.value.trim();
+      nameInput.value = savedName;
+      savedStart = startInput.value;
+      missionLocked = true;
+      try { localStorage.setItem('farmacias-similunares.mission-start',savedStart); } catch {}
+      persist(); render();
+    },
+    reset() {
+      a = b = null;
+      missionLocked = false; savedStart = '';
+      savedName = preset = ''; routeDistance = null; nameInput.value = '';
+      startInput.value = '';
+      travelInput.value = ''; stayInput.value = '';
+      startInput.dataset.missionLocked = 'false';
+      try {
+        localStorage.removeItem(storageKey);
+        localStorage.removeItem('farmacias-similunares.mission-start');
+      } catch {}
+      render();
+    },
+  };
+  document.dispatchEvent(new Event('missionplanready'));
+
   // Keep the completed route locked until Reset.
   buttons.forEach(btn => btn.addEventListener('click', () => {
     const p = btn.dataset.planet;
@@ -254,22 +315,6 @@ sidebar.querySelectorAll('a').forEach(link => {
   // Keep the summary current as travel and stay durations change.
   [travelInput,stayInput].forEach(input => input.addEventListener('input', () => { persist(); renderSummary(); }));
   nameInput.addEventListener('input', () => { persist(); resetBtn.hidden = !a && !nameInput.value; });
-  saveName.addEventListener('click', () => {
-    if (missionLocked) return;
-    const value = nameInput.value.trim();
-    if (!value) { nameInput.setCustomValidity('Escribe el nombre.'); nameInput.reportValidity(); nameInput.setCustomValidity(''); return; }
-    if (!a || !b) { hint.textContent = 'Selecciona partida y destino antes de guardar.'; return; }
-    for (const input of [travelInput, stayInput, startInput]) {
-      if (!input.value || !input.checkValidity()) { input.setCustomValidity('Completa este dato con un valor valido.'); input.reportValidity(); input.setCustomValidity(''); return; }
-    }
-    routeDistance ??= distance(a,b);
-    savedName = value; nameInput.value = value;
-    savedStart = startInput.value; missionLocked = true;
-    try { localStorage.setItem('farmacias-similunares.mission-start', savedStart); } catch {}
-    document.querySelector('#saveMissionStart').click();
-    persist(); render();
-    document.querySelector('#missionSaveHint').textContent = 'Datos guardados: nombre, ruta, distancia, tiempos y fecha. Pulsa Reiniciar para editar.';
-  });
   presetInput.addEventListener('change', () => {
     if (a || savedName || !Object.hasOwn(presets,presetInput.value)) return;
     preset = presetInput.value;
@@ -277,18 +322,6 @@ sidebar.querySelectorAll('a').forEach(link => {
     savedName = data.name; nameInput.value = savedName;
     travelInput.value = data.travel; stayInput.value = data.stay;
     persist(); render();
-  });
-
-  // Clear the route and day counts to begin another mission.
-  resetBtn.addEventListener('click', () => {
-    a = b = null;
-    missionLocked = false; savedStart = '';
-    savedName = preset = ''; routeDistance = null; nameInput.value = '';
-    document.querySelector('#missionSaveHint').textContent = 'Completa los datos y pulsa Guardar.';
-    try { localStorage.removeItem(storageKey); } catch {}
-    travelInput.value = '';
-    stayInput.value = '';
-    render();
   });
 
   render();

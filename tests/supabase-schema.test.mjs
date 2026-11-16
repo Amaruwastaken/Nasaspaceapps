@@ -21,3 +21,17 @@ test('prototype doctor signup role grants access to all report members', async (
   assert.match(migration, /select\s+member\.id,\s*member\.username\s+from\s+public\.profiles\s+member\s+order\s+by/is);
   assert.match(migration, /select\s+p_user_id\s*=\s*\(select\s+auth\.uid\(\)\)\s+or\s+public\.can_review_mission\(\)/i);
 });
+
+test('mission planner saves and reloads the shared Supabase mission', async () => {
+  const [page, script, migration] = await Promise.all([
+    readFile(path.join(process.cwd(), 'Interfaz', 'mision.html'), 'utf8'),
+    readFile(path.join(process.cwd(), 'Interfaz', 'mission-plan.js'), 'utf8'),
+    readFile(path.join(migrationDir, '20261115120000_reset_shared_mission.sql'), 'utf8'),
+  ]);
+
+  assert.match(page, /mission-plan\.js/);
+  assert.match(script, /rpc\('get_shared_mission'\)/);
+  assert.match(script, /rpc\('save_shared_mission'/);
+  assert.match(script, /rpc\('reset_shared_mission'\)/);
+  assert.match(migration, /delete\s+from\s+public\.missions/i);
+});

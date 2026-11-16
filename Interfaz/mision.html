@@ -15,6 +15,7 @@
   <script src="Script.js" defer></script>
   <script type="module" src="auth.js"></script>
   <script type="module" src="mission-start.js"></script>
+  <script type="module" src="mission-plan.js"></script>
   <link rel="icon" type="image/png" href="Imagenes/farmacias-similunares.png" />
 </head>
 <body>
@@ -56,7 +57,7 @@
             <div class="mission-settings">
               <label class="field"><span class="field-label">Misión predeterminada</span><span class="bubble"><select id="missionPreset"><option value="">Personalizada</option><option value="artemis">Artemis I (orbital)</option><option value="apollo">Apollo 11</option></select></span></label>
               <label class="field"><span class="field-label">Nombre de la misión</span><span class="bubble"><input id="missionName" maxlength="80" placeholder="Nombre de tu misión"></span></label>
-              <p class="missions-hint" id="missionSaveHint" role="status">Guarda todos los datos para bloquearlos hasta reiniciar. Los datos se conservan en este navegador.</p>
+              <p class="missions-hint" id="missionSaveHint" role="status">Inicia sesión y guarda la misión para sincronizarla con Supabase.</p>
               <p class="missions-hint" id="missionPresetInfo" hidden></p>
             </div>
             <p class="missions-hint" id="missionsHint">Toca tu punto de partida (A).</p>

@@ -54,6 +54,16 @@ estados activos para mostrarlos en un panel inferior izquierdo. Aplica también
 `supabase/migrations/20261115020300_health_alert_popup.sql` y
 `supabase/migrations/20261115024000_live_health_emergency_panel.sql`.
 
+### Misión compartida
+
+`Interfaz/mision.html` carga la misión compartida desde `public.missions` y
+guarda nombre, ruta, duración, modo de estancia, zona horaria, fecha y relojes
+con `save_shared_mission`. Requiere `20261115110000_persist_shared_mission.sql`;
+`20261115120000_reset_shared_mission.sql` permite borrar la misión compartida al
+reiniciarla. Guardar o reiniciar requiere una sesión de Supabase. El plan usa el
+código fijo `Farmacias Similunares`, por lo que todas las cuentas ven la misma
+misión.
+
 ### Captura conectada a Supabase en Vercel
 
 Proyecto Vercel: nasaspaceapps-farmacias-similunares. El directorio del proyecto es la raiz del repositorio.
