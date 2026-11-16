@@ -38,3 +38,5 @@
 .mission-settings select { width: 100%; min-height: 44px; border: 0; background: transparent; color: inherit; font: inherit; }
 .mission-settings input[readonly] { opacity: .75; }
 .space .solar-planet:disabled { cursor: default; }
+
+.mission-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 18px; }

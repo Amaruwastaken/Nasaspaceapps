@@ -131,6 +131,8 @@ sidebar.querySelectorAll('a').forEach(link => {
 
   // Keep the selected departure (A) and destination (B) between renders.
   let a = null, b = null, savedName = '', preset = '', routeDistance = null;
+  let missionLocked = false, savedStart = '';
+  const startInput = document.querySelector('#missionStartDate');
   const storageKey = 'farmacias-similunares.mission-plan';
   const nameInput = document.querySelector('#missionName');
   const saveName = document.querySelector('#saveMissionName');
@@ -141,13 +143,17 @@ sidebar.querySelectorAll('a').forEach(link => {
     apollo: { name: 'Apollo 11', travel: 4.28, stay: 0.9, info: 'Simulación simplificada: 4.28 días hasta el alunizaje y 0.9 días (21 h 36 min) en la superficie. No incluye el regreso.', url: 'https://www.nasa.gov/wp-content/uploads/static/history/SP-4029/Apollo_11a_Summary.htm' }
   };
   function persist() {
-    try { localStorage.setItem(storageKey, JSON.stringify({a,b,name:savedName,draft:nameInput.value,preset,distance:routeDistance,travel:travelInput.value,stay:stayInput.value})); }
+    try { localStorage.setItem(storageKey, JSON.stringify({locked:missionLocked,start:savedStart || startInput.value,a,b,name:savedName,draft:nameInput.value,preset,distance:routeDistance,travel:travelInput.value,stay:stayInput.value})); }
     catch { document.querySelector('#missionSaveHint').textContent = 'El navegador no permite guardar; los datos solo se conservarán mientras esta página est? abierta.'; }
   }
   try {
     const data = JSON.parse(localStorage.getItem(storageKey) || 'null');
     if (data && (!data.a || Object.hasOwn(PLANETS,data.a)) && (!data.b || (data.a && data.b !== data.a && Object.hasOwn(PLANETS,data.b)))) {
       a = data.a; b = data.b;
+      missionLocked = data.locked === true; savedStart = typeof data.start === 'string' ? data.start : '';
+      if (missionLocked && savedStart) startInput.value = savedStart;
+      startInput.dataset.missionLocked = String(missionLocked);
+      startInput.readOnly = missionLocked;
       savedName = typeof data.name === 'string' ? data.name.slice(0,80) : '';
       nameInput.value = savedName || (typeof data.draft === 'string' ? data.draft.slice(0,80) : '');
       preset = Object.hasOwn(presets,data.preset) ? data.preset : '';
@@ -207,7 +213,10 @@ sidebar.querySelectorAll('a').forEach(link => {
     nameB.textContent = b ? PLANETS[b] : '—';
     resetBtn.hidden = !a && !nameInput.value;
     nameInput.readOnly = Boolean(savedName);
-    saveName.disabled = Boolean(savedName);
+    saveName.disabled = missionLocked;
+    travelInput.readOnly = stayInput.readOnly = missionLocked;
+    startInput.readOnly = missionLocked;
+    startInput.dataset.missionLocked = String(missionLocked);
     presetInput.value = preset;
     presetInput.disabled = Boolean(a || savedName);
     presetInfo.hidden = !preset;
@@ -246,10 +255,20 @@ sidebar.querySelectorAll('a').forEach(link => {
   [travelInput,stayInput].forEach(input => input.addEventListener('input', () => { persist(); renderSummary(); }));
   nameInput.addEventListener('input', () => { persist(); resetBtn.hidden = !a && !nameInput.value; });
   saveName.addEventListener('click', () => {
-    if (savedName) return;
+    if (missionLocked) return;
     const value = nameInput.value.trim();
     if (!value) { nameInput.setCustomValidity('Escribe el nombre.'); nameInput.reportValidity(); nameInput.setCustomValidity(''); return; }
-    savedName = value; nameInput.value = value; persist(); render();
+    if (!a || !b) { hint.textContent = 'Selecciona partida y destino antes de guardar.'; return; }
+    for (const input of [travelInput, stayInput, startInput]) {
+      if (!input.value || !input.checkValidity()) { input.setCustomValidity('Completa este dato con un valor valido.'); input.reportValidity(); input.setCustomValidity(''); return; }
+    }
+    routeDistance ??= distance(a,b);
+    savedName = value; nameInput.value = value;
+    savedStart = startInput.value; missionLocked = true;
+    try { localStorage.setItem('farmacias-similunares.mission-start', savedStart); } catch {}
+    document.querySelector('#saveMissionStart').click();
+    persist(); render();
+    document.querySelector('#missionSaveHint').textContent = 'Datos guardados: nombre, ruta, distancia, tiempos y fecha. Pulsa Reiniciar para editar.';
   });
   presetInput.addEventListener('change', () => {
     if (a || savedName || !Object.hasOwn(presets,presetInput.value)) return;
@@ -263,7 +282,9 @@ sidebar.querySelectorAll('a').forEach(link => {
   // Clear the route and day counts to begin another mission.
   resetBtn.addEventListener('click', () => {
     a = b = null;
+    missionLocked = false; savedStart = '';
     savedName = preset = ''; routeDistance = null; nameInput.value = '';
+    document.querySelector('#missionSaveHint').textContent = 'Completa los datos y pulsa Guardar.';
     try { localStorage.removeItem(storageKey); } catch {}
     travelInput.value = '';
     stayInput.value = '';
